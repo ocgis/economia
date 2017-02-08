@@ -1,0 +1,1 @@
+json.array! @etimes, partial: 'etimes/etime', as: :etime

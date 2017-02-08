@@ -1,0 +1,9 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Date:</strong>
+  <%= @date_posted.date %>
+</p>
+
+<%= link_to 'Edit', edit_date_posted_path(@date_posted) %> |
+<%= link_to 'Back', date_posteds_path %>

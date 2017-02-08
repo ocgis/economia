@@ -1,0 +1,2 @@
+class ReconcileDate < ApplicationRecord
+end

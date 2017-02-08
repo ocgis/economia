@@ -1,0 +1,34 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Id :</strong>
+  <%= @split.id_ %>
+</p>
+
+<p>
+  <strong>Memo:</strong>
+  <%= @split.memo %>
+</p>
+
+<p>
+  <strong>Reconciled state:</strong>
+  <%= @split.reconciled_state %>
+</p>
+
+<p>
+  <strong>Value:</strong>
+  <%= @split.value %>
+</p>
+
+<p>
+  <strong>Quantity:</strong>
+  <%= @split.quantity %>
+</p>
+
+<p>
+  <strong>Account:</strong>
+  <%= @split.account %>
+</p>
+
+<%= link_to 'Edit', edit_split_path(@split) %> |
+<%= link_to 'Back', splits_path %>

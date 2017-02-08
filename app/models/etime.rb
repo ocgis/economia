@@ -1,0 +1,2 @@
+class Etime < ApplicationRecord
+end

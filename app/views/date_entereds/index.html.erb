@@ -1,0 +1,27 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Date Entereds</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @date_entereds.each do |date_entered| %>
+      <tr>
+        <td><%= date_entered.date %></td>
+        <td><%= link_to 'Show', date_entered %></td>
+        <td><%= link_to 'Edit', edit_date_entered_path(date_entered) %></td>
+        <td><%= link_to 'Destroy', date_entered, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Date Entered', new_date_entered_path %>

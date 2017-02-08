@@ -1,0 +1,1 @@
+json.partial! "reconcile_dates/reconcile_date", reconcile_date: @reconcile_date

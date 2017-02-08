@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  id_: MyString
+  memo: MyString
+  reconciled_state: MyString
+  value: MyString
+  quantity: MyString
+  account: MyString
+
+two:
+  id_: MyString
+  memo: MyString
+  reconciled_state: MyString
+  value: MyString
+  quantity: MyString
+  account: MyString

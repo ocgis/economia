@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Id :</strong>
+  <%= @currency.id_ %>
+</p>
+
+<p>
+  <strong>Space:</strong>
+  <%= @currency.space %>
+</p>
+
+<%= link_to 'Edit', edit_currency_path(@currency) %> |
+<%= link_to 'Back', currencies_path %>
