@@ -1,2 +1,0 @@
-class DatePosted < ApplicationRecord
-end

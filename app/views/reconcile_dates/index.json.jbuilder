@@ -1,1 +1,0 @@
-json.array! @reconcile_dates, partial: 'reconcile_dates/reconcile_date', as: :reconcile_date

@@ -5,10 +5,12 @@ class CreateAccounts < ActiveRecord::Migration
       t.string :description
       t.string :type_
       t.string :id_
-      t.string :commodity
       t.string :commodity_scu
       t.string :code
       t.string :parent
+
+      t.string :commodity_id_
+      t.string :commodity_space
 
       t.timestamps
     end

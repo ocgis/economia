@@ -28,18 +28,13 @@ def wash_name(name)
     washed = 'type_'
   elsif washed == 'id'
     washed = 'id_'
-  elsif washed == 'time'
-    washed = 'etime'
   end
   return washed
 end
   
-def node_to_db(node)
-  puts node.inspect
+def node_to_db(node, make_object = true)
   puts "Handling new node #{node.name.capitalize}"
-  puts node.children.inspect
   attributes = {}
-  reference_to = []
   reference_from = []
   node.children.each do |xp|
     if xp.element?
@@ -51,7 +46,6 @@ def node_to_db(node)
         # Do nothing
       elsif xp_name[-1] == 's' # List of objects
         puts "Handling list of objects #{xp.name}"
-        puts xp.children.inspect
         xp.children.each do |child|
           if child.element?
             reference_from.append(node_to_db(child))
@@ -59,18 +53,28 @@ def node_to_db(node)
         end
       else # Single object
         puts "Handling single object #{xp.name}"
-        puts xp.children.inspect
-        reference_to.append(node_to_db(xp))
+        child_data = node_to_db(xp, false)
+        puts child_data.inspect
+        child_data[:attributes].each do |key, value|
+          attributes[xp_name + '_' + key] = value
+        end
+        puts attributes.inspect
       end
     end
   end
-  node_name = wash_name(node.name)
-  model_name = node_name.titleize.delete(' ')
-  puts model_name
-  puts attributes
 
-  obj = model_name.constantize.create(attributes)
-  puts obj.inspect
+  if make_object
+    node_name = wash_name(node.name)
+    model_name = node_name.titleize.delete(' ')
+    puts model_name
+    puts attributes
+
+    obj = model_name.constantize.create(attributes)
+    puts obj.inspect
+  end
+
+  return { attributes: attributes,
+           reference_from: reference_from }
 end
 
 
@@ -90,7 +94,7 @@ for i in 1..count['book']
     count = book.xpath("gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
     puts "============================="
     puts "Number of #{t}: #{count}"
-    
+
     for ti in 1..count
       puts "#{t} #{ti}"
       if t == 'price'
@@ -105,15 +109,15 @@ for i in 1..count['book']
 end
 
 
-puts "================"
-['gnc-v2', 'gnc-v2/gnc:count-data', 'gnc-v2/gnc:book'].each do |xp|
-  puts "Checking #{xp}"
-  doc.xpath(xp).each do |row|
-    puts row.name
-    row.children.each do |child|
-      handle_node(child)
-    end
-  end
-  puts "Checked #{xp}"
-  puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-end
+# puts "================"
+# ['gnc-v2', 'gnc-v2/gnc:count-data', 'gnc-v2/gnc:book'].each do |xp|
+#   puts "Checking #{xp}"
+#   doc.xpath(xp).each do |row|
+#     puts row.name
+#     row.children.each do |child|
+#       handle_node(child)
+#     end
+#   end
+#   puts "Checked #{xp}"
+#   puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+# end

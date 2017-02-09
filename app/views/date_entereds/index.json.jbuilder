@@ -1,1 +1,0 @@
-json.array! @date_entereds, partial: 'date_entereds/date_entered', as: :date_entered

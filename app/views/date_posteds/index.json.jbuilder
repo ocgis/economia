@@ -1,1 +1,0 @@
-json.array! @date_posteds, partial: 'date_posteds/date_posted', as: :date_posted

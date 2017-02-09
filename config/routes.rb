@@ -1,12 +1,7 @@
 Rails.application.routes.draw do
   resources :prices
-  resources :etimes
   resources :transactions
-  resources :reconcile_dates
   resources :splits
-  resources :date_entereds
-  resources :date_posteds
-  resources :currencies
   get 'accounts/index'
 
   get 'accounts/show'

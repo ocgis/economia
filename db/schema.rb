@@ -17,16 +17,16 @@ ActiveRecord::Schema.define(version: 20170208205833) do
     t.string   "description"
     t.string   "type_"
     t.string   "id_"
-    t.string   "commodity"
     t.string   "commodity_scu"
     t.string   "code"
     t.string   "parent"
+    t.string   "commodity_id_"
+    t.string   "commodity_space"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "commodities", force: :cascade do |t|
-    t.string   "uuid",         limit: 36, null: false
     t.string   "space"
     t.string   "name"
     t.string   "id_"
@@ -39,51 +39,27 @@ ActiveRecord::Schema.define(version: 20170208205833) do
     t.datetime "updated_at"
   end
 
-  create_table "currencies", force: :cascade do |t|
-    t.string   "id_"
-    t.string   "space"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "date_entereds", force: :cascade do |t|
-    t.datetime "date"
-    t.integer  "ns"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "date_posteds", force: :cascade do |t|
-    t.datetime "date"
-    t.integer  "ns"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "etimes", force: :cascade do |t|
-    t.datetime "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "prices", force: :cascade do |t|
     t.string   "id_"
     t.string   "source"
     t.string   "value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "reconcile_dates", force: :cascade do |t|
-    t.datetime "date"
-    t.integer  "ns"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "commodity_id_"
+    t.string   "commodity_space"
+    t.string   "currency_id_"
+    t.string   "currency_space"
+    t.datetime "time_date"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
   create_table "slots", force: :cascade do |t|
     t.string   "key"
     t.string   "value"
+    t.date     "value_gdate"
+    t.string   "value_slot_key"
+    t.string   "value_slot_value"
+    t.string   "value_slot_value_slot_key"
+    t.string   "value_slot_value_slot_value"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -96,22 +72,22 @@ ActiveRecord::Schema.define(version: 20170208205833) do
     t.string   "quantity"
     t.string   "account"
     t.string   "action"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "reconcile_date_date"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
   create_table "transactions", force: :cascade do |t|
     t.string   "id_"
     t.string   "description"
     t.string   "num"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-  end
-
-  create_table "values", force: :cascade do |t|
-    t.date     "gdate"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string   "currency_id_"
+    t.string   "currency_space"
+    t.datetime "date_entered_date"
+    t.string   "date_entered_ns"
+    t.datetime "date_posted_date"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
   end
 
 end

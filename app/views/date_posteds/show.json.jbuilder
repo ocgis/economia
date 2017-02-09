@@ -1,1 +1,0 @@
-json.partial! "date_posteds/date_posted", date_posted: @date_posted
