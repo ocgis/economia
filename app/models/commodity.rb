@@ -1,2 +1,2 @@
-class Commodity < ActiveRecord::Base
+class Commodity < ApplicationRecord
 end
