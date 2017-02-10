@@ -4,8 +4,18 @@ one:
   id_: MyString
   source: MyString
   value: MyString
+  commodity_id_: MyString
+  commodity_space: MyString
+  currency_id_: MyString
+  currency_space: MyString
+  time_date: 2017-02-10 13:39:24
 
 two:
   id_: MyString
   source: MyString
   value: MyString
+  commodity_id_: MyString
+  commodity_space: MyString
+  currency_id_: MyString
+  currency_space: MyString
+  time_date: 2017-02-10 13:39:24

@@ -17,7 +17,7 @@ class PricesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create price" do
     assert_difference('Price.count') do
-      post prices_url, params: { price: { id_: @price.id_, source: @price.source, value: @price.value } }
+      post prices_url, params: { price: { commodity_id_: @price.commodity_id_, commodity_space: @price.commodity_space, currency_id_: @price.currency_id_, currency_space: @price.currency_space, id_: @price.id_, source: @price.source, time_date: @price.time_date, value: @price.value } }
     end
 
     assert_redirected_to price_url(Price.last)
@@ -34,7 +34,7 @@ class PricesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update price" do
-    patch price_url(@price), params: { price: { id_: @price.id_, source: @price.source, value: @price.value } }
+    patch price_url(@price), params: { price: { commodity_id_: @price.commodity_id_, commodity_space: @price.commodity_space, currency_id_: @price.currency_id_, currency_space: @price.currency_space, id_: @price.id_, source: @price.source, time_date: @price.time_date, value: @price.value } }
     assert_redirected_to price_url(@price)
   end
 
