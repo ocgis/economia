@@ -21,6 +21,41 @@
     <%= f.text_field :description %>
   </div>
 
+  <div class="field">
+    <%= f.label :num %>
+    <%= f.text_field :num %>
+  </div>
+
+  <div class="field">
+    <%= f.label :currency_id_ %>
+    <%= f.text_field :currency_id_ %>
+  </div>
+
+  <div class="field">
+    <%= f.label :currency_space %>
+    <%= f.text_field :currency_space %>
+  </div>
+
+  <div class="field">
+    <%= f.label :date_entered_date %>
+    <%= f.datetime_select :date_entered_date %>
+  </div>
+
+  <div class="field">
+    <%= f.label :date_entered_ns %>
+    <%= f.number_field :date_entered_ns %>
+  </div>
+
+  <div class="field">
+    <%= f.label :date_posted_date %>
+    <%= f.datetime_select :date_posted_date %>
+  </div>
+
+  <div class="field">
+    <%= f.label :date_posted_ns %>
+    <%= f.number_field :date_posted_ns %>
+  </div>
+
   <div class="actions">
     <%= f.submit %>
   </div>

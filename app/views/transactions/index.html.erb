@@ -7,6 +7,13 @@
     <tr>
       <th>Id </th>
       <th>Description</th>
+      <th>Num</th>
+      <th>Currency id </th>
+      <th>Currency space</th>
+      <th>Date entered date</th>
+      <th>Date entered ns</th>
+      <th>Date posted date</th>
+      <th>Date posted ns</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -16,6 +23,13 @@
       <tr>
         <td><%= transaction.id_ %></td>
         <td><%= transaction.description %></td>
+        <td><%= transaction.num %></td>
+        <td><%= transaction.currency_id_ %></td>
+        <td><%= transaction.currency_space %></td>
+        <td><%= transaction.date_entered_date %></td>
+        <td><%= transaction.date_entered_ns %></td>
+        <td><%= transaction.date_posted_date %></td>
+        <td><%= transaction.date_posted_ns %></td>
         <td><%= link_to 'Show', transaction %></td>
         <td><%= link_to 'Edit', edit_transaction_path(transaction) %></td>
         <td><%= link_to 'Destroy', transaction, method: :delete, data: { confirm: 'Are you sure?' } %></td>
