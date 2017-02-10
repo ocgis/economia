@@ -1,2 +1,2 @@
-json.extract! split, :id, :id_, :memo, :reconciled_state, :value, :quantity, :account, :created_at, :updated_at
+json.extract! split, :id, :id_, :memo, :reconciled_state, :value, :quantity, :account, :action, :reconcile_date_date, :reconcile_date_ns, :created_at, :updated_at
 json.url split_url(split, format: :json)

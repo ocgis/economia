@@ -41,6 +41,21 @@
     <%= f.text_field :account %>
   </div>
 
+  <div class="field">
+    <%= f.label :action %>
+    <%= f.text_field :action %>
+  </div>
+
+  <div class="field">
+    <%= f.label :reconcile_date_date %>
+    <%= f.datetime_select :reconcile_date_date %>
+  </div>
+
+  <div class="field">
+    <%= f.label :reconcile_date_ns %>
+    <%= f.number_field :reconcile_date_ns %>
+  </div>
+
   <div class="actions">
     <%= f.submit %>
   </div>
