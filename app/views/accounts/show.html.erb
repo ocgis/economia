@@ -1,6 +1,49 @@
 <p id="notice"><%= notice %></p>
 
-<%= @account.inspect %>
+<p>
+  <strong>Name:</strong>
+  <%= @account.name %>
+</p>
+
+<p>
+  <strong>Description:</strong>
+  <%= @account.description %>
+</p>
+
+<p>
+  <strong>Type :</strong>
+  <%= @account.type_ %>
+</p>
+
+<p>
+  <strong>Id :</strong>
+  <%= @account.id_ %>
+</p>
+
+<p>
+  <strong>Commodity scu:</strong>
+  <%= @account.commodity_scu %>
+</p>
+
+<p>
+  <strong>Code:</strong>
+  <%= @account.code %>
+</p>
+
+<p>
+  <strong>Parent:</strong>
+  <%= @account.parent %>
+</p>
+
+<p>
+  <strong>Commodity id :</strong>
+  <%= @account.commodity_id_ %>
+</p>
+
+<p>
+  <strong>Commodity space:</strong>
+  <%= @account.commodity_space %>
+</p>
 
 <%= link_to 'Edit', edit_account_path(@account) %> |
 <%= link_to 'Back', accounts_path %>

@@ -1,1 +1,1 @@
-json.extract! @account, :id, :created_at, :updated_at
+json.partial! "accounts/account", account: @account

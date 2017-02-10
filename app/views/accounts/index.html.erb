@@ -1,8 +1,19 @@
-<h1>Listing accounts</h1>
+<p id="notice"><%= notice %></p>
+
+<h1>Accounts</h1>
 
 <table>
   <thead>
     <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Type </th>
+      <th>Id </th>
+      <th>Commodity scu</th>
+      <th>Code</th>
+      <th>Parent</th>
+      <th>Commodity id </th>
+      <th>Commodity space</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -11,6 +22,14 @@
     <% @accounts.each do |account| %>
       <tr>
         <td><%= account.name %></td>
+        <td><%= account.description %></td>
+        <td><%= account.type_ %></td>
+        <td><%= account.id_ %></td>
+        <td><%= account.commodity_scu %></td>
+        <td><%= account.code %></td>
+        <td><%= account.parent %></td>
+        <td><%= account.commodity_id_ %></td>
+        <td><%= account.commodity_space %></td>
         <td><%= link_to 'Show', account %></td>
         <td><%= link_to 'Edit', edit_account_path(account) %></td>
         <td><%= link_to 'Destroy', account, method: :delete, data: { confirm: 'Are you sure?' } %></td>
