@@ -1,2 +1,2 @@
-class Slot < ActiveRecord::Base
+class Slot < ApplicationRecord
 end
