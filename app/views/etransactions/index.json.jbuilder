@@ -1,0 +1,1 @@
+json.array! @etransactions, partial: 'etransactions/etransaction', as: :etransaction

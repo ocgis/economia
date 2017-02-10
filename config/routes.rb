@@ -1,8 +1,8 @@
 Rails.application.routes.draw do
+  resources :etransactions
   resources :slots
   resources :commodities
   resources :prices
-  resources :transactions
   resources :splits
   get 'accounts/index'
 

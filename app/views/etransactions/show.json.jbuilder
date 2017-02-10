@@ -1,0 +1,1 @@
+json.partial! "etransactions/etransaction", etransaction: @etransaction

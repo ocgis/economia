@@ -22,33 +22,49 @@ def handle_node(node)
   end
 end
 
-def wash_name(name)
+def wash_attribute_name(name)
   washed = name.gsub('-', '_')
   if washed == 'type'
     washed = 'type_'
   elsif washed == 'id'
     washed = 'id_'
+  elsif washed == 'account'
+    washed = 'account_id_'
   end
   return washed
 end
   
+def wash_model_name(name)
+  washed = name.gsub('-', '_')
+  if washed == 'transaction'
+    washed = 'etransaction'
+  end
+  return washed
+end
+
 def node_to_db(node, make_object = true)
   puts "Handling new node #{node.name.capitalize}"
   attributes = {}
-  reference_from = []
+  reference_from = {}
   node.children.each do |xp|
     if xp.element?
-      xp_name = wash_name(xp.name)
+      xp_name = wash_attribute_name(xp.name)
         
       if xp.children.size == 1
-        attributes[xp_name] = xp.children[0].to_s
+        if ['value', 'quantity'].include? xp_name
+          parts = xp.children[0].to_s.split('/')
+          attributes[xp_name] = BigDecimal.new(parts[0]) / BigDecimal.new(parts[1])
+        else
+          attributes[xp_name] = xp.children[0].to_s
+        end
       elsif xp.children.size == 0
         # Do nothing
       elsif xp_name[-1] == 's' # List of objects
         puts "Handling list of objects #{xp.name}"
+        reference_from[xp_name] = []
         xp.children.each do |child|
           if child.element?
-            reference_from.append(node_to_db(child))
+            reference_from[xp_name].append(node_to_db(child))
           end
         end
       else # Single object
@@ -64,17 +80,23 @@ def node_to_db(node, make_object = true)
   end
 
   if make_object
-    node_name = wash_name(node.name)
+    node_name = wash_model_name(node.name)
     model_name = node_name.titleize.delete(' ')
     puts model_name
-    puts attributes
+    puts attributes.inspect
+    puts reference_from.inspect
 
     obj = model_name.constantize.create(attributes)
-    puts obj.inspect
+    reference_from.each do |key, vals|
+      vals.each do |val|
+        obj.send(key) << val
+      end
+    end
+    return obj
+  else
+    return { attributes: attributes,
+             reference_from: reference_from }
   end
-
-  return { attributes: attributes,
-           reference_from: reference_from }
 end
 
 
@@ -90,11 +112,15 @@ puts count.inspect
 for i in 1..count['book']
   book = doc.xpath("gnc-v2/gnc:book[#{i}]")
   types = ['commodity', 'account', 'transaction', 'price']
+  types = ['transaction']
   types.each do |t|
     count = book.xpath("gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
     puts "============================="
     puts "Number of #{t}: #{count}"
 
+#    if count > 10
+#      count = 10
+#    end
     for ti in 1..count
       puts "#{t} #{ti}"
       if t == 'price'

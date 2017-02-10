@@ -17,7 +17,7 @@ class SlotsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create slot" do
     assert_difference('Slot.count') do
-      post slots_url, params: { slot: { key: @slot.key, value: @slot.value, value_gdate: @slot.value_gdate, value_slot_key: @slot.value_slot_key, value_slot_value: @slot.value_slot_value, value_slot_value_slot_key: @slot.value_slot_value_slot_key, value_slot_value_slot_value: @slot.value_slot_value_slot_value } }
+      post slots_url, params: { slot: { etransaction_id: @slot.etransaction_id, key: @slot.key, value: @slot.value, value_gdate: @slot.value_gdate, value_slot_key: @slot.value_slot_key, value_slot_value: @slot.value_slot_value, value_slot_value_slot_key: @slot.value_slot_value_slot_key, value_slot_value_slot_value: @slot.value_slot_value_slot_value } }
     end
 
     assert_redirected_to slot_url(Slot.last)
@@ -34,7 +34,7 @@ class SlotsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update slot" do
-    patch slot_url(@slot), params: { slot: { key: @slot.key, value: @slot.value, value_gdate: @slot.value_gdate, value_slot_key: @slot.value_slot_key, value_slot_value: @slot.value_slot_value, value_slot_value_slot_key: @slot.value_slot_value_slot_key, value_slot_value_slot_value: @slot.value_slot_value_slot_value } }
+    patch slot_url(@slot), params: { slot: { etransaction_id: @slot.etransaction_id, key: @slot.key, value: @slot.value, value_gdate: @slot.value_gdate, value_slot_key: @slot.value_slot_key, value_slot_value: @slot.value_slot_value, value_slot_value_slot_key: @slot.value_slot_value_slot_key, value_slot_value_slot_value: @slot.value_slot_value_slot_value } }
     assert_redirected_to slot_url(@slot)
   end
 

@@ -26,8 +26,8 @@
 </p>
 
 <p>
-  <strong>Account:</strong>
-  <%= @split.account %>
+  <strong>Account id :</strong>
+  <%= @split.account_id_ %>
 </p>
 
 <p>
@@ -43,6 +43,16 @@
 <p>
   <strong>Reconcile date ns:</strong>
   <%= @split.reconcile_date_ns %>
+</p>
+
+<p>
+  <strong>Account:</strong>
+  <%= @split.account %>
+</p>
+
+<p>
+  <strong>Etransaction:</strong>
+  <%= @split.etransaction %>
 </p>
 
 <%= link_to 'Edit', edit_split_path(@split) %> |

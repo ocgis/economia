@@ -8,6 +8,7 @@ one:
   value_slot_value: MyString
   value_slot_value_slot_key: MyString
   value_slot_value_slot_value: MyString
+  etransaction: one
 
 two:
   key: MyString
@@ -17,3 +18,4 @@ two:
   value_slot_value: MyString
   value_slot_value_slot_key: MyString
   value_slot_value_slot_value: MyString
+  etransaction: two

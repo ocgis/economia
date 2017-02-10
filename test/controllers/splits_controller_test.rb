@@ -17,7 +17,7 @@ class SplitsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create split" do
     assert_difference('Split.count') do
-      post splits_url, params: { split: { account: @split.account, action: @split.action, id_: @split.id_, memo: @split.memo, quantity: @split.quantity, reconcile_date_date: @split.reconcile_date_date, reconcile_date_ns: @split.reconcile_date_ns, reconciled_state: @split.reconciled_state, value: @split.value } }
+      post splits_url, params: { split: { account_id: @split.account_id, account_id_: @split.account_id_, action: @split.action, etransaction_id: @split.etransaction_id, id_: @split.id_, memo: @split.memo, quantity: @split.quantity, reconcile_date_date: @split.reconcile_date_date, reconcile_date_ns: @split.reconcile_date_ns, reconciled_state: @split.reconciled_state, value: @split.value } }
     end
 
     assert_redirected_to split_url(Split.last)
@@ -34,7 +34,7 @@ class SplitsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update split" do
-    patch split_url(@split), params: { split: { account: @split.account, action: @split.action, id_: @split.id_, memo: @split.memo, quantity: @split.quantity, reconcile_date_date: @split.reconcile_date_date, reconcile_date_ns: @split.reconcile_date_ns, reconciled_state: @split.reconciled_state, value: @split.value } }
+    patch split_url(@split), params: { split: { account_id: @split.account_id, account_id_: @split.account_id_, action: @split.action, etransaction_id: @split.etransaction_id, id_: @split.id_, memo: @split.memo, quantity: @split.quantity, reconcile_date_date: @split.reconcile_date_date, reconcile_date_ns: @split.reconcile_date_ns, reconciled_state: @split.reconciled_state, value: @split.value } }
     assert_redirected_to split_url(@split)
   end
 

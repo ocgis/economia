@@ -6,9 +6,9 @@ one:
   num: MyString
   currency_id_: MyString
   currency_space: MyString
-  date_entered_date: 2017-02-10 13:34:12
+  date_entered_date: 2017-02-10 14:24:23
   date_entered_ns: 1
-  date_posted_date: 2017-02-10 13:34:12
+  date_posted_date: 2017-02-10 14:24:23
   date_posted_ns: 1
 
 two:
@@ -17,7 +17,7 @@ two:
   num: MyString
   currency_id_: MyString
   currency_space: MyString
-  date_entered_date: 2017-02-10 13:34:12
+  date_entered_date: 2017-02-10 14:24:23
   date_entered_ns: 1
-  date_posted_date: 2017-02-10 13:34:12
+  date_posted_date: 2017-02-10 14:24:23
   date_posted_ns: 1
