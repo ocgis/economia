@@ -1,0 +1,41 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Commodities</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Space</th>
+      <th>Name</th>
+      <th>Id </th>
+      <th>Xcode</th>
+      <th>Fraction</th>
+      <th>Get quotes</th>
+      <th>Quote source</th>
+      <th>Quote tz</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @commodities.each do |commodity| %>
+      <tr>
+        <td><%= commodity.space %></td>
+        <td><%= commodity.name %></td>
+        <td><%= commodity.id_ %></td>
+        <td><%= commodity.xcode %></td>
+        <td><%= commodity.fraction %></td>
+        <td><%= commodity.get_quotes %></td>
+        <td><%= commodity.quote_source %></td>
+        <td><%= commodity.quote_tz %></td>
+        <td><%= link_to 'Show', commodity %></td>
+        <td><%= link_to 'Edit', edit_commodity_path(commodity) %></td>
+        <td><%= link_to 'Destroy', commodity, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Commodity', new_commodity_path %>

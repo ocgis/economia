@@ -1,0 +1,44 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Space:</strong>
+  <%= @commodity.space %>
+</p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @commodity.name %>
+</p>
+
+<p>
+  <strong>Id :</strong>
+  <%= @commodity.id_ %>
+</p>
+
+<p>
+  <strong>Xcode:</strong>
+  <%= @commodity.xcode %>
+</p>
+
+<p>
+  <strong>Fraction:</strong>
+  <%= @commodity.fraction %>
+</p>
+
+<p>
+  <strong>Get quotes:</strong>
+  <%= @commodity.get_quotes %>
+</p>
+
+<p>
+  <strong>Quote source:</strong>
+  <%= @commodity.quote_source %>
+</p>
+
+<p>
+  <strong>Quote tz:</strong>
+  <%= @commodity.quote_tz %>
+</p>
+
+<%= link_to 'Edit', edit_commodity_path(@commodity) %> |
+<%= link_to 'Back', commodities_path %>

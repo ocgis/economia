@@ -1,0 +1,57 @@
+<%= form_for(commodity) do |f| %>
+  <% if commodity.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(commodity.errors.count, "error") %> prohibited this commodity from being saved:</h2>
+
+      <ul>
+      <% commodity.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :space %>
+    <%= f.text_field :space %>
+  </div>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= f.label :id_ %>
+    <%= f.text_field :id_ %>
+  </div>
+
+  <div class="field">
+    <%= f.label :xcode %>
+    <%= f.number_field :xcode %>
+  </div>
+
+  <div class="field">
+    <%= f.label :fraction %>
+    <%= f.number_field :fraction %>
+  </div>
+
+  <div class="field">
+    <%= f.label :get_quotes %>
+    <%= f.text_field :get_quotes %>
+  </div>
+
+  <div class="field">
+    <%= f.label :quote_source %>
+    <%= f.text_field :quote_source %>
+  </div>
+
+  <div class="field">
+    <%= f.label :quote_tz %>
+    <%= f.text_field :quote_tz %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
