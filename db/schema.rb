@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170210140717) do
+ActiveRecord::Schema.define(version: 20170210172507) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "name"
@@ -75,8 +75,10 @@ ActiveRecord::Schema.define(version: 20170210140717) do
     t.string   "value_slot_value_slot_key"
     t.string   "value_slot_value_slot_value"
     t.integer  "etransaction_id"
+    t.integer  "account_id"
     t.datetime "created_at",                  null: false
     t.datetime "updated_at",                  null: false
+    t.index ["account_id"], name: "index_slots_on_account_id"
     t.index ["etransaction_id"], name: "index_slots_on_etransaction_id"
   end
 

@@ -1,0 +1,9 @@
+<tr>
+  <td></td>
+  <td></td>
+  <td><%= split.memo %></td>
+  <td><%= split.account %></td>
+  <td><%= split.reconciled_state %></td>
+  <td><%= if split.value > 0 then split.value end %></td>
+  <td><%= if split.value < 0 then -split.value end %></td>
+</tr>

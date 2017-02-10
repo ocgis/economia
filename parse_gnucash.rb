@@ -51,11 +51,12 @@ def node_to_db(node, make_object = true)
       xp_name = wash_attribute_name(xp.name)
         
       if xp.children.size == 1
+        attributes[xp_name] = xp.children[0].to_s
         if ['value', 'quantity'].include? xp_name
           parts = xp.children[0].to_s.split('/')
-          attributes[xp_name] = BigDecimal.new(parts[0]) / BigDecimal.new(parts[1])
-        else
-          attributes[xp_name] = xp.children[0].to_s
+          if parts.size == 2
+            attributes[xp_name] = BigDecimal.new(parts[0]) / BigDecimal.new(parts[1])
+          end
         end
       elsif xp.children.size == 0
         # Do nothing
@@ -112,13 +113,12 @@ puts count.inspect
 for i in 1..count['book']
   book = doc.xpath("gnc-v2/gnc:book[#{i}]")
   types = ['commodity', 'account', 'transaction', 'price']
-  types = ['transaction']
   types.each do |t|
     count = book.xpath("gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
     puts "============================="
     puts "Number of #{t}: #{count}"
 
-#    if count > 10
+#    if t == 'transaction' and count > 10
 #      count = 10
 #    end
     for ti in 1..count
