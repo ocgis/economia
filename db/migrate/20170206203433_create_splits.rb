@@ -10,6 +10,7 @@ class CreateSplits < ActiveRecord::Migration[5.0]
       t.string :action
 
       t.datetime :reconcile_date_date
+      t.integer :reconcile_date_ns
       
       t.timestamps
     end

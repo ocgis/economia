@@ -73,6 +73,7 @@ ActiveRecord::Schema.define(version: 20170208205833) do
     t.string   "account"
     t.string   "action"
     t.datetime "reconcile_date_date"
+    t.integer  "reconcile_date_ns"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
   end
@@ -84,8 +85,9 @@ ActiveRecord::Schema.define(version: 20170208205833) do
     t.string   "currency_id_"
     t.string   "currency_space"
     t.datetime "date_entered_date"
-    t.string   "date_entered_ns"
+    t.integer  "date_entered_ns"
     t.datetime "date_posted_date"
+    t.integer  "date_posted_ns"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
   end
