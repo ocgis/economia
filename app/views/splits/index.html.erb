@@ -10,7 +10,6 @@
       <th>Reconciled state</th>
       <th>Value</th>
       <th>Quantity</th>
-      <th>Account id </th>
       <th>Action</th>
       <th>Reconcile date date</th>
       <th>Reconcile date ns</th>
@@ -28,12 +27,11 @@
         <td><%= split.reconciled_state %></td>
         <td><%= split.value %></td>
         <td><%= split.quantity %></td>
-        <td><%= split.account_id_ %></td>
         <td><%= split.action %></td>
         <td><%= split.reconcile_date_date %></td>
         <td><%= split.reconcile_date_ns %></td>
-        <td><%= split.account %></td>
-        <td><%= split.etransaction %></td>
+        <td><%= split.account.name %></td>
+        <td><%= split.etransaction.description %></td>
         <td><%= link_to 'Show', split %></td>
         <td><%= link_to 'Edit', edit_split_path(split) %></td>
         <td><%= link_to 'Destroy', split, method: :delete, data: { confirm: 'Are you sure?' } %></td>

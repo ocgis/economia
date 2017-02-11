@@ -69,6 +69,6 @@ class SplitsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def split_params
-      params.require(:split).permit(:id_, :memo, :reconciled_state, :value, :quantity, :account_id_, :action, :reconcile_date_date, :reconcile_date_ns, :account_id, :etransaction_id)
+      params.require(:split).permit(:id_, :memo, :reconciled_state, :value, :quantity, :action, :reconcile_date_date, :reconcile_date_ns, :account_id, :etransaction_id)
     end
 end

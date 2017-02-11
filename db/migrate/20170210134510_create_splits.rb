@@ -6,7 +6,6 @@ class CreateSplits < ActiveRecord::Migration[5.0]
       t.string :reconciled_state
       t.decimal :value
       t.decimal :quantity
-      t.string :account_id_
       t.string :action
       t.datetime :reconcile_date_date
       t.integer :reconcile_date_ns

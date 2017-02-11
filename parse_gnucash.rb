@@ -87,11 +87,21 @@ def node_to_db(node, make_object = true)
     puts attributes.inspect
     puts reference_from.inspect
 
+    if attributes.key?("account_id_")
+      account_id = attributes["account_id_"]
+      attributes.except!("account_id_")
+    else
+      account_id = nil
+    end
+
     obj = model_name.constantize.create(attributes)
     reference_from.each do |key, vals|
       vals.each do |val|
         obj.send(key) << val
       end
+    end
+    if account_id != nil
+      obj.account = Account.where(id_: account_id)[0]
     end
     return obj
   else

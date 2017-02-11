@@ -88,7 +88,6 @@ ActiveRecord::Schema.define(version: 20170210172507) do
     t.string   "reconciled_state"
     t.decimal  "value"
     t.decimal  "quantity"
-    t.string   "account_id_"
     t.string   "action"
     t.datetime "reconcile_date_date"
     t.integer  "reconcile_date_ns"
