@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(version: 20170210172507) do
     t.string   "commodity_scu"
     t.string   "code"
     t.string   "parent"
+    t.integer  "account_parent_id"
     t.string   "commodity_id_"
     t.string   "commodity_space"
     t.datetime "created_at"

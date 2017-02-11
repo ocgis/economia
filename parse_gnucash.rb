@@ -149,6 +149,11 @@ for i in 1..count['book']
     puts "importing #{t} objects"
     wash_model_name(t).titleize.constantize.import objects, recursive: true
   end
+
+  Account.all.each do |account|
+    account.account_parent = Account.where(id_: account.parent)[0]
+    account.save
+  end
 end
 
 

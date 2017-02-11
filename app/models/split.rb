@@ -10,7 +10,7 @@ class Split < ApplicationRecord
     elsif splits.size == 0
       return ""
     else
-      return splits[0].account.name
+      return splits[0].account.full_name
     end
   end
 end

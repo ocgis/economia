@@ -8,6 +8,7 @@ class CreateAccounts < ActiveRecord::Migration
       t.string :commodity_scu
       t.string :code
       t.string :parent
+      t.integer :account_parent_id
 
       t.string :commodity_id_
       t.string :commodity_space

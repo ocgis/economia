@@ -1,5 +1,8 @@
 # coding: utf-8
 class Account < ApplicationRecord
+  belongs_to :account_parent, :class_name => 'Account', :foreign_key => :account_parent_id
+  has_many :account_children, :class_name => 'Account'
+
   has_many :splits
   has_many :slots
 
@@ -28,6 +31,19 @@ class Account < ApplicationRecord
       return "Insättning"
     else
       return "FIXME: Implement decrease_name for #{self.type_}"
+    end
+  end
+
+  def full_name
+    if self.account_parent == nil
+      return self.name
+    else
+      parent_name = self.account_parent.full_name
+      if parent_name == "Root Account"
+        return self.name
+      else
+        return "#{parent_name}:#{self.name}"
+      end
     end
   end
 
