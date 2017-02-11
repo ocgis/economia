@@ -65,7 +65,7 @@ def node_to_db(node, make_object = true)
         reference_from[xp_name] = []
         xp.children.each do |child|
           if child.element?
-            reference_from[xp_name].append(node_to_db(child))
+            reference_from[xp_name].append(node_to_db(child, false))
           end
         end
       else # Single object
@@ -87,21 +87,24 @@ def node_to_db(node, make_object = true)
     puts attributes.inspect
     puts reference_from.inspect
 
-    if attributes.key?("account_id_")
-      account_id = attributes["account_id_"]
-      attributes.except!("account_id_")
-    else
-      account_id = nil
-    end
-
-    obj = model_name.constantize.create(attributes)
+    obj = model_name.constantize.new(attributes)
     reference_from.each do |key, vals|
       vals.each do |val|
-        obj.send(key) << val
+        puts "Bah"
+        puts key, val
+        if val[:attributes].key?("account_id_")
+          account_id = val[:attributes]["account_id_"]
+          val[:attributes].except!("account_id_")
+        else
+          account_id = nil
+        end
+
+        child = obj.send(key).build(val[:attributes])
+
+        if account_id != nil
+          child.account = Account.where(id_: account_id)[0]
+        end
       end
-    end
-    if account_id != nil
-      obj.account = Account.where(id_: account_id)[0]
     end
     return obj
   else
@@ -128,9 +131,10 @@ for i in 1..count['book']
     puts "============================="
     puts "Number of #{t}: #{count}"
 
-#    if t == 'transaction' and count > 10
-#      count = 10
+#    if t == 'transaction' and count > 100
+#      count = 100
 #    end
+    objects = []
     for ti in 1..count
       puts "#{t} #{ti}"
       if t == 'price'
@@ -139,8 +143,11 @@ for i in 1..count['book']
         node = book.xpath("gnc:#{t}[#{ti}]")
       end
       puts node
-      node_to_db(node[0])
+      objects.append(node_to_db(node[0]))
     end
+
+    puts "importing #{t} objects"
+    wash_model_name(t).titleize.constantize.import objects, recursive: true
   end
 end
 
