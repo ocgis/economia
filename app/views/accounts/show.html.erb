@@ -59,7 +59,9 @@
     </tr>
   </thead>
   <tbody>
-    <% @account.splits.each do |split| %>
+    <% balance = BigDecimal(0) %>
+    <% @account.splits.joins(:etransaction).order('etransactions.date_posted_date').each do |split| %>
+    <% balance = balance + split.value %>
     <tr>
       <td><%= split.etransaction.date_posted_date %></td>
       <td><%= split.etransaction.num %></td>
@@ -68,6 +70,7 @@
       <td><%= split.reconciled_state %></td>
       <td><%= if split.value > 0 then split.value end %></td>
       <td><%= if split.value < 0 then -split.value end %></td>
+      <td><%= balance %></td>
     </tr>
     <% end %>
   <tbody>
