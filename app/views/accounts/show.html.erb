@@ -65,7 +65,7 @@
     <tr>
       <td><%= split.etransaction.date_posted_date %></td>
       <td><%= split.etransaction.num %></td>
-      <td><%= split.etransaction.description %></td>
+      <td><%= link_to split.etransaction.description, split.etransaction %></td>
       <td><%= split.other_account %></td>
       <td><%= split.reconciled_state %></td>
       <td><%= if split.value > 0 then split.value end %></td>
