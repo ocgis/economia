@@ -21,9 +21,9 @@ th {background-color: #f2f2f2}
 
   <tbody>
     <tr>
-      <td><%= @etransaction.date_posted_date %></td>
-      <td><%= @etransaction.num %></td>
-      <td><%= @etransaction.description %></td>
+      <td><%= best_in_place @etransaction, :date_posted_date %></td>
+      <td><%= best_in_place @etransaction, :num %></td>
+      <td><%= best_in_place @etransaction, :description %></td>
       <td></td>
       <td></td>
       <td></td>
@@ -34,9 +34,9 @@ th {background-color: #f2f2f2}
     <tr>
       <td style="border:none"></td>
       <td></td>
-      <td><%= split.memo %></td>
+      <td><%= best_in_place split, :memo %></td>
       <td><%= split.account.full_name %></td>
-      <td><%= split.reconciled_state %></td>
+      <td><%= best_in_place split, :reconciled_state %></td>
       <td><%= if split.value > 0 then split.value end %></td>
       <td><%= if split.value < 0 then -split.value end %></td>
     </tr>

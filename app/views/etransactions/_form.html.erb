@@ -56,6 +56,18 @@
     <%= f.number_field :date_posted_ns %>
   </div>
 
+  <div id="splits">
+    <p><strong>Splits:</strong></p>
+
+    <%= f.fields_for :splits do |split| %>
+        <%= render 'split_fields', f: split %>
+    <% end %>
+
+    <div class="links">
+      <%= link_to_add_association 'add split', f, :splits %>
+    </div>
+</div>
+
   <div class="actions">
     <%= f.submit %>
   </div>

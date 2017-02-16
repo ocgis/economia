@@ -1,0 +1,33 @@
+
+<div class="nested-fields">
+  <%= f.label :id_ %>
+  <%= f.text_field :id_ %>
+
+  <%= f.label :memo %>
+  <%= f.text_field :memo %>
+
+  <%= f.label :reconciled_state %>
+  <%= f.text_field :reconciled_state %>
+
+  <%= f.label :value %>
+  <%= f.text_field :value %>
+
+  <%= f.label :quantity %>
+  <%= f.text_field :quantity %>
+
+  <%= f.label :action %>
+  <%= f.text_field :action %>
+
+  <%= f.label :reconcile_date_date %>
+  <%= f.datetime_select :reconcile_date_date %>
+
+  <%= f.label :reconcile_date_ns %>
+  <%= f.number_field :reconcile_date_ns %>
+
+  <%= f.label :account_id %>
+  <%= f.text_field :account_id %>
+
+  <%= f.check_box :_destroy %>
+
+  <%= link_to_remove_association "remove split", f %>
+</div>

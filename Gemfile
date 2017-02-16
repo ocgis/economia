@@ -46,4 +46,6 @@ gem 'activerecord-import'
 
 gem 'nokogiri'
 
-gem 'uuidtools'
+gem 'best_in_place'
+
+gem 'cocoon'

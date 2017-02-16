@@ -69,6 +69,6 @@ class EtransactionsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def etransaction_params
-      params.require(:etransaction).permit(:id_, :description, :num, :currency_id_, :currency_space, :date_entered_date, :date_entered_ns, :date_posted_date, :date_posted_ns)
+      params.require(:etransaction).permit(:id_, :description, :num, :currency_id_, :currency_space, :date_entered_date, :date_entered_ns, :date_posted_date, :date_posted_ns, splits_attributes: [:id, :id_, :memo, :reconciled_state, :value, :quantity, :action, :reconcile_date_date, :reconcile_date_ns, :account_id, :_destroy])
     end
 end
