@@ -1,4 +1,4 @@
-<%= form_for(etransaction) do |f| %>
+<%= semantic_form_for etransaction do |f| %>
   <% if etransaction.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(etransaction.errors.count, "error") %> prohibited this etransaction from being saved:</h2>
@@ -11,64 +11,29 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :id_ %>
-    <%= f.text_field :id_ %>
-  </div>
-
-  <div class="field">
-    <%= f.label :description %>
-    <%= f.text_field :description %>
-  </div>
-
-  <div class="field">
-    <%= f.label :num %>
-    <%= f.text_field :num %>
-  </div>
-
-  <div class="field">
-    <%= f.label :currency_id_ %>
-    <%= f.text_field :currency_id_ %>
-  </div>
-
-  <div class="field">
-    <%= f.label :currency_space %>
-    <%= f.text_field :currency_space %>
-  </div>
-
-  <div class="field">
-    <%= f.label :date_entered_date %>
-    <%= f.datetime_select :date_entered_date %>
-  </div>
-
-  <div class="field">
-    <%= f.label :date_entered_ns %>
-    <%= f.number_field :date_entered_ns %>
-  </div>
-
-  <div class="field">
-    <%= f.label :date_posted_date %>
-    <%= f.datetime_select :date_posted_date %>
-  </div>
-
-  <div class="field">
-    <%= f.label :date_posted_ns %>
-    <%= f.number_field :date_posted_ns %>
-  </div>
+  <%= f.inputs do %>
+    <%= f.input :id_, as: :hidden %>
+    <%= f.input :description %>
+    <%= f.input :num %>
+    <%= f.input :currency_id_, as: :hidden %>
+    <%= f.input :currency_space, as: :hidden %>
+    <%= f.input :date_entered_date, as: :hidden %>
+    <%= f.input :date_entered_ns, as: :hidden %>
+    <%= f.input :date_posted_date %>
+    <%= f.input :date_posted_ns, as: :hidden %>
+  <% end %>
 
   <div id="splits">
-    <p><strong>Splits:</strong></p>
-
-    <%= f.fields_for :splits do |split| %>
-        <%= render 'split_fields', f: split %>
+    <%= f.semantic_fields_for :splits do |split| %>
+      <%= render 'split_fields', f: split %>
     <% end %>
-
     <div class="links">
       <%= link_to_add_association 'add split', f, :splits %>
-    </div>
-</div>
+    </div>      
+  </div>
 
   <div class="actions">
-    <%= f.submit %>
+    <%= f.actions %>
   </div>
+
 <% end %>

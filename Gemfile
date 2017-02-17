@@ -49,3 +49,5 @@ gem 'nokogiri'
 gem 'best_in_place'
 
 gem 'cocoon'
+
+gem 'formtastic'

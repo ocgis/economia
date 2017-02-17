@@ -1,33 +1,17 @@
 
 <div class="nested-fields">
-  <%= f.label :id_ %>
-  <%= f.text_field :id_ %>
-
-  <%= f.label :memo %>
-  <%= f.text_field :memo %>
-
-  <%= f.label :reconciled_state %>
-  <%= f.text_field :reconciled_state %>
-
-  <%= f.label :value %>
-  <%= f.text_field :value %>
-
-  <%= f.label :quantity %>
-  <%= f.text_field :quantity %>
-
-  <%= f.label :action %>
-  <%= f.text_field :action %>
-
-  <%= f.label :reconcile_date_date %>
-  <%= f.datetime_select :reconcile_date_date %>
-
-  <%= f.label :reconcile_date_ns %>
-  <%= f.number_field :reconcile_date_ns %>
-
-  <%= f.label :account_id %>
-  <%= f.text_field :account_id %>
-
-  <%= f.check_box :_destroy %>
+  <%= f.inputs do %>
+    <%= f.input :id_, as: :hidden %>
+    <%= f.input :memo %>
+    <%= f.input :reconciled_state, as: :hidden %>
+    <%= f.input :value %>
+    <%= f.input :quantity, as: :hidden %>
+    <%= f.input :action, as: :hidden %>
+    <%= f.input :reconcile_date_date, as: :hidden %>
+    <%= f.input :reconcile_date_ns, as: :hidden %>
+    <%= f.input :account_id, as: :select, collection: Hash[Account.all.map{|b| [b.full_name, b.id]}] %>
+    <%= f.check_box :_destroy %>
+  <% end %>
 
   <%= link_to_remove_association "remove split", f %>
 </div>
