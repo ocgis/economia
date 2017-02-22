@@ -19,7 +19,7 @@
     <%= f.input :currency_space, as: :hidden %>
     <%= f.input :date_entered_date, as: :hidden %>
     <%= f.input :date_entered_ns, as: :hidden %>
-    <%= f.input :date_posted_date %>
+    <%= f.input :date_posted_date, as: :date_picker, input_html: { value: etransaction.date_posted_date } %>
     <%= f.input :date_posted_ns, as: :hidden %>
   <% end %>
 

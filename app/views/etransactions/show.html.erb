@@ -35,6 +35,7 @@ th {background-color: #f2f2f2}
       <td style="border:none"></td>
       <td></td>
       <td><%= best_in_place split, :memo %></td>
+      <td><%= best_in_place split, :account_id, :type => :select, :collection => Account.all.map { |i| [i.id, i.full_name] } %></td>
       <td><%= split.account.full_name %></td>
       <td><%= best_in_place split, :reconciled_state %></td>
       <td><%= if split.value > 0 then split.value end %></td>
