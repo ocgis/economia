@@ -23,11 +23,14 @@ class SummaryController < ApplicationController
       year = 2017
     end
     number_of_months = 12
+    @prev_year = year - 1
+    @next_year = year + 1
 
     all_rows = []
 
     accounts.each do |account|
       row = { title: account.full_name,
+              account_id: account.id,
               incoming: '',
               months: [],
               average: BigDecimal(0),
@@ -83,7 +86,7 @@ class SummaryController < ApplicationController
       end      
     end
     
-    @rows = [{ title: '2017',
+    @rows = [{ title: year.to_s,
                incoming: 'Ingående',
                months: ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'],
                average: 'Medel',

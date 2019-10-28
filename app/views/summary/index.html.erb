@@ -1,3 +1,5 @@
+<%= link_to "<", summary_path(:year => @prev_year) %>
+<%= link_to ">", summary_path(:year => @next_year) %>
 <table>
 <% @rows.each do |row| %>
 <tr>
