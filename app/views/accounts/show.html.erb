@@ -51,6 +51,7 @@
       <th>Datum</th>
       <th>Num</th>
       <th>Beskrivning</th>
+      <th>Memo</th>
       <th>Överföring</th>
       <th>Avstämt</th>
       <th><%= @account.decrease_name %></th>
@@ -66,6 +67,7 @@
       <td><%= split.etransaction.date_posted_date %></td>
       <td><%= split.etransaction.num %></td>
       <td><%= link_to split.etransaction.description, split.etransaction %></td>
+      <td><%= split.memo %></td>
       <td><%= split.other_account %></td>
       <td><%= split.reconciled_state %></td>
       <td><%= if split.value > 0 then split.value end %></td>

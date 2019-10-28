@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'summary' => 'summary#index'
+
   resources :etransactions
   resources :slots
   resources :commodities
@@ -64,5 +66,6 @@ Rails.application.routes.draw do
   #   end
 
   resources :accounts
-  
+
+  root 'accounts#index'
 end

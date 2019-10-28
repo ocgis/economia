@@ -1,2 +1,23 @@
-<h1>Summary#index</h1>
-<p>Find me in app/views/summary/index.html.erb</p>
+<table>
+<% @rows.each do |row| %>
+<tr>
+  <td>
+    <%= row[:title] %>
+  </td>
+  <td style = "text-align: right;">
+    <%= row[:incoming] %>
+  </td>
+  <% row[:months].each do |column| %>
+  <td style = "text-align: right;">
+    <%= column %>
+  </td>
+  <% end %>
+  <td style = "text-align: right;">
+    <%= row[:average] %>
+  </td>
+  <td style = "text-align: right;">
+    <%= row[:sum] %>
+  </td>
+</tr>
+<% end %>
+</table>
