@@ -10,6 +10,24 @@ class AccountsController < ApplicationController
   # GET /accounts/1
   # GET /accounts/1.json
   def show
+    splits = @account.splits.joins(:etransaction).order('etransactions.date_posted_date')
+
+    if params.key?(:year)
+      year = params[:year].to_i
+      if params.key?(:month)
+        month = params[:month].to_i
+        start_date = DateTime.new(year, month, 1)
+        end_date = start_date + 1.month
+      else
+        start_date = DateTime.new(year, 1, 1)
+        end_date = start_date + 1.year
+      end
+      @splits = splits.where("etransactions.date_posted_date >= :time_from and etransactions.date_posted_date < :time_to",
+                             { time_from: start_date,
+                               time_to: end_date })
+    else
+      @splits = splits
+    end
   end
 
   # GET /accounts/new

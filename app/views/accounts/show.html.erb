@@ -61,7 +61,7 @@
   </thead>
   <tbody>
     <% balance = BigDecimal(0) %>
-    <% @account.splits.joins(:etransaction).order('etransactions.date_posted_date').each do |split| %>
+    <% @splits.each do |split| %>
     <% balance = balance + split.value %>
     <tr>
       <td><%= split.etransaction.date_posted_date %></td>

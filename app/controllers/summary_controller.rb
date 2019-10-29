@@ -23,6 +23,7 @@ class SummaryController < ApplicationController
       year = 2017
     end
     number_of_months = 12
+    @year = year
     @prev_year = year - 1
     @next_year = year + 1
 
@@ -60,6 +61,10 @@ class SummaryController < ApplicationController
                  sum: BigDecimal(0)}
       delete_rows = []
       all_rows.each do |row|
+        if row[:title] == new_row[:title]
+          new_row[:account_id] = row[:account_id]
+        end
+
         if row[:title].start_with?(new_row[:title])
           new_row[:months] = sum_lists(new_row[:months], row[:months])
           delete_rows.append(row)
@@ -91,6 +96,7 @@ class SummaryController < ApplicationController
                months: ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'],
                average: 'Medel',
                sum: 'Totalt'}]
+    @month_nrs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     living_titles = ['Utgifter:Bostadsköp', 'Utgifter:Skatt:Vinstskatt']
     income_tax_titles = ['Utgifter:Skatt:Inkomstskatt']
