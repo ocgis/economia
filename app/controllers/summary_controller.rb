@@ -276,7 +276,7 @@ class SummaryController < ApplicationController
   end
 
   def calculate_sum_and_average(row)
-    row[:average] = average(row[:months])
-    row[:sum] = sum(row[:months])
+    row[:average] = average(row[:months]).round(2)
+    row[:sum] = sum(row[:months]).round(2)
   end
 end
