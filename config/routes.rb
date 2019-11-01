@@ -2,13 +2,18 @@ Rails.application.routes.draw do
   get 'summary' => 'summary#index'
 
   resources :etransactions
+  put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
+
   resources :slots
   resources :commodities
   resources :prices
   resources :splits
-  get 'accounts/index'
 
+  resources :accounts
+  get 'accounts/index'
   get 'accounts/show'
+
+  root 'accounts#index'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
@@ -65,7 +70,4 @@ Rails.application.routes.draw do
   #     resources :products
   #   end
 
-  resources :accounts
-
-  root 'accounts#index'
 end

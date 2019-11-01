@@ -1,5 +1,5 @@
 class EtransactionsController < ApplicationController
-  before_action :set_etransaction, only: [:show, :edit, :update, :destroy]
+  before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split]
 
   # GET /etransactions
   # GET /etransactions.json
@@ -58,6 +58,18 @@ class EtransactionsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to etransactions_url, notice: 'Etransaction was successfully destroyed.' }
       format.json { head :no_content }
+    end
+  end
+
+  # PATCH/PUT /etransactions/1/add_split
+  # PATCH/PUT /etransactions/1/add_split.json
+  def add_split
+    respond_to do |format|
+      split = Split.new
+      @etransaction.splits << split
+
+      format.html { redirect_to @etransaction, notice: 'Split was added.' }
+      format.json { render :show, status: :ok, location: @etransaction }
     end
   end
 
