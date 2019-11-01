@@ -1,5 +1,5 @@
 class EtransactionsController < ApplicationController
-  before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split]
+  before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split, :destroy_split]
 
   # GET /etransactions
   # GET /etransactions.json
@@ -73,6 +73,18 @@ class EtransactionsController < ApplicationController
     end
   end
 
+  # DELETE /etransactions/1/destroy_split
+  # DELETE /etransactions/1/destroy_split.json
+  def destroy_split
+    respond_to do |format|
+      split = Split.find(params[:split_id])
+      split.destroy
+
+      format.html { redirect_to @etransaction, notice: 'Split was destroyed.' }
+      format.json { render :show, status: :ok, location: @etransaction }
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_etransaction
@@ -81,6 +93,6 @@ class EtransactionsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def etransaction_params
-      params.require(:etransaction).permit(:id_, :description, :num, :currency_id_, :currency_space, :date_entered_date, :date_entered_ns, :date_posted_date, :date_posted_ns, splits_attributes: [:id, :id_, :memo, :reconciled_state, :value, :quantity, :action, :reconcile_date_date, :reconcile_date_ns, :account_id, :_destroy])
+      params.require(:etransaction).permit(:id_, :description, :num, :currency_id_, :currency_space, :date_entered_date, :date_entered_ns, :date_posted_date, :date_posted_ns, :split_id, splits_attributes: [:id, :id_, :memo, :reconciled_state, :value, :quantity, :action, :reconcile_date_date, :reconcile_date_ns, :account_id, :_destroy])
     end
 end

@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   resources :etransactions
   put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
+  delete 'etransactions/:id/destroy_split' => 'etransactions#destroy_split', :as => :destroy_split_etransaction
 
   resources :slots
   resources :commodities
