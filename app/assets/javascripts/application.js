@@ -16,4 +16,5 @@
 //= require jquery.purr
 //= require best_in_place
 //= require cocoon
+//= require tabulator
 //= require_tree .

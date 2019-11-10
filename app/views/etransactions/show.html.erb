@@ -6,24 +6,26 @@ table, th, td { border-collapse: collapse }
 th {background-color: #f2f2f2}
 </style>
 
-<table>
+<table id="example-table">
   <thead>
     <tr>
-      <th align="left">Datum</th>
-      <th align="left">Num</th>
-      <th align="left">Beskrivning</th>
-      <th align="left">Konto</th>
-      <th align="left">Avstämt</th>
-      <th align="left">Öka</th>
-      <th align="left">Minska</th>
+      <th align="left" tabulator-field="date">Datum</th>
+      <th align="left" tabulator-field="number">Num</th>
+      <th align="left" tabulator-field="description" tabulator-editor="input">Beskrivning</th>
+      <th align="left" tabulator-field="account">Konto</th>
+      <th align="left" tabulator-field="reconciled" tabulator-editor="input">Avstämt</th>
+      <th align="left" tabulator-field="increase" tabulator-editor="input">Öka</th>
+      <th align="left" tabulator-field="decrease" tabulator-editor="input">Minska</th>
+      <th tabulator-field="split_id" tabulator-visible="false">Split id</th>
     </tr>
   </thead>
 
   <tbody>
     <tr>
-      <td><%= best_in_place @etransaction, :date_posted_date %></td>
-      <td><%= best_in_place @etransaction, :num %></td>
-      <td><%= best_in_place @etransaction, :description %></td>
+      <td><%= @etransaction.date_posted_date %></td>
+      <td><%= @etransaction.num %></td>
+      <td><%= @etransaction.description %></td>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
@@ -34,17 +36,52 @@ th {background-color: #f2f2f2}
     <tr>
       <td style="border:none"></td>
       <td></td>
-      <td><%= best_in_place split, :memo %></td>
-      <td><%= best_in_place split, :account_id, :as => :select, :collection => Account.all.map{ |i| [i.id, i.full_name] }.sort_by { |arr| arr[1] } %></td>
-      <td><%= best_in_place split, :reconciled_state %></td>
+      <td><%= split.memo %></td>
+      <td><%= Account.find(split.account_id).full_name %></td>
+      <td><%= split.reconciled_state %></td>
       <td><%= if not split.value.nil? and split.value > 0 then split.value end %></td>
       <td><%= if not split.value.nil? and split.value < 0 then -split.value end %></td>
-      <td><%= link_to "remove split", destroy_split_etransaction_path(split_id: split.id), method: :delete %>
+      <td><%= split.id %></td>
     </tr>
     <% end %>
   <tbody>
 </table>
-<%= link_to "Add split", add_split_etransaction_path, method: :put %>
 
 <%= link_to 'Edit', edit_etransaction_path(@etransaction) %> |
 <%= link_to 'Back', etransactions_path %>
+
+<script>
+  var table = new Tabulator("#example-table", {
+  columns:[
+  {title: "Datum", field: "date", editor: "input"},
+  {title: "Konto", field: "account", editor: "autocomplete", editorParams:{
+  values: [
+  <% Account.all.each do |account| %>
+  "<%= account.full_name %>",
+  <% end %>
+  ]
+  }}
+  ],
+  dataEdited:function(data){
+  var url = "<%= update_data_etransaction_url(@etransaction) %>";
+  var ajaxData = "data="+JSON.stringify(data);
+  $.ajax({ url: url,
+  type: 'POST',
+  beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+  data: ajaxData,
+  success: function(response) {
+    $('#notice').html(response);
+  }
+  });
+  },
+  dataEdited2:function(data){
+  //data - the updated table data
+  alert("Data edited");
+  var url = "<%= update_data_etransaction_url(@etransaction) %>";
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", url, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify(data));  }
+  });
+</script>
+

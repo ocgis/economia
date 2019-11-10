@@ -1,5 +1,7 @@
+require 'pp'
+
 class EtransactionsController < ApplicationController
-  before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split, :destroy_split]
+  before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split, :destroy_split, :update_data]
 
   # GET /etransactions
   # GET /etransactions.json
@@ -82,6 +84,50 @@ class EtransactionsController < ApplicationController
 
       format.html { redirect_to @etransaction, notice: 'Split was destroyed.' }
       format.json { render :show, status: :ok, location: @etransaction }
+    end
+  end
+
+  def update_data
+    data = JSON.parse params[:data]
+    pp data
+
+    splits_ids = []
+    splits_data = []
+    data.each do |row|
+      pp row
+      # FIXME: Only update if something was changed
+      if row['id'] == 0
+        puts("Update etransaction")
+        pp @etransaction
+        @etransaction.description = row["description"]
+        @etransaction.num = row["number"]
+        # FIXME @etransaction.date_posted_date = row["date"]
+        @etransaction.save
+      else # FIXME: Handle new splits
+        v_q = BigDecimal(row['increase']) - BigDecimal(row['decrease'])
+        splits_ids.append(row['split_id'].to_i)
+        splits_data.append({memo: row['description'],
+                            reconciled_state: row['reconciled'],
+                            value: v_q,
+                            quantity: v_q,
+                            action: '',
+                            # FIXME account_id: row['account'],
+                           })
+        pp BigDecimal(row['increase']).to_s
+        pp BigDecimal(row['decrease']).to_s
+      end
+    end
+    puts("splits_ids")
+    pp splits_ids
+    puts("splits_data")
+    pp splits_data
+    Split.update(splits_ids, splits_data)
+
+    # FIXME: Handle deleted rows
+    @etransaction.splits.each do |split|
+      pp split
+      pp split.value.to_s
+      pp split.quantity.to_s
     end
   end
 

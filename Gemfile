@@ -56,3 +56,5 @@ gem 'best_in_place'
 gem 'cocoon'
 
 gem 'formtastic'
+
+gem "tabulator-rails", "~> 1.1"

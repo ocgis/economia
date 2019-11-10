@@ -12,6 +12,7 @@
  *
  *= require formtastic
  *= require jquery-ui
+ *= require tabulator
  *= require_tree .
  *= require_self
  */
