@@ -9,14 +9,14 @@ th {background-color: #f2f2f2}
 <table id="example-table">
   <thead>
     <tr>
-      <th align="left" tabulator-field="date">Datum</th>
-      <th align="left" tabulator-field="number">Num</th>
-      <th align="left" tabulator-field="description" tabulator-editor="input">Beskrivning</th>
-      <th align="left" tabulator-field="account">Konto</th>
-      <th align="left" tabulator-field="reconciled" tabulator-editor="input">Avstämt</th>
-      <th align="left" tabulator-field="increase" tabulator-editor="input">Öka</th>
-      <th align="left" tabulator-field="decrease" tabulator-editor="input">Minska</th>
-      <th tabulator-field="split_id" tabulator-visible="false">Split id</th>
+      <th align="left">Datum</th>
+      <th align="left">Num</th>
+      <th align="left">Beskrivning</th>
+      <th align="left">Konto</th>
+      <th align="left">Avstämt</th>
+      <th align="left">Öka</th>
+      <th align="left">Minska</th>
+      <th>Split id</th>
     </tr>
   </thead>
 
@@ -54,13 +54,19 @@ th {background-color: #f2f2f2}
   var table = new Tabulator("#example-table", {
   columns:[
   {title: "Datum", field: "date", editor: "input"},
+  {title: "Num", field: "number"},
+  {title: "Beskrivning", field: "description", editor: "input"},
   {title: "Konto", field: "account", editor: "autocomplete", editorParams:{
   values: [
   <% Account.all.each do |account| %>
   "<%= account.full_name %>",
   <% end %>
   ]
-  }}
+  }},
+  {title: "Avstämt", field: "reconciled", editor: "input"},
+  {title: "Öka", field: "increase", editor: "input"},
+  {title: "Minska", field: "decrease", editor: "input"},
+  {title: "Split id", field: "split_id", visible: false}
   ],
   dataEdited:function(data){
   var url = "<%= update_data_etransaction_url(@etransaction) %>";
