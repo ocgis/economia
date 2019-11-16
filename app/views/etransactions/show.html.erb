@@ -76,7 +76,7 @@ th {background-color: #f2f2f2}
   beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
   data: ajaxData,
   success: function(response) {
-    $('#notice').html(response);
+    table.updateData(response);
   }
   });
   },

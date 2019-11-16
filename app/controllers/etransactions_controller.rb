@@ -115,6 +115,8 @@ class EtransactionsController < ApplicationController
     Split.update(splits_ids, splits_data)
 
     # FIXME: Handle deleted rows
+
+    render :json => data
   end
 
   private
