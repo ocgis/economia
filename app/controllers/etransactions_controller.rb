@@ -105,13 +105,14 @@ class EtransactionsController < ApplicationController
         @etransaction.save
       else # FIXME: Handle new splits
         v_q = BigDecimal(row['increase']) - BigDecimal(row['decrease'])
+        account_id = Account.find_by_full_name(row['account']).id
         splits_ids.append(row['split_id'].to_i)
         splits_data.append({memo: row['description'],
                             reconciled_state: row['reconciled'],
                             value: v_q,
                             quantity: v_q,
                             action: '',
-                            # FIXME account_id: row['account'],
+                            account_id: account_id,
                            })
         pp BigDecimal(row['increase']).to_s
         pp BigDecimal(row['decrease']).to_s
