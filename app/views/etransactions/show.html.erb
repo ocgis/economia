@@ -66,6 +66,9 @@ th {background-color: #f2f2f2}
   {title: "Avstämt", field: "reconciled", editor: "input"},
   {title: "Öka", field: "increase", editor: "input", validator:["numeric", "min:0"]},
   {title: "Minska", field: "decrease", editor: "input", validator:["numeric", "min:0"]},
+  {title: "Ta bort", formatter:"buttonCross", align:"center", cellClick:function(e, cell){
+    cell.getRow().delete();
+  }},
   {title: "Split id", field: "split_id", visible: false}
   ],
   dataEdited:function(data){

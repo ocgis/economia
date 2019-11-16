@@ -112,6 +112,13 @@ class EtransactionsController < ApplicationController
                            })
       end
     end
+    delete_ids = []
+    @etransaction.splits.each do |split|
+      if not splits_ids.include? split.id then
+        delete_ids.append(split.id)
+      end
+    end
+    Split.destroy(delete_ids)
     Split.update(splits_ids, splits_data)
 
     # FIXME: Handle deleted rows
