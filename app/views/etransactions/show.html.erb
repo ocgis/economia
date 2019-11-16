@@ -53,7 +53,7 @@ th {background-color: #f2f2f2}
 <script>
   var table = new Tabulator("#example-table", {
   columns:[
-  {title: "Datum", field: "date", editor: "input"},
+  {title: "Datum", field: "date", editor: "input", validator: "regex:^\\d\\d\\d\\d-\\d\\d-\\d\\d$"},
   {title: "Num", field: "number"},
   {title: "Beskrivning", field: "description", editor: "input"},
   {title: "Konto", field: "account", editor: "autocomplete", editorParams:{
@@ -64,8 +64,8 @@ th {background-color: #f2f2f2}
   ]
   }},
   {title: "Avstämt", field: "reconciled", editor: "input"},
-  {title: "Öka", field: "increase", editor: "input"},
-  {title: "Minska", field: "decrease", editor: "input"},
+  {title: "Öka", field: "increase", editor: "input", validator:["numeric", "min:0"]},
+  {title: "Minska", field: "decrease", editor: "input", validator:["numeric", "min:0"]},
   {title: "Split id", field: "split_id", visible: false}
   ],
   dataEdited:function(data){
