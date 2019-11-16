@@ -89,19 +89,15 @@ class EtransactionsController < ApplicationController
 
   def update_data
     data = JSON.parse params[:data]
-    pp data
 
     splits_ids = []
     splits_data = []
     data.each do |row|
-      pp row
       # FIXME: Only update if something was changed
       if row['id'] == 0
-        puts("Update etransaction")
-        pp @etransaction
         @etransaction.description = row["description"]
         @etransaction.num = row["number"]
-        # FIXME @etransaction.date_posted_date = row["date"]
+        @etransaction.date_posted_date = DateTime.parse(row["date"])
         @etransaction.save
       else # FIXME: Handle new splits
         v_q = BigDecimal(row['increase']) - BigDecimal(row['decrease'])
@@ -114,22 +110,11 @@ class EtransactionsController < ApplicationController
                             action: '',
                             account_id: account_id,
                            })
-        pp BigDecimal(row['increase']).to_s
-        pp BigDecimal(row['decrease']).to_s
       end
     end
-    puts("splits_ids")
-    pp splits_ids
-    puts("splits_data")
-    pp splits_data
     Split.update(splits_ids, splits_data)
 
     # FIXME: Handle deleted rows
-    @etransaction.splits.each do |split|
-      pp split
-      pp split.value.to_s
-      pp split.quantity.to_s
-    end
   end
 
   private
