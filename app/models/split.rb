@@ -13,4 +13,13 @@ class Split < ApplicationRecord
       return splits[0].account.full_name
     end
   end
+
+  def account_full_name
+    if not self.account_id.nil? then
+      return self.account.full_name
+    else
+      return ""
+    end
+  end
+
 end

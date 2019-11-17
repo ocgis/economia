@@ -55,6 +55,7 @@ class Account < ApplicationRecord
         return candidate
       end
     end
+    return nil
   end
   
 end

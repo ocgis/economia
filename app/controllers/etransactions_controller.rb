@@ -90,18 +90,29 @@ class EtransactionsController < ApplicationController
   def update_data
     data = JSON.parse params[:data]
 
+    add_ids = []
     splits_ids = []
     splits_data = []
     data.each do |row|
       # FIXME: Only update if something was changed
-      if row['id'] == 0
+      if not row.include? 'id' then
+        split = Split.new()
+        @etransaction.splits << split
+        row["split_id"] = split.id.to_s
+        add_ids.append(split.id)
+      elsif row['id'] == 0
         @etransaction.description = row["description"]
         @etransaction.num = row["number"]
         @etransaction.date_posted_date = DateTime.parse(row["date"])
         @etransaction.save
-      else # FIXME: Handle new splits
+      else
         v_q = BigDecimal(row['increase']) - BigDecimal(row['decrease'])
-        account_id = Account.find_by_full_name(row['account']).id
+        account = Account.find_by_full_name(row['account'])
+        if not account.nil? then
+          account_id = account.id
+        else
+          account_id = nil
+        end
         splits_ids.append(row['split_id'].to_i)
         splits_data.append({memo: row['description'],
                             reconciled_state: row['reconciled'],
@@ -114,7 +125,7 @@ class EtransactionsController < ApplicationController
     end
     delete_ids = []
     @etransaction.splits.each do |split|
-      if not splits_ids.include? split.id then
+      if not (add_ids + splits_ids).include? split.id then
         delete_ids.append(split.id)
       end
     end
