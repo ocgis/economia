@@ -48,11 +48,13 @@ class Account < ApplicationRecord
   end
 
   def self.find_by_full_name(full_name)
-    name = full_name.split(":")[-1]
-    candidates = Account.where(name: name)
-    candidates.each do |candidate|
-      if candidate.full_name == full_name then
-        return candidate
+    if not full_name.nil?
+      name = full_name.split(":")[-1]
+      candidates = Account.where(name: name)
+      candidates.each do |candidate|
+        if candidate.full_name == full_name then
+          return candidate
+        end
       end
     end
     return nil
