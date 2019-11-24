@@ -22,4 +22,12 @@ class Split < ApplicationRecord
     end
   end
 
+  def value_safe
+    if not self.value.nil?
+      return self.value
+    else
+      return BigDecimal(0)
+    end
+  end
+
 end

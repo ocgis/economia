@@ -6,7 +6,7 @@ class EtransactionsController < ApplicationController
   # GET /etransactions
   # GET /etransactions.json
   def index
-    @etransactions = Etransaction.all
+    @etransactions = Etransaction.order("date_posted_date DESC").limit(100).sort_by{|e| e.date_posted_date_sort}
   end
 
   # GET /etransactions/1
@@ -17,6 +17,8 @@ class EtransactionsController < ApplicationController
   # GET /etransactions/new
   def new
     @etransaction = Etransaction.new
+    @etransaction.save
+    redirect_to action: :show, id: @etransaction.id
   end
 
   # GET /etransactions/1/edit
