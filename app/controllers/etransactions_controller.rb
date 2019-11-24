@@ -97,7 +97,7 @@ class EtransactionsController < ApplicationController
     splits_data = []
     data.each do |row|
       # FIXME: Only update if something was changed
-      if not row.include? 'id' then
+      if not row.include? 'split_id' then
         split = Split.new()
         @etransaction.splits << split
         row["split_id"] = split.id.to_s
@@ -108,7 +108,9 @@ class EtransactionsController < ApplicationController
         @etransaction.date_posted_date = DateTime.parse(row["date"])
         @etransaction.save
       else
-        v_q = BigDecimal(row['increase']) - BigDecimal(row['decrease'])
+        increase = row['increase'].nil? ? 0 : row['increase']
+        decrease = row['decrease'].nil? ? 0 : row['decrease']
+        v_q = BigDecimal(increase) - BigDecimal(decrease)
         account = Account.find_by_full_name(row['account'])
         if not account.nil? then
           account_id = account.id

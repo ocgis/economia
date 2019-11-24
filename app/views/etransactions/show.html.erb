@@ -95,7 +95,7 @@ th {background-color: #f2f2f2}
   });
 
   $("#add-split").click(function(){
-    table.addRow({});
+    table.addRow({id: table.getDataCount()}, false);
   });
 
 </script>
