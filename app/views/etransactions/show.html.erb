@@ -39,8 +39,8 @@ th {background-color: #f2f2f2}
       <td><%= split.memo %></td>
       <td><%= split.account_full_name %></td>
       <td><%= split.reconciled_state %></td>
-      <td><%= if not split.value.nil? and split.value > 0 then split.value end %></td>
-      <td><%= if not split.value.nil? and split.value < 0 then -split.value end %></td>
+      <td><%= split.increase_str %></td>
+      <td><%= split.decrease_str %></td>
       <td><%= split.id %></td>
     </tr>
     <% end %>

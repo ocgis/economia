@@ -111,6 +111,8 @@ class EtransactionsController < ApplicationController
         increase = row['increase'].nil? ? 0 : row['increase']
         decrease = row['decrease'].nil? ? 0 : row['decrease']
         v_q = BigDecimal(increase) - BigDecimal(decrease)
+        row['increase'] = Split.posdec2(v_q)
+        row['decrease'] = Split.posdec2(-v_q)
         account = Account.find_by_full_name(row['account'])
         if not account.nil? then
           account_id = account.id
