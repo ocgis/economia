@@ -58,3 +58,5 @@ gem 'cocoon'
 gem 'formtastic'
 
 gem "tabulator-rails", "~> 1.1"
+
+gem "momentjs-rails"

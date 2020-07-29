@@ -17,4 +17,5 @@
 //= require best_in_place
 //= require cocoon
 //= require tabulator
+//= require moment
 //= require_tree .
