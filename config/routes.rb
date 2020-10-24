@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   get 'summary' => 'summary#index'
 
+  namespace :api do
+    namespace :v1 do
+      resources :transactions, only: [:show, :update]
+    end
+  end
+
   resources :etransactions
   put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
   post 'etransactions/:id/update_data' => 'etransactions#update_data', :as => :update_data_etransaction
