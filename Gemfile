@@ -63,3 +63,7 @@ gem "momentjs-rails"
 
 # React
 gem 'webpacker'
+
+# Authentication
+gem 'devise'
+gem 'omniauth-facebook'

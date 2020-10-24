@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
   get 'summary' => 'summary#index'
 
   namespace :api do
@@ -7,7 +8,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :etransactions
+  resources :etransactions, except: [:show]
   put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
   post 'etransactions/:id/update_data' => 'etransactions#update_data', :as => :update_data_etransaction
   delete 'etransactions/:id/destroy_split' => 'etransactions#destroy_split', :as => :destroy_split_etransaction
@@ -21,7 +22,8 @@ Rails.application.routes.draw do
   get 'accounts/index'
   get 'accounts/show'
 
-  root 'accounts#index'
+  root 'root#index'
+  get '/*path' => 'root#index'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

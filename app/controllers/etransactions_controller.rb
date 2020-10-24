@@ -1,6 +1,9 @@
 require 'pp'
 
 class EtransactionsController < ApplicationController
+  protect_from_forgery with: :exception
+  before_action :authenticate_user!
+
   before_action :set_etransaction, only: [:show, :edit, :update, :destroy, :add_split, :destroy_split, :update_data]
 
   # GET /etransactions

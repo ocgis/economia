@@ -5,6 +5,7 @@ import { DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import TopMenu from "./TopMenu";
 
 class ShowTransaction extends React.Component {
 
@@ -199,7 +200,10 @@ class ShowTransaction extends React.Component {
         const transaction = this.state.transaction;
         if (transaction == null) {
             return (
-                <h1>Loading</h1>
+                <div>
+                  <TopMenu />
+                  <h1>Loading</h1>
+                </div>
             );
         } else {
             let splits = this.state.splits;
@@ -304,6 +308,7 @@ class ShowTransaction extends React.Component {
 
             return (
                 <div>
+                  <TopMenu />
                   <Table id="transactionTable" columns={columns} dataSource={data} rowkey={'row_index'} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
                   <Input value="test" />

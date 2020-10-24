@@ -1,4 +1,6 @@
 class SlotsController < ApplicationController
+  protect_from_forgery with: :exception
+  before_action :authenticate_user!
   before_action :set_slot, only: [:show, :edit, :update, :destroy]
 
   # GET /slots
