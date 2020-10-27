@@ -1,26 +1,11 @@
-# config valid only for current version of Capistrano
-lock "3.7.2"
+# config valid for current version and patch releases of Capistrano
+lock "~> 3.14.1"
 
 set :application, "economia"
 set :repo_url, "git@github.com:ocgis/economia.git"
 
-set :deploy_to, '/home/economia/economia'
-
-set :linked_files, %w{config/database.yml config/secrets.yml}
-set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle}
-
-namespace :deploy do
-
-  desc 'Restart application'
-  task :restart do
-    on roles(:app), in: :sequence, wait: 5 do
-      execute :touch, release_path.join('tmp/restart.txt')
-    end
-  end
-
-  after :publishing, 'deploy:restart'
-  after :finishing, 'deploy:cleanup'
-end
+set :stages, ["staging", "production"]
+set :default_stage, "staging"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -39,13 +24,20 @@ end
 # set :pty, true
 
 # Default value for :linked_files is []
-# append :linked_files, "config/database.yml", "config/secrets.yml"
+append :linked_files, "config/database.yml", "config/secrets.yml"
 
 # Default value for linked_dirs is []
-# append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
+append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system", "storage"
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
+set :default_env, { SECRET_KEY_BASE: "347M3" }
+
+# Default value for local_user is ENV['USER']
+# set :local_user, -> { `git config user.name`.chomp }
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
+
+# Uncomment the following to require manually verifying the host key before first deploy.
+# set :ssh_options, verify_host_key: :secure
