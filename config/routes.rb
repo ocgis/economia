@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :transactions, only: [:show, :update]
+      resources :etransactions, only: [:show, :update]
     end
   end
 
@@ -21,6 +21,12 @@ Rails.application.routes.draw do
   resources :accounts
   get 'accounts/index'
   get 'accounts/show'
+
+  resources :root, only: [:index] do
+    collection do
+      get 'error'
+    end
+  end
 
   root 'root#index'
   get '/*path' => 'root#index'

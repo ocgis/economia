@@ -31,9 +31,15 @@ class ShowTransaction extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/transactions/${id}`)
+        axios.get(`/api/v1/etransactions/${id}`)
             .then(response => this.setStateFromResponse(response))
-            .catch(() => this.props.history.push("/"));
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: error.response.data.error });
+                } else {
+                    this.props.history.push("/");
+                }
+            });
     }
 
 
@@ -45,11 +51,11 @@ class ShowTransaction extends React.Component {
         transaction.splits_attributes = this.state.splits;
 
         if(transaction.id == null) {
-            axios.post('/api/v1/transactions', { transaction: transaction })
+            axios.post('/api/v1/etransactions', { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => console.log(error))
         } else {
-            axios.patch(`/api/v1/transactions/${transaction.id}`, { transaction: transaction })
+            axios.patch(`/api/v1/etransactions/${transaction.id}`, { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => { console.log(error) })                      
         }
@@ -77,6 +83,7 @@ class ShowTransaction extends React.Component {
 
     
     setStateFromResponse(response) {
+        console.log("response", response);
         this.state.transaction = response.data.transaction;
         this.state.splits = response.data.splits;
         this.calculateStateFromTo();
@@ -199,12 +206,21 @@ class ShowTransaction extends React.Component {
  
         const transaction = this.state.transaction;
         if (transaction == null) {
-            return (
-                <div>
-                  <TopMenu />
-                  <h1>Loading</h1>
-                </div>
-            );
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
         } else {
             let splits = this.state.splits;
             const columns = [

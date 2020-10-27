@@ -2,8 +2,8 @@
 require 'matrix'
 
 class SummaryController < ApplicationController
-  protect_from_forgery with: :exception
-  before_action :authenticate_user!
+
+  authorize_resource class: false
 
   def index
     accounts = Account.all()

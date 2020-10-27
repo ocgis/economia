@@ -1,4 +1,7 @@
-class Api::V1::TransactionsController < ApplicationController
+class Api::V1::EtransactionsController < ApplicationController
+
+  load_and_authorize_resource
+
   before_action :set_transaction, only: [:update]
 
   def show
@@ -23,6 +26,10 @@ class Api::V1::TransactionsController < ApplicationController
     else
       render json: @transaction.errors
     end
+  end
+
+  rescue_from CanCan::AccessDenied do |exception|
+    render json: { error: "Access denied"}, status: 403
   end
 
   private
