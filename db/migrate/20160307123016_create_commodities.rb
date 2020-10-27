@@ -1,4 +1,4 @@
-class CreateCommodities < ActiveRecord::Migration[4.0]
+class CreateCommodities < ActiveRecord::Migration[4.2]
   def change
     create_table :commodities do |t|
       t.string :space
