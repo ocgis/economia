@@ -978,6 +978,11 @@
   dependencies:
     mkdirp "^1.0.4"
 
+"@rails/ujs@^6.0.3-4":
+  version "6.0.3-4"
+  resolved "https://registry.yarnpkg.com/@rails/ujs/-/ujs-6.0.3-4.tgz#8dafc84178080f9c4f21076953ea1d0dc0bfe0fc"
+  integrity sha512-pNEEndJYNMCYEZG79MkoMc40AYKBfm0md8pawJ/SUu/1aIhToJcKu+9hHT/7WMLudsakOgC/C8KKFuZOs4QTgw==
+
 "@rails/webpacker@5.2.1":
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/@rails/webpacker/-/webpacker-5.2.1.tgz#87cdbd4af2090ae2d74bdc51f6f04717d907c5b3"
@@ -6769,6 +6774,13 @@ react@^16.13.1:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
+
+react_ujs@^2.6.0, react_ujs@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/react_ujs/-/react_ujs-2.6.1.tgz#a202a33c95c9e2bb18ab56926b7e79f3325ec855"
+  integrity sha512-9M33/A8cubStkZ2cpJSimcTD0RlCWiqXF6e90IQmMw/Caf/W0dtAzOtHtiQE3JjLbt/nhRR7NLPxMfnlm141ig==
+  dependencies:
+    react_ujs "^2.6.0"
 
 read-cache@^1.0.0:
   version "1.0.0"
