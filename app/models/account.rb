@@ -35,10 +35,33 @@ class Account < ApplicationRecord
   end
 
   def full_name
-    if self.account_parent == nil
+    accounts_map = {}
+    Account.all.each do |account|
+      accounts_map[account.id] = account
+    end
+
+    return self.full_name_by_map(accounts_map)
+  end
+
+  def self.full_name_map
+    all_accounts = Account.all
+    accounts_map = {}
+    all_accounts.each do |account|
+      accounts_map[account.id] = account
+    end
+
+    full_name_map = {}
+    all_accounts.each do |account|
+      full_name_map[account.id] = account.full_name_by_map(accounts_map)
+    end
+    return full_name_map
+  end
+
+  def full_name_by_map(accounts_map)
+    if self.account_parent_id == nil
       return self.name
     else
-      parent_name = self.account_parent.full_name
+      parent_name = accounts_map[self.account_parent_id].full_name_by_map(accounts_map)
       if parent_name == "Root Account"
         return self.name
       else
@@ -59,5 +82,6 @@ class Account < ApplicationRecord
     end
     return nil
   end
-  
+
+
 end

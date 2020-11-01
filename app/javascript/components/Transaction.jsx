@@ -83,9 +83,9 @@ class ShowTransaction extends React.Component {
 
     
     setStateFromResponse(response) {
-        console.log("response", response);
         this.state.transaction = response.data.transaction;
         this.state.splits = response.data.splits;
+        this.state.accounts = response.data.accounts;
         this.calculateStateFromTo();
         this.setState(this.state);
     }
@@ -264,7 +264,7 @@ class ShowTransaction extends React.Component {
                         if (t.account_name == null) {
                             return null;
                         } else {
-                            return (<Input defaultValue={t.account_name} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'account_name')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<Input defaultValue={this.state.accounts[t.account_name]} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'account_name')} onKeyDown={this.onKeyDownHandler} />);
                         }
                     }
                 },

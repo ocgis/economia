@@ -5,14 +5,15 @@ class Api::V1::EtransactionsController < ApplicationController
   before_action :set_transaction, only: [:update]
 
   def show
-    puts params[:id]
     transaction = Etransaction.find(params[:id])
     splits = transaction.splits.map {
       |split| split.attributes
     }
+    accounts_map = Account.full_name_map
 
     render json: { transaction: transaction.attributes,
-                   splits: splits }
+                   splits: splits,
+                   accounts: accounts_map }
   end
 
 
@@ -21,8 +22,11 @@ class Api::V1::EtransactionsController < ApplicationController
       splits = @transaction.splits.map {
         |split| split.attributes
       }
+      accounts_map = Account.full_name_map
+
       render json: { transaction: @transaction.attributes,
-                     splits: splits }
+                     splits: splits,
+                     accounts: accounts_map}
     else
       render json: @transaction.errors
     end
