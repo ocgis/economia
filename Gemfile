@@ -6,6 +6,10 @@ gem 'rails', '>= 5.2.4.4'
 # Use sqlite3 as the database for Active Record
 #gem 'sqlite3'
 
+# Use mysql as the database for Active Record
+gem 'mysql2'
+
+# Use postgres as the database for Active Record
 gem 'pg'
 
 # Use SCSS for stylesheets
@@ -37,11 +41,12 @@ gem 'spring',        group: :development
 # gem 'unicorn'
 
 # Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-gem 'capistrano'
-gem 'capistrano-bundler'
-gem 'capistrano-rails'
+gem 'capistrano-rails', group: :development
+
+# Add this if you're using rbenv
 gem 'capistrano-rbenv', github: "capistrano/rbenv"
+
+gem 'capistrano-yarn', group: :development
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
