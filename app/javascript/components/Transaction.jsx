@@ -1,7 +1,7 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
-import { DatePicker, Input, InputNumber, Table } from "antd";
+import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -81,11 +81,15 @@ class ShowTransaction extends React.Component {
         }
     }
 
-    
+
     setStateFromResponse(response) {
         this.state.transaction = response.data.transaction;
         this.state.splits = response.data.splits;
-        this.state.accounts = response.data.accounts;
+        this.state.account_names = response.data.accounts;
+        this.state.account_ids = {}
+        Object.keys(this.state.account_names).forEach((t) => {
+            this.state.account_ids[this.state.account_names[t]] = t;
+        });
         this.calculateStateFromTo();
         this.setState(this.state);
     }
@@ -143,6 +147,7 @@ class ShowTransaction extends React.Component {
         }
     }
 
+
     onTextChangeHandler(reference, index, field) {
         return  (event) => {
             if (index == null) {
@@ -151,6 +156,17 @@ class ShowTransaction extends React.Component {
                 this.state[reference][index][field] = event.target.value;
             }
             this.setState(this.state);
+        }
+    }
+
+
+    onAccountChangeHandler(index) {
+        return  (value) => {
+            let new_id = this.state.account_ids[value];
+            if (new_id != null) {
+                this.state.splits[index].account_id = new_id;
+                this.setState(this.state);
+            }
         }
     }
 
@@ -259,12 +275,24 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Konto',
-                    key: 'account_name',
+                    key: 'account_id',
                     render: t => {
-                        if (t.account_name == null) {
+                        if (t.account_id == null) {
                             return null;
                         } else {
-                            return (<Input defaultValue={this.state.accounts[t.account_name]} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'account_name')} onKeyDown={this.onKeyDownHandler} />);
+                            let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+                            return (<AutoComplete
+                                    defaultValue={this.state.account_names[t.account_id]}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={options}
+                                    placeholder="välj konto"
+                                    filterOption={(inputValue, option) =>
+                                                  option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                                 }
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
+                                    onChange={this.onAccountChangeHandler(t.index)}
+                                    />);
                         }
                     }
                 },
@@ -315,7 +343,7 @@ class ShowTransaction extends React.Component {
             splits =  splits.map((t, index) => ({ reference: 'splits',
                                                   index: index,
                                                   memo: t.memo,
-                                                  account_name: t.account_id,
+                                                  account_id: t.account_id,
                                                   reconciled_state: t.reconciled_state,
                                                   value: t.value,
                                                   from: t.from,
