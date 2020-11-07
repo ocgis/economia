@@ -4,11 +4,11 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :etransactions, only: [:show, :update]
+      resources :etransactions, only: [:show, :update, :new]
     end
   end
 
-  resources :etransactions, except: [:show]
+  resources :etransactions, except: [:show, :new]
   put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
   post 'etransactions/:id/update_data' => 'etransactions#update_data', :as => :update_data_etransaction
   delete 'etransactions/:id/destroy_split' => 'etransactions#destroy_split', :as => :destroy_split_etransaction

@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { ShowTransaction } from "../components/Transaction"
+import { NewTransaction, ShowTransaction } from "../components/Transaction"
 import TopMenu from "../components/TopMenu"
 
 export default (
@@ -10,6 +10,12 @@ export default (
           path="/"
           exact
           component={TopMenu}
+          />
+
+        <Route
+          path="/etransactions/new"
+          exact
+          component={NewTransaction}
           />
 
         <Route

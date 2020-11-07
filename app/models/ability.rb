@@ -35,7 +35,7 @@ class Ability
 
     if user.has_role? :admin
       can [:index], Account
-      can [:index, :show, :update], Etransaction
+      can [:index, :show, :new, :update], Etransaction
       can [:index], :summary
     end
   end

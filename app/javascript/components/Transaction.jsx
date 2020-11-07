@@ -1,11 +1,68 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
+import { Redirect } from "react-router-dom";
 import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import TopMenu from "./TopMenu";
+
+
+class NewTransaction extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            transaction: null,
+            error: null
+        };
+    }
+
+
+    componentDidMount() {
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/etransactions/new`)
+            .then(response => {
+                this.setState({ transaction: response.data.transaction });
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    render() {
+        const transaction = this.state.transaction;
+        if (transaction == null) {
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
+        } else {
+            return (<Redirect to={`/etransactions/${transaction.id}`} />);
+        }
+    }
+}
+
 
 class ShowTransaction extends React.Component {
 
@@ -277,9 +334,7 @@ class ShowTransaction extends React.Component {
                     title: 'Konto',
                     key: 'account_id',
                     render: t => {
-                        if (t.account_id == null) {
-                            return null;
-                        } else {
+                        if (t.reference == 'splits') {
                             let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
                             return (<AutoComplete
                                     defaultValue={this.state.account_names[t.account_id]}
@@ -293,6 +348,8 @@ class ShowTransaction extends React.Component {
                                     onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
                                     onChange={this.onAccountChangeHandler(t.index)}
                                     />);
+                        } else {
+                            return null;
                         }
                     }
                 },
@@ -364,4 +421,4 @@ class ShowTransaction extends React.Component {
 }
 
 
-export { ShowTransaction };
+export { NewTransaction, ShowTransaction };

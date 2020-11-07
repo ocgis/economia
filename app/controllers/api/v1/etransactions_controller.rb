@@ -4,6 +4,16 @@ class Api::V1::EtransactionsController < ApplicationController
 
   before_action :set_transaction, only: [:update]
 
+  def new
+    transaction = Etransaction.new(date_entered_date: DateTime.now,
+                                   date_entered_ns: 0,
+                                   date_posted_date: DateTime.now,
+                                   date_posted_ns: 0);
+    transaction.save
+    render json: { transaction: transaction.attributes }
+  end
+
+
   def show
     transaction = Etransaction.find(params[:id])
     splits = transaction.splits.map {
