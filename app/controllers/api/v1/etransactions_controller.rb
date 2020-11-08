@@ -42,6 +42,22 @@ class Api::V1::EtransactionsController < ApplicationController
     end
   end
 
+
+  def index
+    etransactions = Etransaction.preload(:splits).order("date_posted_date DESC").limit(100).sort_by{|e| e.date_posted_date_sort}
+
+    transactions = etransactions.map do |e|
+      splits = e.splits.map do |split|
+        split.attributes
+      end
+      e.attributes.update(splits: splits)
+    end
+    accounts_map = Account.full_name_map
+    render json: { transactions: transactions,
+                   accounts: accounts_map }
+  end
+
+
   rescue_from CanCan::AccessDenied do |exception|
     render json: { error: "Access denied"}, status: 403
   end

@@ -1,12 +1,35 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
-import { Redirect } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import TopMenu from "./TopMenu";
+
+
+let mapTransactionToTable = (transaction, splits) => {
+    let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
+                                                   id: t.id,
+                                                   date_posted_date: t.date_posted_date,
+                                                   num: t.num,
+                                                   description: t.description,
+                                                   value: 0 }));
+    splits.sort((a, b) => { return a.id - b.id });
+    splits =  splits.map((t, index) => ({ reference: 'splits',
+                                          id: t.id,
+                                          index: index,
+                                          memo: t.memo,
+                                          account_id: t.account_id,
+                                          reconciled_state: t.reconciled_state,
+                                          value: t.value,
+                                          from: t.from,
+                                          to: t.to }));
+    data = data.concat(splits);
+
+    return data;
+}
 
 
 class NewTransaction extends React.Component {
@@ -391,29 +414,16 @@ class ShowTransaction extends React.Component {
                 }
             ];
 
-            let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
-                                                           date_posted_date: t.date_posted_date,
-                                                           num: t.num,
-                                                           description: t.description,
-                                                           value: 0 }));
-            splits.sort((a, b) => { return a.id - b.id });
-            splits =  splits.map((t, index) => ({ reference: 'splits',
-                                                  index: index,
-                                                  memo: t.memo,
-                                                  account_id: t.account_id,
-                                                  reconciled_state: t.reconciled_state,
-                                                  value: t.value,
-                                                  from: t.from,
-                                                  to: t.to }));
-            data = data.concat(splits);
+            let data = mapTransactionToTable(transaction, splits);
+            for (var i = 0; i < data.length; i++) {
+                data[i].key = i;
+            }
 
             return (
                 <div>
                   <TopMenu />
-                  <Table id="transactionTable" columns={columns} dataSource={data} rowkey={'row_index'} pagination={false} />
+                  <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
-                  <Input value="test" />
-                  <DatePicker />
                 </div>
             );
         }
@@ -421,4 +431,142 @@ class ShowTransaction extends React.Component {
 }
 
 
-export { NewTransaction, ShowTransaction };
+class IndexTransaction extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            transactions: null,
+            error: null
+        };
+    }
+
+
+    componentDidMount() {
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/etransactions`)
+            .then(response => {
+                this.state = { transactions: response.data.transactions,
+                               account_names: response.data.accounts };
+                this.calculateStateFromTo();
+                this.setState(this.state);
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    calculateStateFromTo() {
+        var i;
+        var j;
+        for (j = 0; j < this.state.transactions.length; j++) {
+            for (i = 0; i < this.state.transactions[j].splits.length; i++) {
+                this.state.transactions[j].splits[i].from = this.state.transactions[j].splits[i].value < 0 ? Number(-this.state.transactions[j].splits[i].value).toFixed(2) : '';
+                this.state.transactions[j].splits[i].to = this.state.transactions[j].splits[i].value > 0 ? Number(this.state.transactions[j].splits[i].value).toFixed(2) : '';
+            }
+        }
+    }
+
+    render() {
+        const transactions = this.state.transactions;
+        if (transactions == null) {
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <TopMenu />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
+        } else {
+            let data = [];
+            this.state.transactions.forEach((t) => {
+                data = data.concat(mapTransactionToTable(t, t.splits));
+            });
+
+            for (var i = 0; i < data.length; i++) {
+                data[i].key = i;
+            }
+
+            const columns = [
+                {
+                    title: 'Datum',
+                    key: 'date_posted_date',
+                    render: t => {
+                        if (t.date_posted_date == null) {
+                            return null;
+                        } else {
+                            return moment(t.date_posted_date).format('YYYY-MM-DD');
+                        }
+                    }
+                },
+                {
+                    title: 'Num',
+                    dataIndex: 'num'
+                },
+                {
+                    title: 'Beskrivning',
+                    key: 'description',
+                    render: t => {
+                        if (t.reference == 'transaction') {
+                            return (
+                                <Link to={`/etransactions/${t.id}`}>
+                                  {t.description}
+                                </Link>
+                            );
+                        } else {
+                            return t.memo;
+                        }
+                    }
+                },
+                {
+                    title: 'Konto',
+                    key: 'account_id',
+                    render: t => {
+                        if (t.reference == 'splits') {
+                            return this.state.account_names[t.account_id];
+                        } else {
+                            return null;
+                        }
+                    }
+                },
+                {
+                    title: 'Avstämt',
+                    dataIndex: 'reconciled_state',
+                },
+                {
+                    title: 'Till',
+                    dataIndex: 'to'
+                },
+                {
+                    title: 'Från',
+                    dataIndex: 'from'
+                }
+            ];
+
+            return (
+                <div>
+                  <TopMenu />
+                  <Table id="transactionsTable" columns={columns} dataSource={data} pagination={false} />
+                </div>
+            );
+        }
+    }
+}
+
+
+export { IndexTransaction, NewTransaction, ShowTransaction };
