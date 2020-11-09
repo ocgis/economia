@@ -1,10 +1,10 @@
 Rails.application.routes.draw do
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
-  get 'summary' => 'summary#index'
 
   namespace :api do
     namespace :v1 do
       resources :etransactions, only: [:show, :update, :new, :index]
+      resources :summary, only: [:index]
     end
   end
 

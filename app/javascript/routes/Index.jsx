@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
+import { IndexSummary } from "../components/Summary"
 import TopMenu from "../components/TopMenu"
 
 export default (
@@ -29,6 +30,13 @@ export default (
           exact
           component={IndexTransaction}
           />
+
+        <Route
+          path="/summary"
+          exact
+          component={IndexSummary}
+          />
+
       </Switch>
     </Router>
 );
