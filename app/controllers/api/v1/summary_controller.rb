@@ -30,8 +30,29 @@ class Api::V1::SummaryController < ApplicationController
 
     all_rows = []
 
+    start_date = DateTime.new(year, 1, 1)
+    end_date = start_date + number_of_months.month
+    splits = Split.preload(:etransaction).joins(:etransaction).where("etransactions.date_posted_date >= :time_from and etransactions.date_posted_date < :time_to",
+                                              { time_from: start_date,
+                                                time_to: end_date })
+    account_splits = {}
     accounts.each do |account|
-      row = { title: account.full_name,
+      account_splits[account.id] = {}
+      current_date = start_date
+      number_of_months.times do
+        account_splits[account.id][[current_date.year, current_date.month]] = []
+        current_date = current_date + 1.month
+      end
+    end
+
+    splits.each do |split|
+      date = split.etransaction.date_posted_date
+      account_splits[split.account_id][[date.year, date.month]].append(split)
+    end
+
+    accounts_map = Account.full_name_map
+    accounts.each do |account|
+      row = { title: accounts_map[account.id],
               account_id: account.id,
               incoming: '',
               months: [],
@@ -41,9 +62,7 @@ class Api::V1::SummaryController < ApplicationController
       number_of_months.times do
         end_date = start_date + 1.month
         total = BigDecimal.new(0)
-        account.splits.joins(:etransaction).where("etransactions.date_posted_date >= :time_from and etransactions.date_posted_date < :time_to",
-                                                  { time_from: start_date,
-                                                    time_to: end_date }).each do |split|
+        account_splits[account.id][[start_date.year, start_date.month]].each do |split|
           total = total + split[:value]
         end
         row[:months].append(total)
