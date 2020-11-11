@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { IndexAccount, ShowAccount } from "../components/Account"
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
 import { IndexSummary } from "../components/Summary"
 import TopMenu from "../components/TopMenu"
@@ -11,6 +12,18 @@ export default (
           path="/"
           exact
           component={TopMenu}
+          />
+
+        <Route
+          path="/accounts/:id"
+          exact
+          component={ShowAccount}
+          />
+
+        <Route
+          path="/accounts"
+          exact
+          component={IndexAccount}
           />
 
         <Route

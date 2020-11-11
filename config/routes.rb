@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :accounts, only: [:show, :index]
       resources :etransactions, only: [:show, :update, :new, :index]
       resources :summary, only: [:index]
     end
@@ -17,10 +18,6 @@ Rails.application.routes.draw do
   resources :commodities
   resources :prices
   resources :splits
-
-  resources :accounts
-  get 'accounts/index'
-  get 'accounts/show'
 
   resources :root, only: [:index] do
     collection do
