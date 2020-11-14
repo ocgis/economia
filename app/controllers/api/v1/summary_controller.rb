@@ -21,7 +21,7 @@ class Api::V1::SummaryController < ApplicationController
     if params.key?(:year)
       year = params[:year].to_i
     else
-      year = 2017
+      year = DateTime.now.getlocal.year
     end
     number_of_months = 12
     @year = year
@@ -47,7 +47,18 @@ class Api::V1::SummaryController < ApplicationController
 
     splits.each do |split|
       date = split.etransaction.date_posted_date
-      account_splits[split.account_id][[date.year, date.month]].append(split)
+      if date.nil? or split.account_id.nil?
+        if date.nil?
+          puts "ERROR: date_posted_date is nil"
+          puts split.etransaction.inspect
+        end
+        if split.account_id.nil?
+          puts "ERROR: account_id is nil"
+          puts split.inspect
+        end
+      else
+        account_splits[split.account_id][[date.year, date.month]].append(split)
+      end
     end
 
     accounts_map = Account.full_name_map
