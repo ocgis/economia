@@ -93,7 +93,8 @@ class ShowTransaction extends React.Component {
         super(props);
         this.state = {
             transaction: null,
-            splits: []
+            splits: [],
+            descriptionOptions: []
         };
 
         this.onTextChangeHandler = this.onTextChangeHandler.bind(this);
@@ -175,12 +176,67 @@ class ShowTransaction extends React.Component {
     }
 
 
+    searchAccountDescriptions(searchString) {
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        let encodedSearch = encodeURIComponent(searchString);
+        axios.get(`/api/v1/etransactions/search?query=${encodedSearch}`)
+            .then(response => { this.state.descriptionOptions = response.data.result;
+                                this.setState(this.state); })
+            .catch(error => {
+                console.log("ERROR", error);
+            });
+    }
+
+
+    copyTransaction(id) {
+        let handleResponse = response => {
+            let {created_at, updated_at, date_entered_date, date_entered_ns, date_posted_date, date_posted_ns, id, id_, ...newTransaction} = response.data.transaction;
+            this.state.transaction = { ...this.state.transaction, ...newTransaction };
+
+            let newSplits = response.data.splits;
+            // Overwrite existing splits with new splits
+            for(var i = 0; i < Math.min(this.state.splits.length, newSplits.length); i++) {
+                let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = newSplits[i]
+                this.state.splits[i] = { ...this.state.splits[i], ...newSplit };
+            }
+            // Append new splits
+            for(var i = this.state.splits.length; i < newSplits.length; i++) {
+                let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = newSplits[i]
+                this.state.splits.push(newSplit);
+            }
+            // Delete existing splits
+            for(var i = newSplits.length; i < this.state.splits.length; i++) {
+                this.state.splits[i]._destroy = true;
+            }
+            this.calculateStateFromTo();
+            this.submitTransaction();
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/etransactions/${id}`)
+            .then(response => handleResponse(response))
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: error.response.data.error });
+                } else {
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
     onBlurHandler(reference, index, field) {
         return  (event) => {
             if ((reference == "splits") && ['from', 'to'].includes(field)) {
-                let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
-                this.state.splits[index][field] = result == null ? '' : result;
-                this.setState(this.state);
+                if (this.state.splits[index][field] != '') {
+                    let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
+                    this.state.splits[index][field] = result == null ? '' : result;
+                    this.setState(this.state);
+                }
             }
             
             if ((event.relatedTarget == null) || (event.target.parentElement.parentElement != event.relatedTarget.parentElement.parentElement)) {
@@ -278,18 +334,18 @@ class ShowTransaction extends React.Component {
     render () {
         let addSplitHandler = () => {
             this.state.splits.push({account_id: null,
-                                      action: "",
-                                      etransaction_id: this.state.transaction.id,
-                                      from: "",
-                                      id: null,
-                                      id_: "economia fixme",
-                                      memo: "",
-                                      quantity: 0,
-                                      reconcile_date_date: null,
-                                      reconcile_date_ns: null,
-                                      reconciled_state: "n",
-                                      to: "",
-                                      value: 0});
+                                    action: "",
+                                    etransaction_id: this.state.transaction.id,
+                                    from: "",
+                                    id: null,
+                                    id_: "economia fixme",
+                                    memo: "",
+                                    quantity: 0,
+                                    reconcile_date_date: null,
+                                    reconcile_date_ns: null,
+                                    reconciled_state: "n",
+                                    to: "",
+                                    value: 0});
             this.submitTransaction();
         }
 
@@ -347,7 +403,18 @@ class ShowTransaction extends React.Component {
                     key: 'description',
                     render: t => {
                         if (t.reference == 'transaction') {
-                            return (<Input value={t.description} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'description')} onChange={this.onTextChangeHandler(t.reference, t.index, 'description')} onKeyDown={this.onKeyDownHandler} />);
+                            let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+                            return (<AutoComplete
+                                    defaultValue={t.description}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={this.state.descriptionOptions}
+                                    placeholder="skriv beskrivning"
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                    onSearch={(search) => this.searchAccountDescriptions(search)}
+                                    onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                                    onSelect={(value, object) => this.copyTransaction(object.key)}
+                                    />);
                         } else {
                             return (<Input value={t.memo} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'description')} onChange={this.onTextChangeHandler(t.reference, t.index, 'memo')} onKeyDown={this.onKeyDownHandler} />);
                         }

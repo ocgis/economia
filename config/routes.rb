@@ -4,7 +4,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :accounts, only: [:show, :index]
-      resources :etransactions, only: [:show, :update, :new, :index]
+      resources :etransactions, only: [:show, :update, :new, :index] do
+        collection do
+          get 'search'
+        end
+      end
       resources :summary, only: [:index]
     end
   end

@@ -58,6 +58,16 @@ class Api::V1::EtransactionsController < ApplicationController
   end
 
 
+  def search
+    etransactions = Etransaction.where("LOWER(description) LIKE ?", "%" + params[:query].downcase + "%").order(updated_at: :desc).limit(10)
+    result = etransactions.map do |etransaction|
+      { value: etransaction.description,
+        key: etransaction.id }
+    end
+    render json: { result: result }
+  end
+
+
   rescue_from CanCan::AccessDenied do |exception|
     render json: { error: "Access denied"}, status: 403
   end
