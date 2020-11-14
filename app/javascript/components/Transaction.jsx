@@ -94,7 +94,8 @@ class ShowTransaction extends React.Component {
         this.state = {
             transaction: null,
             splits: [],
-            descriptionOptions: []
+            descriptionOptions: [],
+            key: Date.now()
         };
 
         this.onTextChangeHandler = this.onTextChangeHandler.bind(this);
@@ -210,6 +211,7 @@ class ShowTransaction extends React.Component {
             for(var i = newSplits.length; i < this.state.splits.length; i++) {
                 this.state.splits[i]._destroy = true;
             }
+            this.state.key = Date.now();
             this.calculateStateFromTo();
             this.submitTransaction();
         }
@@ -427,6 +429,7 @@ class ShowTransaction extends React.Component {
                         if (t.reference == 'splits') {
                             let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
                             return (<AutoComplete
+                                    key={this.state.key}
                                     defaultValue={this.state.account_names[t.account_id]}
                                     bordered={false}
                                     style={{ width: 200 }}
