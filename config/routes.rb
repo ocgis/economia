@@ -10,6 +10,11 @@ Rails.application.routes.draw do
         end
       end
       resources :summary, only: [:index]
+      resources :splits, only: [:show] do
+        collection do
+          get 'search'
+        end
+      end
     end
   end
 
@@ -21,7 +26,6 @@ Rails.application.routes.draw do
   resources :slots
   resources :commodities
   resources :prices
-  resources :splits
 
   resources :root, only: [:index] do
     collection do

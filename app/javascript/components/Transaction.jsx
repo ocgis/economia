@@ -192,6 +192,20 @@ class ShowTransaction extends React.Component {
     });
 
 
+    searchSplitMemos = throttle(500, (searchString) => {
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        let encodedSearch = encodeURIComponent(searchString);
+        axios.get(`/api/v1/splits/search?query=${encodedSearch}`)
+            .then(response => { this.state.descriptionOptions = response.data.result;
+                                this.setState(this.state); })
+            .catch(error => {
+                console.log("ERROR", error);
+            });
+    });
+
+
     copyTransaction(id) {
         let handleResponse = response => {
             let {created_at, updated_at, date_entered_date, date_entered_ns, date_posted_date, date_posted_ns, id, id_, ...newTransaction} = response.data.transaction;
@@ -221,6 +235,30 @@ class ShowTransaction extends React.Component {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         axios.get(`/api/v1/etransactions/${id}`)
+            .then(response => handleResponse(response))
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: error.response.data.error });
+                } else {
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+    copySplit(split_index, id) {
+        let handleResponse = response => {
+            let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = response.data.split;
+            this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
+
+            this.state.key = Date.now();
+            this.calculateStateFromTo();
+            this.submitTransaction();
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/splits/${id}`)
             .then(response => handleResponse(response))
             .catch(error => {
                 if (error.response) {
@@ -406,7 +444,6 @@ class ShowTransaction extends React.Component {
                     key: 'description',
                     render: t => {
                         if (t.reference == 'transaction') {
-                            let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
                             return (<AutoComplete
                                     defaultValue={t.description}
                                     bordered={false}
@@ -419,7 +456,17 @@ class ShowTransaction extends React.Component {
                                     onSelect={(value, object) => this.copyTransaction(object.key)}
                                     />);
                         } else {
-                            return (<Input value={t.memo} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'description')} onChange={this.onTextChangeHandler(t.reference, t.index, 'memo')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<AutoComplete
+                                    defaultValue={t.memo}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={this.state.descriptionOptions}
+                                    placeholder="skriv beskrivning"
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                    onSearch={(search) => this.searchSplitMemos(search)}
+                                    onFocus={(event) => this.searchSplitMemos(event.target.value)}
+                                    onSelect={(value, object) => this.copySplit(t.index, object.key)}
+                                    />);
                         }
                     }
                 },
