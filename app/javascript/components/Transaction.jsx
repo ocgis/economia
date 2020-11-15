@@ -6,6 +6,7 @@ import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { throttle } from "throttle-debounce";
 import TopMenu from "./TopMenu";
 
 
@@ -177,7 +178,7 @@ class ShowTransaction extends React.Component {
     }
 
 
-    searchAccountDescriptions(searchString) {
+    searchAccountDescriptions = throttle(500, (searchString) => {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
@@ -188,7 +189,7 @@ class ShowTransaction extends React.Component {
             .catch(error => {
                 console.log("ERROR", error);
             });
-    }
+    });
 
 
     copyTransaction(id) {
