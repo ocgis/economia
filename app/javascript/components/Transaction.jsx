@@ -453,7 +453,8 @@ class ShowTransaction extends React.Component {
                                     onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
                                     onSearch={(search) => this.searchAccountDescriptions(search)}
                                     onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
-                                    onSelect={(value, object) => this.copyTransaction(object.key)}
+                                    onSelect={(value, object) => { this.searchAccountDescriptions(value);
+                                                                   this.copyTransaction(object.key); }}
                                     />);
                         } else {
                             return (<AutoComplete
@@ -465,7 +466,8 @@ class ShowTransaction extends React.Component {
                                     onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
                                     onSearch={(search) => this.searchSplitMemos(search)}
                                     onFocus={(event) => this.searchSplitMemos(event.target.value)}
-                                    onSelect={(value, object) => this.copySplit(t.index, object.key)}
+                                    onSelect={(value, object) => { this.searchSplitMemos(value);
+                                                                   this.copySplit(t.index, object.key) }}
                                     />);
                         }
                     }
