@@ -1,4 +1,6 @@
 # coding: utf-8
+require 'matrix'
+
 class Api::V1::SummaryController < ApplicationController
 
   authorize_resource class: false
