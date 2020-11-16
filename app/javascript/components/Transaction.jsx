@@ -5,7 +5,7 @@ import { Link, Redirect } from "react-router-dom";
 import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from "throttle-debounce";
 import TopMenu from "./TopMenu";
 
@@ -397,6 +397,19 @@ class ShowTransaction extends React.Component {
             });
         }
  
+        let balanceSplitHandler = (t) => {
+            return (() => {
+                let newValue = this.state.splits[t.index].value;
+                this.state.splits.forEach((split) => {
+                    newValue = newValue - split.value;
+                });
+                this.state.splits[t.index].value = newValue;
+                this.state.splits[t.index].quantity = newValue;
+                this.calculateStateFromTo();
+                this.submitTransaction();
+            });
+        }
+
         const transaction = this.state.transaction;
         if (transaction == null) {
             if (this.state.error != null) {
@@ -522,11 +535,26 @@ class ShowTransaction extends React.Component {
                     }
                 },
                 {
+                    title: 'Balansera',
+                    key: 'balance',
+                    render: t => {
+                        if (t.reference == "splits") {
+                            return (
+                                <ThunderboltOutlined onClick={balanceSplitHandler(t)} />
+                            );
+                        } else {
+                            return null;
+                        }
+                    }
+                },
+                {
                     title: 'Ta bort',
                     key: 'remove',
                     render: t => {
                         if (t.reference == "splits") {
-                            return (<MinusCircleOutlined onClick={removeSplitHandler(t)}/>);
+                            return (
+                                <MinusCircleOutlined onClick={removeSplitHandler(t)} />
+                            );
                         } else {
                             return null;
                         }
