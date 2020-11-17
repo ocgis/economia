@@ -55,7 +55,7 @@ def node_to_db(node, make_object = true)
         if ['value', 'quantity'].include? xp_name
           parts = xp.children[0].to_s.split('/')
           if parts.size == 2
-            attributes[xp_name] = BigDecimal.new(parts[0]) / BigDecimal.new(parts[1])
+            attributes[xp_name] = BigDecimal(parts[0]) / BigDecimal(parts[1])
           end
         end
       elsif xp.children.size == 0

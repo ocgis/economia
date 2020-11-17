@@ -74,7 +74,7 @@ class Api::V1::SummaryController < ApplicationController
       start_date = DateTime.new(year, 1, 1)
       number_of_months.times do
         end_date = start_date + 1.month
-        total = BigDecimal.new(0)
+        total = BigDecimal(0)
         account_splits[account.id][[start_date.year, start_date.month]].each do |split|
           total = total + split[:value]
         end
@@ -89,7 +89,7 @@ class Api::V1::SummaryController < ApplicationController
     collapses.each do |collapse|
       new_row = {title: collapse,
                  incoming: '',
-                 months: Array.new(number_of_months, BigDecimal.new(0)),
+                 months: Array.new(number_of_months, BigDecimal(0)),
                  average: BigDecimal(0),
                  sum: BigDecimal(0)}
       delete_rows = []
@@ -147,7 +147,7 @@ class Api::V1::SummaryController < ApplicationController
 
     expenses_sums = { title: "Summa utgifter",
                       incoming: '',
-                      months: Array.new(number_of_months, BigDecimal.new(0)),
+                      months: Array.new(number_of_months, BigDecimal(0)),
                       average: BigDecimal(0),
                       sum: BigDecimal(0)}
     expenses.each do |expense|
@@ -157,6 +157,7 @@ class Api::V1::SummaryController < ApplicationController
     calculate_sum_and_average(expenses_sums)
 
     @rows = @rows + expenses
+    puts @rows.inspect
     @rows.append(expenses_sums)
 
     living_expenses = []
@@ -172,7 +173,7 @@ class Api::V1::SummaryController < ApplicationController
 
     living_expenses_sums = { title: "Totala utgifter",
                              incoming: '',
-                             months: Array.new(number_of_months, BigDecimal.new(0)),
+                             months: Array.new(number_of_months, BigDecimal(0)),
                              average: BigDecimal(0),
                              sum: BigDecimal(0) }
     (living_expenses + [expenses_sums]).each do |living_expense|
@@ -200,7 +201,7 @@ class Api::V1::SummaryController < ApplicationController
 
     incomes_sums = { title: "Total inkomst",
                      incoming: '',
-                     months: Array.new(number_of_months, BigDecimal.new(0)),
+                     months: Array.new(number_of_months, BigDecimal(0)),
                      average: BigDecimal(0),
                      sum: BigDecimal(0)}
     incomes.each do |income|
@@ -232,7 +233,7 @@ class Api::V1::SummaryController < ApplicationController
 
     income_taxes_sums = { title: "Inkomst efter skatt",
                           incoming: '',
-                          months: Array.new(number_of_months, BigDecimal.new(0)),
+                          months: Array.new(number_of_months, BigDecimal(0)),
                           average: BigDecimal(0),
                           sum: BigDecimal(0) }
     income_taxes_sums[:months] = sum_lists(income_taxes_sums[:months], incomes_sums[:months])
@@ -252,7 +253,7 @@ class Api::V1::SummaryController < ApplicationController
     
     loans_sums = { title: "Inlånat",
                    incoming: '',
-                   months: Array.new(number_of_months, BigDecimal.new(0)),
+                   months: Array.new(number_of_months, BigDecimal(0)),
                    average: BigDecimal(0),
                    sum: BigDecimal(0) }
     all_rows.each do |row|
@@ -272,7 +273,7 @@ class Api::V1::SummaryController < ApplicationController
     assets = []
     assets_sums = { title: "Bank",
                     incoming: '',
-                    months: Array.new(number_of_months, BigDecimal.new(0)),
+                    months: Array.new(number_of_months, BigDecimal(0)),
                     average: BigDecimal(0),
                     sum: BigDecimal(0) }
     all_rows.each do |row|
