@@ -208,18 +208,18 @@ class ShowTransaction extends React.Component {
 
     copyTransaction(id) {
         let handleResponse = response => {
-            let {created_at, updated_at, date_entered_date, date_entered_ns, date_posted_date, date_posted_ns, id, id_, ...newTransaction} = response.data.transaction;
+            let {created_at, updated_at, date_entered_date, date_entered_ns, date_posted_date, date_posted_ns, id, ...newTransaction} = response.data.transaction;
             this.state.transaction = { ...this.state.transaction, ...newTransaction };
 
             let newSplits = response.data.splits;
             // Overwrite existing splits with new splits
             for(var i = 0; i < Math.min(this.state.splits.length, newSplits.length); i++) {
-                let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = newSplits[i]
+                let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
                 this.state.splits[i] = { ...this.state.splits[i], ...newSplit };
             }
             // Append new splits
             for(var i = this.state.splits.length; i < newSplits.length; i++) {
-                let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = newSplits[i]
+                let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
                 this.state.splits.push(newSplit);
             }
             // Delete existing splits
@@ -247,7 +247,7 @@ class ShowTransaction extends React.Component {
 
     copySplit(split_index, id) {
         let handleResponse = response => {
-            let {created_at, updated_at, etransaction_id, id, id_, ...newSplit} = response.data.split;
+            let {created_at, updated_at, etransaction_id, id, ...newSplit} = response.data.split;
             this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
 
             this.state.key = Date.now();
@@ -379,7 +379,6 @@ class ShowTransaction extends React.Component {
                                     etransaction_id: this.state.transaction.id,
                                     from: "",
                                     id: null,
-                                    id_: "economia fixme",
                                     memo: "",
                                     quantity: 0,
                                     reconcile_date_date: null,

@@ -96,7 +96,7 @@ class IndexAccount extends React.Component {
                 },
                 {
                     title: 'Id',
-                    dataIndex: 'id_'
+                    dataIndex: 'id'
                 },
                 {
                     title: 'Commodity scu',
@@ -112,7 +112,7 @@ class IndexAccount extends React.Component {
                 },
                 {
                     title: 'Commodity id',
-                    dataIndex: 'commodity_id_'
+                    dataIndex: 'commodity_id'
                 },
                 {
                     title: 'Commodity space',
@@ -286,11 +286,11 @@ class ShowAccount extends React.Component {
                     <Descriptions.Item label="Name">{account.full_name}</Descriptions.Item>
                     <Descriptions.Item label="Description">{account.description}</Descriptions.Item>
                     <Descriptions.Item label="Type">{account.type_}</Descriptions.Item>
-                    <Descriptions.Item label="Id">{account.id_}</Descriptions.Item>
+                    <Descriptions.Item label="Id">{account.id}</Descriptions.Item>
                     <Descriptions.Item label="Commodity scu">{account.commodity_scu}</Descriptions.Item>
                     <Descriptions.Item label="Code">{account.code}</Descriptions.Item>
                     <Descriptions.Item label="Parent">{account.parent}</Descriptions.Item>
-                    <Descriptions.Item label="Commodity id">{account.commodity_id_}</Descriptions.Item>
+                    <Descriptions.Item label="Commodity id">{account.commodity_id}</Descriptions.Item>
                     <Descriptions.Item label="Commodity space">{account.commodity_space}</Descriptions.Item>
                   </Descriptions>
                   <Table id="splitsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />

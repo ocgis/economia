@@ -1,7 +1,6 @@
 class CreateSplits < ActiveRecord::Migration[5.0]
   def change
-    create_table :splits do |t|
-      t.string :id_
+    create_table :splits, id: :uuid do |t|
       t.string :memo
       t.string :reconciled_state
       t.decimal :value
@@ -9,8 +8,8 @@ class CreateSplits < ActiveRecord::Migration[5.0]
       t.string :action
       t.datetime :reconcile_date_date
       t.integer :reconcile_date_ns
-      t.references :account, foreign_key: true
-      t.references :etransaction, foreign_key: true
+      t.references :account, foreign_key: true, type: :uuid
+      t.references :etransaction, foreign_key: true, type: :uuid
 
       t.timestamps
     end

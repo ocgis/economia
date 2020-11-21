@@ -8,8 +8,8 @@ class CreateSlots < ActiveRecord::Migration[5.0]
       t.string :value_slot_value
       t.string :value_slot_value_slot_key
       t.string :value_slot_value_slot_value
-      t.references :etransaction, foreign_key: true
-      t.references :account, foreign_key: true
+      t.references :etransaction, foreign_key: true, type: :uuid
+      t.references :account, foreign_key: true, type: :uuid
 
       t.timestamps
     end

@@ -1,9 +1,9 @@
 class CreateCommodities < ActiveRecord::Migration[4.2]
   def change
-    create_table :commodities do |t|
+    create_table :commodities, primary_key: [:id, :space], id: false do |t|
+      t.string :id
       t.string :space
       t.string :name
-      t.string :id_
       t.integer :xcode
       t.integer :fraction
       t.string :get_quotes
@@ -12,5 +12,6 @@ class CreateCommodities < ActiveRecord::Migration[4.2]
 
       t.timestamps
     end
+    add_index :commodities, ["id", "space"], :unique => true
   end
 end

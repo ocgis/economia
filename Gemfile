@@ -12,6 +12,9 @@ gem 'mysql2'
 # Use postgres as the database for Active Record
 gem 'pg'
 
+# Composite keys
+gem 'composite_primary_keys'
+
 # Use SCSS for stylesheets
 gem 'sass-rails'
 # Use Uglifier as compressor for JavaScript assets

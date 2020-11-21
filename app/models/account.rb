@@ -1,10 +1,22 @@
 # coding: utf-8
 class Account < ApplicationRecord
-  belongs_to :account_parent, :class_name => 'Account', :foreign_key => :account_parent_id
+  belongs_to :account_parent, :class_name => 'Account', :foreign_key => :parent_id
   has_many :account_children, :class_name => 'Account'
 
   has_many :splits
   has_many :slots
+
+
+  def attributes
+    attrs = super
+    if not attrs['commodity_id'].nil?
+      commodity_id = JSON.parse attrs['commodity_id']
+      attrs.update({ 'commodity_id' => commodity_id[0],
+                     'commodity_space' => commodity_id[1] })
+    end
+    return attrs
+  end
+
 
   def increase_name
     if self.type_ == "LIABILITY"
@@ -58,10 +70,10 @@ class Account < ApplicationRecord
   end
 
   def full_name_by_map(accounts_map)
-    if self.account_parent_id == nil
+    if self.parent_id == nil
       return self.name
     else
-      parent_name = accounts_map[self.account_parent_id].full_name_by_map(accounts_map)
+      parent_name = accounts_map[self.parent_id].full_name_by_map(accounts_map)
       if parent_name == "Root Account"
         return self.name
       else

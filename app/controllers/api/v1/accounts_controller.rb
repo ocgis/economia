@@ -5,7 +5,9 @@ class Api::V1::AccountsController < ApplicationController
   before_action :set_account, only: [:show]
 
   def index
-    accounts = Account.all
+    accounts = Account.all.map do |account|
+      account.attributes
+    end
     accounts_map = Account.full_name_map
 
     render json: { accounts: accounts,
