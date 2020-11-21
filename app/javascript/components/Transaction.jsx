@@ -13,7 +13,7 @@ import TopMenu from "./TopMenu";
 let mapTransactionToTable = (transaction, splits) => {
     let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
                                                    id: t.id,
-                                                   date_posted_date: t.date_posted_date,
+                                                   date_posted: t.date_posted,
                                                    num: t.num,
                                                    description: t.description,
                                                    value: 0 }));
@@ -208,7 +208,7 @@ class ShowTransaction extends React.Component {
 
     copyTransaction(id) {
         let handleResponse = response => {
-            let {created_at, updated_at, date_entered_date, date_entered_ns, date_posted_date, date_posted_ns, id, ...newTransaction} = response.data.transaction;
+            let {created_at, updated_at, date_posted, id, ...newTransaction} = response.data.transaction;
             this.state.transaction = { ...this.state.transaction, ...newTransaction };
 
             let newSplits = response.data.splits;
@@ -381,8 +381,7 @@ class ShowTransaction extends React.Component {
                                     id: null,
                                     memo: "",
                                     quantity: 0,
-                                    reconcile_date_date: null,
-                                    reconcile_date_ns: null,
+                                    reconcile_date: null,
                                     reconciled_state: "n",
                                     to: "",
                                     value: 0});
@@ -431,12 +430,12 @@ class ShowTransaction extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
-                    key: 'date_posted_date',
+                    key: 'date_posted',
                     render: t => {
-                        if (t.date_posted_date == null) {
+                        if (t.date_posted == null) {
                             return null;
                         } else {
-                            return (<DatePicker value={moment(t.date_posted_date)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted_date')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted_date')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<DatePicker value={moment(t.date_posted)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted')} onKeyDown={this.onKeyDownHandler} />);
                         }
                     }
                 },
@@ -652,12 +651,12 @@ class IndexTransaction extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
-                    key: 'date_posted_date',
+                    key: 'date_posted',
                     render: t => {
-                        if (t.date_posted_date == null) {
+                        if (t.date_posted == null) {
                             return null;
                         } else {
-                            return moment(t.date_posted_date).format('YYYY-MM-DD');
+                            return moment(t.date_posted).format('YYYY-MM-DD');
                         }
                     }
                 },

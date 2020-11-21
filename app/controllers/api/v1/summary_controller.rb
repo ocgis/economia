@@ -34,7 +34,7 @@ class Api::V1::SummaryController < ApplicationController
 
     start_date = DateTime.new(year, 1, 1)
     end_date = start_date + number_of_months.month
-    splits = Split.preload(:etransaction).joins(:etransaction).where("etransactions.date_posted_date >= :time_from and etransactions.date_posted_date < :time_to",
+    splits = Split.preload(:etransaction).joins(:etransaction).where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
                                               { time_from: start_date,
                                                 time_to: end_date })
     account_splits = {}
@@ -48,10 +48,10 @@ class Api::V1::SummaryController < ApplicationController
     end
 
     splits.each do |split|
-      date = split.etransaction.date_posted_date
+      date = split.etransaction.date_posted
       if date.nil? or split.account_id.nil?
         if date.nil?
-          puts "ERROR: date_posted_date is nil"
+          puts "ERROR: date_posted is nil"
           puts split.etransaction.inspect
         end
         if split.account_id.nil?

@@ -211,12 +211,12 @@ class ShowAccount extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
-                    key: 'date_posted_date',
+                    key: 'date_posted',
                     render: t => {
-                        if (t.etransaction.date_posted_date == null) {
+                        if (t.etransaction.date_posted == null) {
                             return null;
                         } else {
-                            return moment(t.etransaction.date_posted_date).format('YYYY-MM-DD');
+                            return moment(t.etransaction.date_posted).format('YYYY-MM-DD');
                         }
                     }
                 },

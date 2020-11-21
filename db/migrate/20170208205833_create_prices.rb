@@ -10,7 +10,7 @@ class CreatePrices < ActiveRecord::Migration[5.0]
       t.string :currency_id
       t.string :currency_space
 
-      t.datetime :time_date
+      t.datetime :time
       
       t.timestamps
     end

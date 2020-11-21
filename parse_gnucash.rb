@@ -6,6 +6,8 @@ def wash_attribute_name(name)
     washed = 'account_id'
   elsif washed == 'parent'
     washed = 'parent_id'
+  elsif washed == 'date_entered'
+    washed = 'updated_at'
   end
   return washed
 end
@@ -25,7 +27,7 @@ def node_to_db(node, make_object = true)
   node.children.each do |xp|
     if xp.element?
       xp_name = wash_attribute_name(xp.name)
-        
+
       if xp.children.size == 1
         attributes[xp_name] = xp.children[0].to_s
         if ['value', 'quantity'].include? xp_name
@@ -51,7 +53,12 @@ def node_to_db(node, make_object = true)
       else # Single object
         child_data = node_to_db(xp, false)
         child_data[:attributes].each do |key, value|
-          attributes[xp_name + '_' + key] = value
+          if key == 'date'
+            attr_name = xp_name
+          else
+            attr_name = xp_name + '_' + key
+          end
+          attributes[attr_name] = value
         end
       end
     end

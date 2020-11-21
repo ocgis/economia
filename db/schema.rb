@@ -49,10 +49,7 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.string "num"
     t.string "currency_id"
     t.string "currency_space"
-    t.datetime "date_entered_date"
-    t.integer "date_entered_ns"
-    t.datetime "date_posted_date"
-    t.integer "date_posted_ns"
+    t.datetime "date_posted"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -64,7 +61,7 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.string "commodity_space"
     t.string "currency_id"
     t.string "currency_space"
-    t.datetime "time_date"
+    t.datetime "time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -91,8 +88,7 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.decimal "value"
     t.decimal "quantity"
     t.string "action"
-    t.datetime "reconcile_date_date"
-    t.integer "reconcile_date_ns"
+    t.datetime "reconcile_date"
     t.uuid "account_id"
     t.uuid "etransaction_id"
     t.datetime "created_at", null: false

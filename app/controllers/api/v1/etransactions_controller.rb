@@ -5,10 +5,7 @@ class Api::V1::EtransactionsController < ApplicationController
   before_action :set_transaction, only: [:update]
 
   def new
-    transaction = Etransaction.new(date_entered_date: DateTime.now,
-                                   date_entered_ns: 0,
-                                   date_posted_date: DateTime.now,
-                                   date_posted_ns: 0);
+    transaction = Etransaction.new(date_posted: DateTime.now);
     transaction.save
     render json: { transaction: transaction.attributes }
   end
@@ -44,7 +41,7 @@ class Api::V1::EtransactionsController < ApplicationController
 
 
   def index
-    etransactions = Etransaction.preload(:splits).order("date_posted_date DESC").limit(100).sort_by{|e| e.date_posted_date_sort}
+    etransactions = Etransaction.preload(:splits).order("date_posted DESC").limit(100).sort_by{|e| e.date_posted_sort}
 
     transactions = etransactions.map do |e|
       splits = e.splits.map do |split|
@@ -80,7 +77,7 @@ class Api::V1::EtransactionsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def transaction_params
-      params.require(:transaction).permit(:id, :id_, :description, :num, :currency_id_, :currency_space, :date_entered_date, :date_entered_ns, :date_posted_date, :date_posted_ns, splits_attributes: [:id, :id_, :memo, :reconciled_state, :value, :quantity, :reconcile_date_date, :reconcile_date_ns, :account_id, :etransaction_id, :_destroy])
+      params.require(:transaction).permit(:id, :description, :num, :currency_id_, :currency_space, :date_posted, splits_attributes: [:id, :memo, :reconciled_state, :value, :quantity, :reconcile_date, :account_id, :etransaction_id, :_destroy])
     end
 
 end

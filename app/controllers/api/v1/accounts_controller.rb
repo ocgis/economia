@@ -15,7 +15,7 @@ class Api::V1::AccountsController < ApplicationController
   end
 
   def show
-    all_splits = @account.splits.preload(:etransaction).joins(:etransaction).order('etransactions.date_posted_date')
+    all_splits = @account.splits.preload(:etransaction).joins(:etransaction).order('etransactions.date_posted')
 
     if params.key?(:year)
       year = params[:year].to_i
@@ -27,7 +27,7 @@ class Api::V1::AccountsController < ApplicationController
         start_date = DateTime.new(year, 1, 1)
         end_date = start_date + 1.year
       end
-      splits_objs = all_splits.where("etransactions.date_posted_date >= :time_from and etransactions.date_posted_date < :time_to",
+      splits_objs = all_splits.where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
                              { time_from: start_date,
                                time_to: end_date })
     else

@@ -6,8 +6,7 @@ class CreateSplits < ActiveRecord::Migration[5.0]
       t.decimal :value
       t.decimal :quantity
       t.string :action
-      t.datetime :reconcile_date_date
-      t.integer :reconcile_date_ns
+      t.datetime :reconcile_date
       t.references :account, foreign_key: true, type: :uuid
       t.references :etransaction, foreign_key: true, type: :uuid
 
