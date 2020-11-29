@@ -4,11 +4,13 @@ class CreateCommodities < ActiveRecord::Migration[4.2]
       t.string :id
       t.string :space
       t.string :name
-      t.integer :xcode
+      t.string :xcode
       t.integer :fraction
       t.string :get_quotes
       t.string :quote_source
       t.string :quote_tz
+
+      t.references :book, foreign_key: true, type: :uuid
 
       t.timestamps
     end

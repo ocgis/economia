@@ -7,6 +7,8 @@ class CreateEtransactions < ActiveRecord::Migration[5.0]
       t.string :currency_space
       t.datetime :date_posted
 
+      t.references :book, foreign_key: true, type: :uuid
+
       t.timestamps
     end
   end

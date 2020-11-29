@@ -26,19 +26,27 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.uuid "parent_id"
     t.string "commodity_id"
     t.string "commodity_space"
+    t.uuid "book_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_accounts_on_book_id"
+  end
+
+  create_table "books", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "commodities", id: false, force: :cascade do |t|
     t.string "id"
     t.string "space"
     t.string "name"
-    t.integer "xcode"
+    t.string "xcode"
     t.integer "fraction"
     t.string "get_quotes"
     t.string "quote_source"
     t.string "quote_tz"
+    t.uuid "book_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["id", "space"], name: "index_commodities_on_id_and_space", unique: true
@@ -50,8 +58,10 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.string "currency_id"
     t.string "currency_space"
     t.datetime "date_posted"
+    t.uuid "book_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_etransactions_on_book_id"
   end
 
   create_table "prices", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
@@ -61,9 +71,11 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.string "commodity_space"
     t.string "currency_id"
     t.string "currency_space"
+    t.uuid "book_id"
     t.datetime "time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_prices_on_book_id"
   end
 
   create_table "slots", id: :serial, force: :cascade do |t|
@@ -71,12 +83,14 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.integer "value_integer"
     t.string "value_string"
     t.date "value_gdate"
-    t.uuid "etransaction_id"
+    t.uuid "book_id"
     t.uuid "account_id"
+    t.uuid "etransaction_id"
     t.integer "slot_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_slots_on_account_id"
+    t.index ["book_id"], name: "index_slots_on_book_id"
     t.index ["etransaction_id"], name: "index_slots_on_etransaction_id"
     t.index ["slot_id"], name: "index_slots_on_slot_id"
   end
@@ -111,7 +125,12 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "accounts", "books"
+  add_foreign_key "commodities", "books"
+  add_foreign_key "etransactions", "books"
+  add_foreign_key "prices", "books"
   add_foreign_key "slots", "accounts"
+  add_foreign_key "slots", "books"
   add_foreign_key "slots", "etransactions"
   add_foreign_key "slots", "slots"
   add_foreign_key "splits", "accounts"

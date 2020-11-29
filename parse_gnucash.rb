@@ -1,3 +1,5 @@
+require 'pp'
+
 def wash_attribute_name(name)
   washed = name.gsub('-', '_')
   if washed == 'type'
@@ -25,7 +27,11 @@ def wash_model_name(name)
 end
 
 def node_to_db(node, make_object = true)
-  node_name = node.name.capitalize
+  begin
+    node_name = node.name.capitalize
+  rescue
+    PP.pp(node)
+  end
   attributes = {}
   reference_from = {}
   node.children.each do |xp|
@@ -38,7 +44,26 @@ def node_to_db(node, make_object = true)
 
       xp_name = wash_attribute_name(xp_name)
 
-      if xp.children.size == 1
+      if node_name == 'Book' and ['commodity', 'account', 'transaction'].include? xp_name
+        collection = wash_model_name(xp_name).pluralize
+        if reference_from[collection].nil?
+          reference_from[collection] = []
+        end
+        reference_from[collection].append(node_to_db(xp, true))
+      elsif node_name == 'Book' and xp_name == 'pricedb'
+        xp.children.each do |child|
+          if child.element?
+            child_name = wash_attribute_name(child.name)
+            collection = child_name.pluralize
+            if reference_from[collection].nil?
+              reference_from[collection] = []
+            end
+            reference_from[collection].append(node_to_db(child, true))
+          end
+        end
+      elsif node_name == 'Book' and xp_name.start_with? 'count_data'
+        # Ignore
+      elsif xp.children.size == 1
         attributes[xp_name] = xp.children[0].text.to_s
         if attributes[xp_name].nil?
           attributes[xp_name] = ''
@@ -108,24 +133,10 @@ count = {}
 end
 
 for i in 1..count['book']
+  objects = []
+
   book = doc.xpath("gnc-v2/gnc:book[#{i}]")
-  types = ['commodity', 'account', 'transaction', 'price']
-  types.each do |t|
-    count = book.xpath("gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
-    puts "============================="
-    puts "Number of #{t}: #{count}"
-
-    objects = []
-    for ti in 1..count
-      if t == 'price'
-        node = book.xpath("gnc:pricedb/price[#{ti}]")
-      else
-        node = book.xpath("gnc:#{t}[#{ti}]")
-      end
-      objects.append(node_to_db(node[0]))
-    end
-
-    puts "importing #{t} objects"
-    wash_model_name(t).titleize.constantize.import objects, recursive: true
-  end
+  objects.append(node_to_db(book[0]))
+  puts "importing book objects"
+  Book.import objects, recursive: true
 end

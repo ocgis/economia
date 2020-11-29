@@ -11,6 +11,8 @@ class CreateAccounts < ActiveRecord::Migration[5.2]
       t.string :commodity_id
       t.string :commodity_space
 
+      t.references :book, foreign_key: true, type: :uuid
+
       t.timestamps
     end
   end

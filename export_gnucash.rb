@@ -6,44 +6,31 @@ def wash_model_name(name)
   return washed
 end
 
-def list_commodities(xml)
+def list_commodities(xml, commodities)
   version = '2.0.0'
   ns = 'cmdty'
   Commodity.all.each do |record|
-    excluded_keys = ['created_at', 'updated_at']
     xml['gnc'].commodity(version: version) do
       attributes = record.attributes
-      if attributes['space'] == 'CURRENCY'
-        excluded_keys = excluded_keys + ['name', 'xcode', 'fraction']
-      elsif attributes['space'] == 'VALUTA'
-        excluded_keys = excluded_keys + ['get_quotes', 'quote_source', 'quote_tz']
-      end
-      attributes.each do |key, value|
-        if not excluded_keys.include? key
+      keys = ['space', 'id', 'name', 'xcode', 'fraction', 'get_quotes', 'quote_source', 'quote_tz']
+      keys.each do |key|
+        value = attributes[key]
+        if not value.nil?
           xml[ns].send(key) do
-            if not value.nil?
-              xml.text(value)
-            end
+            xml.text(value)
           end
         end
       end
     end
   end
-  xml['gnc'].commodity(version: version) do
-    xml[ns].space('template')
-    xml[ns].id('template')
-    xml[ns].name('template')
-    xml[ns].xcode('template')
-    xml[ns].fraction(1)
-  end
 end
 
 
-def list_prices(xml)
+def list_prices(xml, prices)
   version = '1'
   ns = 'price'
   xml['gnc'].pricedb(version: version) do
-    Price.all.each do |record|
+    prices.each do |record|
       keep_ns = xml.parent.namespace
       xml.parent.namespace = nil
       xml.price do
@@ -71,10 +58,10 @@ def list_prices(xml)
 end
 
 
-def list_accounts(xml)
+def list_accounts(xml, accounts)
   version = '2.0.0'
   ns = 'act'
-  Account.all.each do |record|
+  accounts.each do |record|
     xml.account(version: version) do
       attributes = record.attributes
       xml[ns].name(attributes['name'])
@@ -117,10 +104,10 @@ def list_accounts(xml)
 end
 
 
-def list_transactions(xml)
+def list_transactions(xml, etransactions)
   version = '2.0.0'
   ns = 'trn'
-  Etransaction.preload(:splits).find_each do |record|
+  etransactions.each do |record|
     xml.transaction(version: version) do
       attributes = record.attributes
       xml[ns].id(type: 'guid') do
@@ -262,40 +249,40 @@ doc = Nokogiri::XML::Builder.new(:encoding => 'utf-8') do |xml|
            'xmlns:vendor' => 'http://www.gnucash.org/XML/vendor') do
     xml['gnc'].send('count-data',
                     'cd:type' => 'book') do
-      xml.text(1)
+      xml.text(Book.all.count)
     end
-    xml['gnc'].book(version: version) do
-      xml['book'].id(type: 'guid') do
-        xml.text("FIXME")
-      end
+    Book.find_each do |book|
+      xml['gnc'].book(version: version) do
+        xml['book'].id(type: 'guid') do
+          xml.text(book.id.split('-').join(''))
+        end
  
-      xml['book'].slots do
-        keep_ns = xml.parent.namespace
-        xml.parent.namespace = nil
-        xml.slot do
-          xml['slot'].key do
-            xml.text('remove-color-not-set-slots')
+        xml['book'].slots do
+          keep_ns = xml.parent.namespace
+          xml.parent.namespace = nil
+          book.slots.find_each do |slot|
+            list_slot(xml, slot)
           end
-          xml['slot'].value(type: 'string') do
-            xml.text('true')
+          xml.parent.namespace = keep_ns
+        end
+
+        models = ['commodity', 'account', 'transaction', 'price']
+        models.each do |model|
+          count = wash_model_name(model).titleize.constantize.count
+          xml['gnc'].send('count-data',
+                          'cd:type' => model) do
+            if model == 'commodity'
+              count = count - 1
+            end
+            xml.text(count)
           end
         end
-        xml.parent.namespace = keep_ns
-      end
 
-      models = ['commodity', 'account', 'transaction', 'price']
-      models.each do |model|
-        count = wash_model_name(model).titleize.constantize.count
-        xml['gnc'].send('count-data',
-                        'cd:type' => model) do
-          xml.text(count)
-        end
+        list_commodities(xml, book.commodities)
+        list_prices(xml, book.prices)
+        list_accounts(xml, book.accounts)
+        list_transactions(xml, book.etransactions)
       end
-
-      list_commodities(xml)
-      list_prices(xml)
-      list_accounts(xml)
-      list_transactions(xml)
     end
   end
 end
