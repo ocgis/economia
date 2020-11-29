@@ -68,18 +68,17 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
 
   create_table "slots", id: :serial, force: :cascade do |t|
     t.string "key"
-    t.string "value"
+    t.integer "value_integer"
+    t.string "value_string"
     t.date "value_gdate"
-    t.string "value_slot_key"
-    t.string "value_slot_value"
-    t.string "value_slot_value_slot_key"
-    t.string "value_slot_value_slot_value"
     t.uuid "etransaction_id"
     t.uuid "account_id"
+    t.integer "slot_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_slots_on_account_id"
     t.index ["etransaction_id"], name: "index_slots_on_etransaction_id"
+    t.index ["slot_id"], name: "index_slots_on_slot_id"
   end
 
   create_table "splits", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
@@ -114,6 +113,7 @@ ActiveRecord::Schema.define(version: 2020_10_26_051036) do
 
   add_foreign_key "slots", "accounts"
   add_foreign_key "slots", "etransactions"
+  add_foreign_key "slots", "slots"
   add_foreign_key "splits", "accounts"
   add_foreign_key "splits", "etransactions"
 end

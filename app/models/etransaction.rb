@@ -1,6 +1,7 @@
 class Etransaction < ApplicationRecord
   has_many :slots, dependent: :destroy
   has_many :splits, dependent: :destroy
+  belongs_to :currency, class_name: 'Commodity', foreign_key: [:currency_id, :currency_space]
   accepts_nested_attributes_for :splits, allow_destroy: true
 
   def date_posted_str

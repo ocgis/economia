@@ -2,12 +2,16 @@ def wash_attribute_name(name)
   washed = name.gsub('-', '_')
   if washed == 'type'
     washed = 'type_'
-  elsif washed == 'account'
+  elsif washed == 'id_guid'
+    washed = 'id'
+  elsif washed == 'account_guid'
     washed = 'account_id'
-  elsif washed == 'parent'
+  elsif washed == 'parent_guid'
     washed = 'parent_id'
   elsif washed == 'date_entered'
     washed = 'updated_at'
+  elsif washed == 'value_frame_slot'
+    washed = 'value_frame'
   end
   return washed
 end
@@ -26,10 +30,19 @@ def node_to_db(node, make_object = true)
   reference_from = {}
   node.children.each do |xp|
     if xp.element?
-      xp_name = wash_attribute_name(xp.name)
+      if xp.attributes['type'].nil?
+        xp_name = xp.name
+      else
+        xp_name = xp.name + '_' + xp.attributes['type']
+      end
+
+      xp_name = wash_attribute_name(xp_name)
 
       if xp.children.size == 1
-        attributes[xp_name] = xp.children[0].to_s
+        attributes[xp_name] = xp.children[0].text.to_s
+        if attributes[xp_name].nil?
+          attributes[xp_name] = ''
+        end
         if ['value', 'quantity'].include? xp_name
           parts = xp.children[0].to_s.split('/')
           if parts.size == 2
@@ -42,31 +55,30 @@ def node_to_db(node, make_object = true)
         end
 
       elsif xp.children.size == 0
-        # Do nothing
-      elsif xp_name[-1] == 's' # List of objects
+        attributes[xp_name] = ''
+      elsif xp_name[-1] == 's' or xp_name == 'value_frame' # List of objects
         reference_from[xp_name] = []
         xp.children.each do |child|
           if child.element?
-            reference_from[xp_name].append(node_to_db(child, false))
+            reference_from[xp_name].append(node_to_db(child, true))
           end
         end
       else # Single object
         child_data = node_to_db(xp, false)
         child_data[:attributes].each do |key, value|
-          if key == 'date'
+          if ['date', 'gdate'].include? key
             attr_name = xp_name
           else
-            attr_name = xp_name + '_' + key
+            attr_name = wash_attribute_name(xp_name + '_' + key)
           end
           attributes[attr_name] = value
         end
+        child_data[:reference_from].each do |key, value|
+          name = wash_attribute_name(xp_name + '_' + key)
+          reference_from[name] = value
+        end
       end
     end
-  end
-
-  if node_name == 'Commodity'
-    attributes['id'] = [attributes['id'], attributes['space']]
-    attributes.delete('space')
   end
 
   if make_object
@@ -76,7 +88,7 @@ def node_to_db(node, make_object = true)
     obj = model_name.constantize.new(attributes)
     reference_from.each do |key, vals|
       vals.each do |val|
-        obj.send(key).build(val[:attributes])
+        obj.send(key) << val
       end
     end
     return obj
