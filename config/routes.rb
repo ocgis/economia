@@ -18,15 +18,6 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :etransactions, except: [:show, :new, :index]
-  put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
-  post 'etransactions/:id/update_data' => 'etransactions#update_data', :as => :update_data_etransaction
-  delete 'etransactions/:id/destroy_split' => 'etransactions#destroy_split', :as => :destroy_split_etransaction
-
-  resources :slots
-  resources :commodities
-  resources :prices
-
   resources :root, only: [:index] do
     collection do
       get 'error'
