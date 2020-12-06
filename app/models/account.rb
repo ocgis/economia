@@ -45,7 +45,7 @@ class Account < ApplicationRecord
   end
 
   def self.full_name_map
-    all_accounts = Account.all
+    all_accounts = all
     accounts_map = {}
     all_accounts.each do |account|
       accounts_map[account.id] = account

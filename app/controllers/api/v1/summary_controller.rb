@@ -5,8 +5,10 @@ class Api::V1::SummaryController < ApplicationController
 
   authorize_resource class: false
 
+  before_action :set_book
+
   def index
-    accounts = Account.all()
+    accounts = @book.accounts
 
     if params.key?(:collapse)
       collapses = params[:collapse].split(',')
@@ -63,7 +65,7 @@ class Api::V1::SummaryController < ApplicationController
       end
     end
 
-    accounts_map = Account.full_name_map
+    accounts_map = @book.accounts.full_name_map
     accounts.each do |account|
       row = { title: accounts_map[account.id],
               account_id: account.id,
@@ -301,6 +303,10 @@ class Api::V1::SummaryController < ApplicationController
 
   private
   
+  def set_book
+    @book = Book.find(params[:book_id])
+  end
+
   def sum_lists(list1, list2)
     return (Vector.elements(list1) + Vector.elements(list2)).to_a
   end

@@ -96,11 +96,11 @@ class IndexBook extends React.Component {
 }
 
 
-let BookMenu = () => {
-    let bookEntries = [<Link to={"/etransactions/new"}>New transaction</Link>,
-                       <Link to={"/accounts"}>Accounts</Link>,
-                       <Link to={"/summary"}>Summary</Link>,
-                       <Link to={"/etransactions"}>Transactions</Link>];
+let BookMenu = (props) => {
+    let bookEntries = [<Link to={`/books/${props.bookId}/etransactions/new`}>New transaction</Link>,
+                       <Link to={`/books/${props.bookId}/accounts`}>Accounts</Link>,
+                       <Link to={`/books/${props.bookId}/summary`}>Summary</Link>,
+                       <Link to={`/books/${props.bookId}/etransactions`}>Transactions</Link>];
                          
     return (
         <TopMenu extraEntries={ bookEntries } />
@@ -183,7 +183,7 @@ class ShowBook extends React.Component {
         } else {
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={book.id} />
                 </div>
             );
         }

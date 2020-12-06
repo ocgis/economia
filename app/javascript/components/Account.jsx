@@ -35,10 +35,16 @@ class IndexAccount extends React.Component {
 
     
     loadData() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/accounts`)
+        axios.get(`/api/v1/books/${bookId}/accounts`)
             .then(response => {
                 this.state = { accounts: response.data.accounts,
                                accounts_map: response.data.accounts_map };
@@ -56,19 +62,25 @@ class IndexAccount extends React.Component {
 
 
     render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const accounts = this.state.accounts;
         if (accounts == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -80,7 +92,7 @@ class IndexAccount extends React.Component {
                     key: 'id',
                     render: (t) => {
                         return (
-                            <Link to={`/accounts/${t.id}`}>
+                            <Link to={`/books/${bookId}/accounts/${t.id}`}>
                               {this.state.accounts_map[t.id]}
                             </Link>
                         );
@@ -123,7 +135,7 @@ class IndexAccount extends React.Component {
             let data = this.state.accounts;
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={bookId} />
                   <Table id="accountsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
@@ -164,14 +176,15 @@ class ShowAccount extends React.Component {
     loadData() {
         const {
             match: {
-                params: { id }
+                params: { id },
+                params: { bookId }
             }
         } = this.props;
 
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/accounts/${id}${this.props.location.search}`)
+        axios.get(`/api/v1/books/${bookId}/accounts/${id}${this.props.location.search}`)
             .then(response => {
                 this.state = { account: response.data.account,
                                splits: response.data.splits };
@@ -189,20 +202,26 @@ class ShowAccount extends React.Component {
 
 
     render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const account = this.state.account;
         const splits = this.state.splits;
         if (account == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -229,7 +248,7 @@ class ShowAccount extends React.Component {
                     title: 'Beskrivning',
                     key: 'description',
                     render: t => (
-                        <Link to={`/etransactions/${t.etransaction_id}`}>{t.etransaction.description}</Link>
+                        <Link to={`/books/${bookId}/etransactions/${t.etransaction_id}`}>{t.etransaction.description}</Link>
                     )
                 },
                 {
@@ -281,7 +300,7 @@ class ShowAccount extends React.Component {
 
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={bookId} />
                   <Descriptions title="Account Information">
                     <Descriptions.Item label="Name">{account.full_name}</Descriptions.Item>
                     <Descriptions.Item label="Description">{account.description}</Descriptions.Item>

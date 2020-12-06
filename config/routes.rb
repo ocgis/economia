@@ -3,17 +3,18 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :books, only: [:show, :index]
-      resources :accounts, only: [:show, :index]
-      resources :etransactions, only: [:show, :update, :new, :index] do
-        collection do
-          get 'search'
+      resources :books, only: [:show, :index] do
+        resources :accounts, only: [:show, :index]
+        resources :summary, only: [:index]
+        resources :etransactions, only: [:show, :update, :new, :index] do
+          collection do
+            get 'search'
+          end
         end
-      end
-      resources :summary, only: [:index]
-      resources :splits, only: [:show] do
-        collection do
-          get 'search'
+        resources :splits, only: [:show] do
+          collection do
+            get 'search'
+          end
         end
       end
     end

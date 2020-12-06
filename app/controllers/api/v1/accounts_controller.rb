@@ -2,13 +2,14 @@ class Api::V1::AccountsController < ApplicationController
 
   load_and_authorize_resource
 
+  before_action :set_book
   before_action :set_account, only: [:show]
 
   def index
-    accounts = Account.all.map do |account|
+    accounts = @book.accounts.map do |account|
       account.attributes
     end
-    accounts_map = Account.full_name_map
+    accounts_map = @book.accounts.full_name_map
 
     render json: { accounts: accounts,
                    accounts_map: accounts_map }
@@ -47,8 +48,12 @@ class Api::V1::AccountsController < ApplicationController
   
   private
 
+  def set_book
+    @book = Book.find(params[:book_id])
+  end
+
   def set_account
-    @account = Account.find(params[:id])
+    @account = @book.accounts.find(params[:id])
   end
 
 end

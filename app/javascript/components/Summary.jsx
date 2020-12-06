@@ -35,10 +35,16 @@ class IndexSummary extends React.Component {
 
     
     loadData() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/summary${window.location.search}`)
+        axios.get(`/api/v1/books/${bookId}/summary${window.location.search}`)
             .then(response => {
                 this.state = { rows: response.data.rows,
                                year: response.data.year,
@@ -57,19 +63,25 @@ class IndexSummary extends React.Component {
 
 
     render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const rows = this.state.rows;
         if (rows == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -128,7 +140,7 @@ class IndexSummary extends React.Component {
             let data = this.state.rows.slice(1);
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={bookId} />
                   <Link to={`/summary?year=${this.state.year-1}`}>&lt;</Link>
                   <Link to={`/summary?year=${this.state.year+1}`}>&gt;</Link>
                   <Table id="summaryTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />

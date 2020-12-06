@@ -45,10 +45,16 @@ class NewTransaction extends React.Component {
 
 
     componentDidMount() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/etransactions/new`)
+        axios.get(`/api/v1/books/${bookId}/etransactions/new`)
             .then(response => {
                 this.setState({ transaction: response.data.transaction });
             })
@@ -64,25 +70,31 @@ class NewTransaction extends React.Component {
 
 
     render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const transaction = this.state.transaction;
         if (transaction == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
             }
         } else {
-            return (<Redirect to={`/etransactions/${transaction.id}`} />);
+            return (<Redirect to={`/books/${bookId}/etransactions/${transaction.id}`} />);
         }
     }
 }
@@ -107,14 +119,15 @@ class ShowTransaction extends React.Component {
     componentDidMount() {
         const {
             match: {
-                params: { id }
+                params: { id },
+                params: { bookId }
             }
         } = this.props;
 
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/etransactions/${id}`)
+        axios.get(`/api/v1/books/${bookId}/etransactions/${id}`)
             .then(response => this.setStateFromResponse(response))
             .catch(error => {
                 if (error.response) {
@@ -127,6 +140,12 @@ class ShowTransaction extends React.Component {
 
 
     submitTransaction() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
 
@@ -134,11 +153,11 @@ class ShowTransaction extends React.Component {
         transaction.splits_attributes = this.state.splits;
 
         if(transaction.id == null) {
-            axios.post('/api/v1/etransactions', { transaction: transaction })
+            axios.post('/api/v1/books/${bookId}/etransactions', { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => console.log(error))
         } else {
-            axios.patch(`/api/v1/etransactions/${transaction.id}`, { transaction: transaction })
+            axios.patch(`/api/v1/books/${bookId}/etransactions/${transaction.id}`, { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => { console.log(error) })                      
         }
@@ -179,11 +198,17 @@ class ShowTransaction extends React.Component {
 
 
     searchAccountDescriptions = throttle(500, (searchString) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         let encodedSearch = encodeURIComponent(searchString);
-        axios.get(`/api/v1/etransactions/search?query=${encodedSearch}`)
+        axios.get(`/api/v1/books/${bookId}/etransactions/search?query=${encodedSearch}`)
             .then(response => { this.state.descriptionOptions = response.data.result;
                                 this.setState(this.state); })
             .catch(error => {
@@ -193,11 +218,17 @@ class ShowTransaction extends React.Component {
 
 
     searchSplitMemos = throttle(500, (searchString) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         let encodedSearch = encodeURIComponent(searchString);
-        axios.get(`/api/v1/splits/search?query=${encodedSearch}`)
+        axios.get(`/api/v1/books/${bookId}/splits/search?query=${encodedSearch}`)
             .then(response => { this.state.descriptionOptions = response.data.result;
                                 this.setState(this.state); })
             .catch(error => {
@@ -207,6 +238,12 @@ class ShowTransaction extends React.Component {
 
 
     copyTransaction(id) {
+                const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         let handleResponse = response => {
             let {created_at, updated_at, date_posted, id, ...newTransaction} = response.data.transaction;
             this.state.transaction = { ...this.state.transaction, ...newTransaction };
@@ -234,7 +271,7 @@ class ShowTransaction extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/etransactions/${id}`)
+        axios.get(`/api/v1/books/${bookId}/etransactions/${id}`)
             .then(response => handleResponse(response))
             .catch(error => {
                 if (error.response) {
@@ -246,6 +283,12 @@ class ShowTransaction extends React.Component {
     }
 
     copySplit(split_index, id) {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         let handleResponse = response => {
             let {created_at, updated_at, etransaction_id, id, ...newSplit} = response.data.split;
             this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
@@ -258,7 +301,7 @@ class ShowTransaction extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/splits/${id}`)
+        axios.get(`/api/v1/books/${bookId}/splits/${id}`)
             .then(response => handleResponse(response))
             .catch(error => {
                 if (error.response) {
@@ -373,6 +416,12 @@ class ShowTransaction extends React.Component {
     }
         
     render () {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         let addSplitHandler = () => {
             this.state.splits.push({account_id: null,
                                     action: "",
@@ -413,14 +462,14 @@ class ShowTransaction extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -567,7 +616,7 @@ class ShowTransaction extends React.Component {
 
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={bookId} />
                   <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
                 </div>
@@ -588,10 +637,16 @@ class IndexTransaction extends React.Component {
 
 
     componentDidMount() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/etransactions`)
+        axios.get(`/api/v1/books/${bookId}/etransactions`)
             .then(response => {
                 this.state = { transactions: response.data.transactions,
                                account_names: response.data.accounts };
@@ -621,19 +676,25 @@ class IndexTransaction extends React.Component {
     }
 
     render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const transactions = this.state.transactions;
         if (transactions == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <BookMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -670,7 +731,7 @@ class IndexTransaction extends React.Component {
                     render: t => {
                         if (t.reference == 'transaction') {
                             return (
-                                <Link to={`/etransactions/${t.id}`}>
+                                <Link to={`/books/${bookId}/etransactions/${t.id}`}>
                                   {t.description}
                                 </Link>
                             );
@@ -706,7 +767,7 @@ class IndexTransaction extends React.Component {
 
             return (
                 <div>
-                  <BookMenu />
+                  <BookMenu bookId={bookId} />
                   <Table id="transactionsTable" columns={columns} dataSource={data} pagination={false} />
                 </div>
             );

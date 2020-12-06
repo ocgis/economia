@@ -22,37 +22,37 @@ export default (
           />
 
         <Route
-          path="/accounts/:id"
+          path="/books/:bookId/accounts/:id"
           exact
           component={ShowAccount}
           />
 
         <Route
-          path="/accounts"
+          path="/books/:bookId/accounts"
           exact
           component={IndexAccount}
           />
 
         <Route
-          path="/etransactions/new"
+          path="/books/:bookId/etransactions/new"
           exact
           component={NewTransaction}
           />
 
         <Route
-          path="/etransactions/:id"
+          path="/books/:bookId/etransactions/:id"
           exact
           component={ShowTransaction}
           />
 
         <Route
-          path="/etransactions"
+          path="/books/:bookId/etransactions"
           exact
           component={IndexTransaction}
           />
 
         <Route
-          path="/summary"
+          path="/books/:bookId/summary"
           exact
           component={IndexSummary}
           />
