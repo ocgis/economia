@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { IndexBook, ShowBook } from "../components/Book"
 import { IndexAccount, ShowAccount } from "../components/Account"
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
 import { IndexSummary } from "../components/Summary"
@@ -11,7 +12,13 @@ export default (
         <Route
           path="/"
           exact
-          component={TopMenu}
+          component={IndexBook}
+          />
+
+        <Route
+          path="/books/:id"
+          exact
+          component={ShowBook}
           />
 
         <Route

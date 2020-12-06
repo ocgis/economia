@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :books, only: [:show, :index]
       resources :accounts, only: [:show, :index]
       resources :etransactions, only: [:show, :update, :new, :index] do
         collection do

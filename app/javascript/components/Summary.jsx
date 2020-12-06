@@ -2,7 +2,7 @@ import axios from "axios";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Table } from "antd";
-import TopMenu from "./TopMenu";
+import { BookMenu } from "./Book";
 
 class IndexSummary extends React.Component {
 
@@ -62,14 +62,14 @@ class IndexSummary extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -128,7 +128,7 @@ class IndexSummary extends React.Component {
             let data = this.state.rows.slice(1);
             return (
                 <div>
-                  <TopMenu />
+                  <BookMenu />
                   <Link to={`/summary?year=${this.state.year-1}`}>&lt;</Link>
                   <Link to={`/summary?year=${this.state.year+1}`}>&gt;</Link>
                   <Table id="summaryTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />

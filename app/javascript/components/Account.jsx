@@ -3,7 +3,7 @@ import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Descriptions, Table } from "antd";
-import TopMenu from "./TopMenu";
+import { BookMenu } from "./Book";
 
 class IndexAccount extends React.Component {
 
@@ -61,14 +61,14 @@ class IndexAccount extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -123,7 +123,7 @@ class IndexAccount extends React.Component {
             let data = this.state.accounts;
             return (
                 <div>
-                  <TopMenu />
+                  <BookMenu />
                   <Table id="accountsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
@@ -195,14 +195,14 @@ class ShowAccount extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -281,7 +281,7 @@ class ShowAccount extends React.Component {
 
             return (
                 <div>
-                  <TopMenu />
+                  <BookMenu />
                   <Descriptions title="Account Information">
                     <Descriptions.Item label="Name">{account.full_name}</Descriptions.Item>
                     <Descriptions.Item label="Description">{account.description}</Descriptions.Item>

@@ -7,7 +7,7 @@ import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from "throttle-debounce";
-import TopMenu from "./TopMenu";
+import { BookMenu } from "./Book";
 
 
 let mapTransactionToTable = (transaction, splits) => {
@@ -69,14 +69,14 @@ class NewTransaction extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -413,14 +413,14 @@ class ShowTransaction extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -567,7 +567,7 @@ class ShowTransaction extends React.Component {
 
             return (
                 <div>
-                  <TopMenu />
+                  <BookMenu />
                   <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
                 </div>
@@ -626,14 +626,14 @@ class IndexTransaction extends React.Component {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -706,7 +706,7 @@ class IndexTransaction extends React.Component {
 
             return (
                 <div>
-                  <TopMenu />
+                  <BookMenu />
                   <Table id="transactionsTable" columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
