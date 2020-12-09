@@ -18,6 +18,6 @@ let TopMenu = (props) => {
 
 let leftEntries = [<Link to={"/"}>Overview</Link>];
 let rightEntries = [<a href={"/users/edit"}>Edit registration</a>,
-                     <a href={"/users/sign_out"} data-method="delete">Logout</a>];
+                    <a href={"/users/sign_out"} data-method="delete">Logout</a>];
 
 export { TopMenu };

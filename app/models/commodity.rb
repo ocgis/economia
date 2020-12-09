@@ -1,10 +1,10 @@
 class Commodity < ApplicationRecord
-  self.primary_keys = :id, :space
+  self.primary_keys = :id, :space, :book_id
 
   alias_method :parent_id, :id
 
   def id=(value)
-    super([value, self.space])
+    super([value, self.space, self.book_id])
   end
 
   def id

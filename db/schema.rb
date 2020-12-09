@@ -49,7 +49,7 @@ ActiveRecord::Schema.define(version: 100) do
     t.uuid "book_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.index ["id", "space"], name: "index_commodities_on_id_and_space", unique: true
+    t.index ["id", "space", "book_id"], name: "index_commodities_on_id_and_space_and_book_id", unique: true
   end
 
   create_table "etransactions", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|

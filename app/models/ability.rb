@@ -34,7 +34,7 @@ class Ability
     user ||= User.new # guest user (not logged in)
 
     if user.has_role? :admin
-      can [:index, :show], Book
+      can [:index, :show, :import], Book
       can [:index, :show], Account
       can [:index, :show, :new, :update, :search], Etransaction
       can [:show, :search], Split

@@ -55,18 +55,20 @@ class IndexBook extends React.Component {
 
     render() {
         const books = this.state.books;
+        let extraEntries = [<a href={"/books/import"}>Import file</a>];
         if (books == null) {
+
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <TopMenu extraEntries={extraEntries} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <TopMenu extraEntries={extraEntries} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -87,7 +89,7 @@ class IndexBook extends React.Component {
             let data = this.state.books;
             return (
                 <div>
-                  <TopMenu />
+                  <TopMenu extraEntries={extraEntries} />
                   <Table id="booksTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
@@ -191,4 +193,52 @@ class ShowBook extends React.Component {
 }
 
 
-export { ShowBook, IndexBook, BookMenu };
+class ImportBook extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            selectedFiles: null
+        };
+        this.onChangeHandler = this.onChangeHandler.bind(this);
+        this.onClickHandler = this.onClickHandler.bind(this);
+    }
+
+
+    render() {
+        return (
+            <div>
+              <TopMenu />
+              <input type="file" name="file" onChange={this.onChangeHandler} multiple />
+              <button type="button" onClick={this.onClickHandler}>Import</button>
+            </div>
+        );
+    }
+
+
+    onChangeHandler(event) {
+        this.setState({
+            selectedFiles: event.target.files,
+            loaded: 0,
+        });
+    }
+
+
+    onClickHandler() {
+        const data = new FormData();
+        const files = this.state.selectedFiles;
+        for (var i = 0; i < files.length; i++) {
+            data.append('files[][file]', files[i]);
+            data.append('files[][last_modified]', files[i].lastModified);
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        axios.post("/api/v1/books/import", data, {}).then(response => {
+            window.location.href = "/";
+        })
+    }  
+}
+
+
+export { ShowBook, IndexBook, ImportBook, BookMenu };

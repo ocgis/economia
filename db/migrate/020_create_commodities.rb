@@ -14,6 +14,6 @@ class CreateCommodities < ActiveRecord::Migration[4.2]
 
       t.timestamps
     end
-    add_index :commodities, ["id", "space"], :unique => true
+    add_index :commodities, ["id", "space", "book_id"], :unique => true
   end
 end
