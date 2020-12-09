@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { IndexBook, ShowBook, ImportBook } from "../components/Book"
+import { IndexBook, ShowBook, ImportBook, ExportBook } from "../components/Book"
 import { IndexAccount, ShowAccount } from "../components/Account"
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
 import { IndexSummary } from "../components/Summary"
@@ -19,6 +19,12 @@ export default (
           path="/books/import"
           exact
           component={ImportBook}
+          />
+
+        <Route
+          path="/books/:id/export"
+          exact
+          component={ExportBook}
           />
 
         <Route

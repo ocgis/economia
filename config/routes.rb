@@ -7,7 +7,11 @@ Rails.application.routes.draw do
         collection do
           post :import
         end
-        
+
+        member do
+          get :export
+        end
+
         resources :accounts, only: [:show, :index]
         resources :summary, only: [:index]
         resources :etransactions, only: [:show, :update, :new, :index] do

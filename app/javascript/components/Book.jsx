@@ -102,7 +102,8 @@ let BookMenu = (props) => {
     let bookEntries = [<Link to={`/books/${props.bookId}/etransactions/new`}>New transaction</Link>,
                        <Link to={`/books/${props.bookId}/accounts`}>Accounts</Link>,
                        <Link to={`/books/${props.bookId}/summary`}>Summary</Link>,
-                       <Link to={`/books/${props.bookId}/etransactions`}>Transactions</Link>];
+                       <Link to={`/books/${props.bookId}/etransactions`}>Transactions</Link>,
+                       <Link to={`/books/${props.bookId}/export`}>Export</Link>];
                          
     return (
         <TopMenu extraEntries={ bookEntries } />
@@ -241,4 +242,47 @@ class ImportBook extends React.Component {
 }
 
 
-export { ShowBook, IndexBook, ImportBook, BookMenu };
+class ExportBook extends React.Component {
+
+    constructor(props) {
+	super(props);
+    }
+
+    exportBook = () => {
+        const {
+            match: {
+                params: { id }
+            }
+        } = this.props;
+
+	axios.get(`/api/v1/books/${id}/export`, { responseType: 'arraybuffer' })
+	    .then(response => {
+		let url = window.URL.createObjectURL(new Blob([response.data]));
+		let a = document.createElement('a');
+		a.href = url;
+                let cd = response.headers['content-disposition'];
+                let s = cd.indexOf('"') + 1;
+                let e = cd.lastIndexOf('"');
+		a.download = cd.substring(s, e);
+		a.click();
+	    });
+    }
+
+    render() {
+        const {
+            match: {
+                params: { id }
+            }
+        } = this.props;
+
+	return (
+	    <div>
+              <BookMenu bookId={id} />
+	      <button onClick={this.exportBook}>Export in Gnucash format</button>
+	    </div>
+	);
+    }
+}
+
+
+export { ShowBook, IndexBook, ImportBook, ExportBook, BookMenu };
