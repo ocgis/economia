@@ -4,7 +4,7 @@ class Api::V1::BooksController < ApplicationController
 
   load_and_authorize_resource
 
-  before_action :set_book, only: [:show, :export]
+  before_action :set_book, only: [:show]
 
   def index
     books = Book.all.map do |book|
@@ -32,7 +32,18 @@ class Api::V1::BooksController < ApplicationController
 
 
   def export
-    send_data ActiveSupport::Gzip.compress(export_gnucash(@book)), type: 'application/gzip', filename: 'export.gnucash'
+    preload = { slots: {},
+                prices: { currency: {},
+                          commodity: {} },
+                commodities: {},
+                accounts: { commodity: {},
+                            account_parent: {},
+                            slots: :value_frame },
+                etransactions: { slots: :value_frame,
+                                 splits: {},
+                                 currency: {} } }
+    book = Book.preload(preload).find(params[:id])
+    send_data ActiveSupport::Gzip.compress(export_gnucash(book)), type: 'application/gzip', filename: 'export.gnucash'
   end
 
   private
@@ -193,7 +204,7 @@ class Api::V1::BooksController < ApplicationController
   def list_commodities(xml, commodities)
     version = '2.0.0'
     ns = 'cmdty'
-    Commodity.all.each do |record|
+    commodities.each do |record|
       xml['gnc'].commodity(version: version) do
         attributes = record.attributes
         keys = ['space', 'id', 'name', 'xcode', 'fraction', 'get_quotes', 'quote_source', 'quote_tz']
@@ -268,7 +279,7 @@ class Api::V1::BooksController < ApplicationController
         if not attributes['description'].nil?
           xml[ns].description(attributes['description'])
         end
-        if record.slots.count > 0
+        if record.slots.size > 0
           xml[ns].slots do
             keep_ns = xml.parent.namespace
             xml.parent.namespace = nil
@@ -315,7 +326,7 @@ class Api::V1::BooksController < ApplicationController
         if not attributes['description'].nil?
           xml[ns].description(attributes['description'])
         end
-        if record.slots.count > 0
+        if record.slots.size > 0
           xml[ns].slots do
             keep_ns = xml.parent.namespace
             xml.parent.namespace = nil
@@ -325,7 +336,7 @@ class Api::V1::BooksController < ApplicationController
             xml.parent.namespace = keep_ns
           end
         end
-        if record.splits.count > 0
+        if record.splits.size > 0
           xml[ns].splits do
             record.splits.each do |split|
               xml[ns].split do
@@ -433,7 +444,7 @@ class Api::V1::BooksController < ApplicationController
                'xmlns:vendor' => 'http://www.gnucash.org/XML/vendor') do
         xml['gnc'].send('count-data',
                         'cd:type' => 'book') do
-          xml.text(Book.all.count)
+          xml.text(1)
         end
         xml['gnc'].book(version: version) do
           xml['book'].id(type: 'guid') do
@@ -443,7 +454,7 @@ class Api::V1::BooksController < ApplicationController
           xml['book'].slots do
             keep_ns = xml.parent.namespace
             xml.parent.namespace = nil
-            book.slots.find_each do |slot|
+            book.slots do |slot|
               list_slot(xml, slot)
             end
             xml.parent.namespace = keep_ns
@@ -451,7 +462,7 @@ class Api::V1::BooksController < ApplicationController
 
           models = ['commodity', 'account', 'transaction', 'price']
           models.each do |model|
-            count = wash_model_name(model).titleize.constantize.count
+            count = book.send(wash_model_name(model).pluralize).size
             xml['gnc'].send('count-data',
                             'cd:type' => model) do
               if model == 'commodity'
