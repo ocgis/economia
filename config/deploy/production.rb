@@ -69,4 +69,4 @@ server '127.0.0.1', user: 'rails', roles: %w{web app}
 set :stage, :production
 set :rails_env, "production"
 set :deploy_to, '/home/rails/economia'
-set :branch, 'production'
+set :branch, 'master'
