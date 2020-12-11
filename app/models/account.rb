@@ -1,10 +1,11 @@
 # coding: utf-8
 class Account < ApplicationRecord
-  belongs_to :account_parent, :class_name => 'Account', :foreign_key => :account_parent_id
+  belongs_to :account_parent, :class_name => 'Account', :foreign_key => :parent_id
   has_many :account_children, :class_name => 'Account'
+  belongs_to :commodity, foreign_key: [:commodity_id, :commodity_space, :book_id]
+  has_many :splits, dependent: :delete_all
+  has_many :slots, dependent: :destroy
 
-  has_many :splits
-  has_many :slots
 
   def increase_name
     if self.type_ == "LIABILITY"
@@ -35,10 +36,33 @@ class Account < ApplicationRecord
   end
 
   def full_name
-    if self.account_parent == nil
+    accounts_map = {}
+    Account.all.each do |account|
+      accounts_map[account.id] = account
+    end
+
+    return self.full_name_by_map(accounts_map)
+  end
+
+  def self.full_name_map
+    all_accounts = all
+    accounts_map = {}
+    all_accounts.each do |account|
+      accounts_map[account.id] = account
+    end
+
+    full_name_map = {}
+    all_accounts.each do |account|
+      full_name_map[account.id] = account.full_name_by_map(accounts_map)
+    end
+    return full_name_map
+  end
+
+  def full_name_by_map(accounts_map)
+    if self.parent_id == nil
       return self.name
     else
-      parent_name = self.account_parent.full_name
+      parent_name = accounts_map[self.parent_id].full_name_by_map(accounts_map)
       if parent_name == "Root Account"
         return self.name
       else
@@ -59,5 +83,6 @@ class Account < ApplicationRecord
     end
     return nil
   end
-  
+
+
 end

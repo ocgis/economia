@@ -1,11 +1,104 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
-import { DatePicker, Input, InputNumber, Table } from "antd";
+import { Link, Redirect } from "react-router-dom";
+import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import TopMenu from "./TopMenu";
+import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { throttle } from "throttle-debounce";
+import { BookMenu } from "./Book";
+
+
+let mapTransactionToTable = (transaction, splits) => {
+    let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
+                                                   id: t.id,
+                                                   date_posted: t.date_posted,
+                                                   num: t.num,
+                                                   description: t.description,
+                                                   value: 0 }));
+    splits.sort((a, b) => { return a.id - b.id });
+    splits =  splits.map((t, index) => ({ reference: 'splits',
+                                          id: t.id,
+                                          index: index,
+                                          memo: t.memo,
+                                          account_id: t.account_id,
+                                          reconciled_state: t.reconciled_state,
+                                          value: t.value,
+                                          from: t.from,
+                                          to: t.to }));
+    data = data.concat(splits);
+
+    return data;
+}
+
+
+class NewTransaction extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            transaction: null,
+            error: null
+        };
+    }
+
+
+    componentDidMount() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/books/${bookId}/etransactions/new`)
+            .then(response => {
+                this.setState({ transaction: response.data.transaction });
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const transaction = this.state.transaction;
+        if (transaction == null) {
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
+        } else {
+            return (<Redirect to={`/books/${bookId}/etransactions/${transaction.id}`} />);
+        }
+    }
+}
+
 
 class ShowTransaction extends React.Component {
 
@@ -13,7 +106,9 @@ class ShowTransaction extends React.Component {
         super(props);
         this.state = {
             transaction: null,
-            splits: []
+            splits: [],
+            descriptionOptions: [],
+            key: Date.now()
         };
 
         this.onTextChangeHandler = this.onTextChangeHandler.bind(this);
@@ -24,14 +119,15 @@ class ShowTransaction extends React.Component {
     componentDidMount() {
         const {
             match: {
-                params: { id }
+                params: { id },
+                params: { bookId }
             }
         } = this.props;
 
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/etransactions/${id}`)
+        axios.get(`/api/v1/books/${bookId}/etransactions/${id}`)
             .then(response => this.setStateFromResponse(response))
             .catch(error => {
                 if (error.response) {
@@ -44,6 +140,12 @@ class ShowTransaction extends React.Component {
 
 
     submitTransaction() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         const csrfToken = document.querySelector('[name=csrf-token]').content
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
 
@@ -51,11 +153,11 @@ class ShowTransaction extends React.Component {
         transaction.splits_attributes = this.state.splits;
 
         if(transaction.id == null) {
-            axios.post('/api/v1/etransactions', { transaction: transaction })
+            axios.post('/api/v1/books/${bookId}/etransactions', { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => console.log(error))
         } else {
-            axios.patch(`/api/v1/etransactions/${transaction.id}`, { transaction: transaction })
+            axios.patch(`/api/v1/books/${bookId}/etransactions/${transaction.id}`, { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => { console.log(error) })                      
         }
@@ -81,22 +183,144 @@ class ShowTransaction extends React.Component {
         }
     }
 
-    
+
     setStateFromResponse(response) {
-        console.log("response", response);
         this.state.transaction = response.data.transaction;
         this.state.splits = response.data.splits;
+        this.state.account_names = response.data.accounts;
+        this.state.account_ids = {}
+        Object.keys(this.state.account_names).forEach((t) => {
+            this.state.account_ids[this.state.account_names[t]] = t;
+        });
         this.calculateStateFromTo();
         this.setState(this.state);
+    }
+
+
+    searchAccountDescriptions = throttle(500, (searchString) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        let encodedSearch = encodeURIComponent(searchString);
+        axios.get(`/api/v1/books/${bookId}/etransactions/search?query=${encodedSearch}`)
+            .then(response => { this.state.descriptionOptions = response.data.result;
+                                this.setState(this.state); })
+            .catch(error => {
+                console.log("ERROR", error);
+            });
+    });
+
+
+    searchSplitMemos = throttle(500, (searchString) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        let encodedSearch = encodeURIComponent(searchString);
+        axios.get(`/api/v1/books/${bookId}/splits/search?query=${encodedSearch}`)
+            .then(response => { this.state.descriptionOptions = response.data.result;
+                                this.setState(this.state); })
+            .catch(error => {
+                console.log("ERROR", error);
+            });
+    });
+
+
+    copyTransaction(id) {
+                const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        let handleResponse = response => {
+            let {created_at, updated_at, date_posted, id, ...newTransaction} = response.data.transaction;
+            this.state.transaction = { ...this.state.transaction, ...newTransaction };
+
+            let newSplits = response.data.splits;
+            // Overwrite existing splits with new splits
+            for(var i = 0; i < Math.min(this.state.splits.length, newSplits.length); i++) {
+                let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
+                this.state.splits[i] = { ...this.state.splits[i], ...newSplit };
+            }
+            // Append new splits
+            for(var i = this.state.splits.length; i < newSplits.length; i++) {
+                let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
+                this.state.splits.push(newSplit);
+            }
+            // Delete existing splits
+            for(var i = newSplits.length; i < this.state.splits.length; i++) {
+                this.state.splits[i]._destroy = true;
+            }
+            this.state.key = Date.now();
+            this.calculateStateFromTo();
+            this.submitTransaction();
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/books/${bookId}/etransactions/${id}`)
+            .then(response => handleResponse(response))
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: error.response.data.error });
+                } else {
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+    copySplit(split_index, id) {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        let handleResponse = response => {
+            let {created_at, updated_at, etransaction_id, id, ...newSplit} = response.data.split;
+            this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
+
+            this.state.key = Date.now();
+            this.calculateStateFromTo();
+            this.submitTransaction();
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/books/${bookId}/splits/${id}`)
+            .then(response => handleResponse(response))
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: error.response.data.error });
+                } else {
+                    this.props.history.push("/");
+                }
+            });
     }
 
 
     onBlurHandler(reference, index, field) {
         return  (event) => {
             if ((reference == "splits") && ['from', 'to'].includes(field)) {
-                let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
-                this.state.splits[index][field] = result == null ? '' : result;
-                this.setState(this.state);
+                if (this.state.splits[index][field] != '') {
+                    let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
+                    this.state.splits[index][field] = result == null ? '' : result;
+                    this.setState(this.state);
+                }
             }
             
             if ((event.relatedTarget == null) || (event.target.parentElement.parentElement != event.relatedTarget.parentElement.parentElement)) {
@@ -143,6 +367,7 @@ class ShowTransaction extends React.Component {
         }
     }
 
+
     onTextChangeHandler(reference, index, field) {
         return  (event) => {
             if (index == null) {
@@ -151,6 +376,17 @@ class ShowTransaction extends React.Component {
                 this.state[reference][index][field] = event.target.value;
             }
             this.setState(this.state);
+        }
+    }
+
+
+    onAccountChangeHandler(index) {
+        return  (value) => {
+            let new_id = this.state.account_ids[value];
+            if (new_id != null) {
+                this.state.splits[index].account_id = new_id;
+                this.setState(this.state);
+            }
         }
     }
 
@@ -180,20 +416,24 @@ class ShowTransaction extends React.Component {
     }
         
     render () {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
         let addSplitHandler = () => {
             this.state.splits.push({account_id: null,
-                                      action: "",
-                                      etransaction_id: this.state.transaction.id,
-                                      from: "",
-                                      id: null,
-                                      id_: "economia fixme",
-                                      memo: "",
-                                      quantity: 0,
-                                      reconcile_date_date: null,
-                                      reconcile_date_ns: null,
-                                      reconciled_state: "n",
-                                      to: "",
-                                      value: 0});
+                                    action: "",
+                                    etransaction_id: this.state.transaction.id,
+                                    from: "",
+                                    id: null,
+                                    memo: "",
+                                    quantity: 0,
+                                    reconcile_date: null,
+                                    reconciled_state: "n",
+                                    to: "",
+                                    value: 0});
             this.submitTransaction();
         }
 
@@ -204,19 +444,32 @@ class ShowTransaction extends React.Component {
             });
         }
  
+        let balanceSplitHandler = (t) => {
+            return (() => {
+                let newValue = this.state.splits[t.index].value;
+                this.state.splits.forEach((split) => {
+                    newValue = newValue - split.value;
+                });
+                this.state.splits[t.index].value = newValue;
+                this.state.splits[t.index].quantity = newValue;
+                this.calculateStateFromTo();
+                this.submitTransaction();
+            });
+        }
+
         const transaction = this.state.transaction;
         if (transaction == null) {
             if (this.state.error != null) {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Could not load content: {this.state.error}</h1>
                     </div>
                 );
             } else {
                 return (
                     <div>
-                      <TopMenu />
+                      <BookMenu bookId={bookId} />
                       <h1>Loading</h1>
                     </div>
                 );
@@ -226,12 +479,12 @@ class ShowTransaction extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
-                    key: 'date_posted_date',
+                    key: 'date_posted',
                     render: t => {
-                        if (t.date_posted_date == null) {
+                        if (t.date_posted == null) {
                             return null;
                         } else {
-                            return (<DatePicker value={moment(t.date_posted_date)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted_date')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted_date')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<DatePicker value={moment(t.date_posted)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted')} onKeyDown={this.onKeyDownHandler} />);
                         }
                     }
                 },
@@ -251,20 +504,55 @@ class ShowTransaction extends React.Component {
                     key: 'description',
                     render: t => {
                         if (t.reference == 'transaction') {
-                            return (<Input value={t.description} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'description')} onChange={this.onTextChangeHandler(t.reference, t.index, 'description')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<AutoComplete
+                                    defaultValue={t.description}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={this.state.descriptionOptions}
+                                    placeholder="skriv beskrivning"
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                    onSearch={(search) => this.searchAccountDescriptions(search)}
+                                    onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                                    onSelect={(value, object) => { this.searchAccountDescriptions(value);
+                                                                   this.copyTransaction(object.key); }}
+                                    />);
                         } else {
-                            return (<Input value={t.memo} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'description')} onChange={this.onTextChangeHandler(t.reference, t.index, 'memo')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<AutoComplete
+                                    defaultValue={t.memo}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={this.state.descriptionOptions}
+                                    placeholder="skriv beskrivning"
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                    onSearch={(search) => this.searchSplitMemos(search)}
+                                    onFocus={(event) => this.searchSplitMemos(event.target.value)}
+                                    onSelect={(value, object) => { this.searchSplitMemos(value);
+                                                                   this.copySplit(t.index, object.key) }}
+                                    />);
                         }
                     }
                 },
                 {
                     title: 'Konto',
-                    key: 'account_name',
+                    key: 'account_id',
                     render: t => {
-                        if (t.account_name == null) {
-                            return null;
+                        if (t.reference == 'splits') {
+                            let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+                            return (<AutoComplete
+                                    key={this.state.key}
+                                    defaultValue={this.state.account_names[t.account_id]}
+                                    bordered={false}
+                                    style={{ width: 200 }}
+                                    options={options}
+                                    placeholder="välj konto"
+                                    filterOption={(inputValue, option) =>
+                                                  option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                                 }
+                                    onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
+                                    onChange={this.onAccountChangeHandler(t.index)}
+                                    />);
                         } else {
-                            return (<Input defaultValue={t.account_name} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'account_name')} onKeyDown={this.onKeyDownHandler} />);
+                            return null;
                         }
                     }
                 },
@@ -294,11 +582,26 @@ class ShowTransaction extends React.Component {
                     }
                 },
                 {
+                    title: 'Balansera',
+                    key: 'balance',
+                    render: t => {
+                        if (t.reference == "splits") {
+                            return (
+                                <ThunderboltOutlined onClick={balanceSplitHandler(t)} />
+                            );
+                        } else {
+                            return null;
+                        }
+                    }
+                },
+                {
                     title: 'Ta bort',
                     key: 'remove',
                     render: t => {
                         if (t.reference == "splits") {
-                            return (<MinusCircleOutlined onClick={removeSplitHandler(t)}/>);
+                            return (
+                                <MinusCircleOutlined onClick={removeSplitHandler(t)} />
+                            );
                         } else {
                             return null;
                         }
@@ -306,29 +609,16 @@ class ShowTransaction extends React.Component {
                 }
             ];
 
-            let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
-                                                           date_posted_date: t.date_posted_date,
-                                                           num: t.num,
-                                                           description: t.description,
-                                                           value: 0 }));
-            splits.sort((a, b) => { return a.id - b.id });
-            splits =  splits.map((t, index) => ({ reference: 'splits',
-                                                  index: index,
-                                                  memo: t.memo,
-                                                  account_name: t.account_id,
-                                                  reconciled_state: t.reconciled_state,
-                                                  value: t.value,
-                                                  from: t.from,
-                                                  to: t.to }));
-            data = data.concat(splits);
+            let data = mapTransactionToTable(transaction, splits);
+            for (var i = 0; i < data.length; i++) {
+                data[i].key = i;
+            }
 
             return (
                 <div>
-                  <TopMenu />
-                  <Table id="transactionTable" columns={columns} dataSource={data} rowkey={'row_index'} pagination={false} />
+                  <BookMenu bookId={bookId} />
+                  <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
-                  <Input value="test" />
-                  <DatePicker />
                 </div>
             );
         }
@@ -336,4 +626,154 @@ class ShowTransaction extends React.Component {
 }
 
 
-export { ShowTransaction };
+class IndexTransaction extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            transactions: null,
+            error: null
+        };
+    }
+
+
+    componentDidMount() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/books/${bookId}/etransactions`)
+            .then(response => {
+                this.state = { transactions: response.data.transactions,
+                               account_names: response.data.accounts };
+                this.calculateStateFromTo();
+                this.setState(this.state);
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    calculateStateFromTo() {
+        var i;
+        var j;
+        for (j = 0; j < this.state.transactions.length; j++) {
+            for (i = 0; i < this.state.transactions[j].splits.length; i++) {
+                this.state.transactions[j].splits[i].from = this.state.transactions[j].splits[i].value < 0 ? Number(-this.state.transactions[j].splits[i].value).toFixed(2) : '';
+                this.state.transactions[j].splits[i].to = this.state.transactions[j].splits[i].value > 0 ? Number(this.state.transactions[j].splits[i].value).toFixed(2) : '';
+            }
+        }
+    }
+
+    render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const transactions = this.state.transactions;
+        if (transactions == null) {
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
+        } else {
+            let data = [];
+            this.state.transactions.forEach((t) => {
+                data = data.concat(mapTransactionToTable(t, t.splits));
+            });
+
+            for (var i = 0; i < data.length; i++) {
+                data[i].key = i;
+            }
+
+            const columns = [
+                {
+                    title: 'Datum',
+                    key: 'date_posted',
+                    render: t => {
+                        if (t.date_posted == null) {
+                            return null;
+                        } else {
+                            return moment(t.date_posted).format('YYYY-MM-DD');
+                        }
+                    }
+                },
+                {
+                    title: 'Num',
+                    dataIndex: 'num'
+                },
+                {
+                    title: 'Beskrivning',
+                    key: 'description',
+                    render: t => {
+                        if (t.reference == 'transaction') {
+                            return (
+                                <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+                                  {t.description}
+                                </Link>
+                            );
+                        } else {
+                            return t.memo;
+                        }
+                    }
+                },
+                {
+                    title: 'Konto',
+                    key: 'account_id',
+                    render: t => {
+                        if (t.reference == 'splits') {
+                            return this.state.account_names[t.account_id];
+                        } else {
+                            return null;
+                        }
+                    }
+                },
+                {
+                    title: 'Avstämt',
+                    dataIndex: 'reconciled_state',
+                },
+                {
+                    title: 'Till',
+                    dataIndex: 'to'
+                },
+                {
+                    title: 'Från',
+                    dataIndex: 'from'
+                }
+            ];
+
+            return (
+                <div>
+                  <BookMenu bookId={bookId} />
+                  <Table id="transactionsTable" columns={columns} dataSource={data} pagination={false} />
+                </div>
+            );
+        }
+    }
+}
+
+
+export { IndexTransaction, NewTransaction, ShowTransaction };

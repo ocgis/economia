@@ -1,26 +1,32 @@
 Rails.application.routes.draw do
   devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
-  get 'summary' => 'summary#index'
 
   namespace :api do
     namespace :v1 do
-      resources :etransactions, only: [:show, :update]
+      resources :books, only: [:show, :index] do
+        collection do
+          post :import
+        end
+
+        member do
+          get :export
+        end
+
+        resources :accounts, only: [:show, :index]
+        resources :summary, only: [:index]
+        resources :etransactions, only: [:show, :update, :new, :index] do
+          collection do
+            get 'search'
+          end
+        end
+        resources :splits, only: [:show] do
+          collection do
+            get 'search'
+          end
+        end
+      end
     end
   end
-
-  resources :etransactions, except: [:show]
-  put 'etransactions/:id/add_split' => 'etransactions#add_split', :as => :add_split_etransaction
-  post 'etransactions/:id/update_data' => 'etransactions#update_data', :as => :update_data_etransaction
-  delete 'etransactions/:id/destroy_split' => 'etransactions#destroy_split', :as => :destroy_split_etransaction
-
-  resources :slots
-  resources :commodities
-  resources :prices
-  resources :splits
-
-  resources :accounts
-  get 'accounts/index'
-  get 'accounts/show'
 
   resources :root, only: [:index] do
     collection do

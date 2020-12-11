@@ -1,35 +1,19 @@
-def handle_node(node)
-  if node.element?
-    puts "Element"
-    puts node.name
-  elsif node.text?
-    puts "Text"
-    puts node.content
-  else
-    puts "Unknown, name: #{node.name}"
-    puts node.to_s
-  end
-
-  if node.name == 'account'
-    puts "ACCOUNT"
-    puts node
-    puts node.xpath('act:name')[0].content
-  elsif node.name == 'transaction'
-    puts "TRANSACTION"
-    puts node
-  else
-    puts " #{node.name}"
-  end
-end
+require 'pp'
 
 def wash_attribute_name(name)
   washed = name.gsub('-', '_')
   if washed == 'type'
     washed = 'type_'
-  elsif washed == 'id'
-    washed = 'id_'
-  elsif washed == 'account'
-    washed = 'account_id_'
+  elsif washed == 'id_guid'
+    washed = 'id'
+  elsif washed == 'account_guid'
+    washed = 'account_id'
+  elsif washed == 'parent_guid'
+    washed = 'parent_id'
+  elsif washed == 'date_entered'
+    washed = 'updated_at'
+  elsif washed == 'value_frame_slot'
+    washed = 'value_frame'
   end
   return washed
 end
@@ -43,39 +27,81 @@ def wash_model_name(name)
 end
 
 def node_to_db(node, make_object = true)
-  puts "Handling new node #{node.name.capitalize}"
+  begin
+    node_name = node.name.capitalize
+  rescue
+    PP.pp(node)
+  end
   attributes = {}
   reference_from = {}
   node.children.each do |xp|
     if xp.element?
-      xp_name = wash_attribute_name(xp.name)
-        
-      if xp.children.size == 1
-        attributes[xp_name] = xp.children[0].to_s
+      if xp.attributes['type'].nil?
+        xp_name = xp.name
+      else
+        xp_name = xp.name + '_' + xp.attributes['type']
+      end
+
+      xp_name = wash_attribute_name(xp_name)
+
+      if node_name == 'Book' and ['commodity', 'account', 'transaction'].include? xp_name
+        collection = wash_model_name(xp_name).pluralize
+        if reference_from[collection].nil?
+          reference_from[collection] = []
+        end
+        reference_from[collection].append(node_to_db(xp, true))
+      elsif node_name == 'Book' and xp_name == 'pricedb'
+        xp.children.each do |child|
+          if child.element?
+            child_name = wash_attribute_name(child.name)
+            collection = child_name.pluralize
+            if reference_from[collection].nil?
+              reference_from[collection] = []
+            end
+            reference_from[collection].append(node_to_db(child, true))
+          end
+        end
+      elsif node_name == 'Book' and xp_name.start_with? 'count_data'
+        # Ignore
+      elsif xp.children.size == 1
+        attributes[xp_name] = xp.children[0].text.to_s
+        if attributes[xp_name].nil?
+          attributes[xp_name] = ''
+        end
         if ['value', 'quantity'].include? xp_name
           parts = xp.children[0].to_s.split('/')
           if parts.size == 2
-            attributes[xp_name] = BigDecimal.new(parts[0]) / BigDecimal.new(parts[1])
+            attributes[xp_name] = BigDecimal(parts[0]) / BigDecimal(parts[1])
           end
         end
+        if xp.attributes['type'].to_s == 'guid'
+          uuid = attributes[xp_name]
+          attributes[xp_name] = [uuid[0..7], uuid[8..11], uuid[12..15], uuid[16..19], uuid[20..31]].join('-')
+        end
+
       elsif xp.children.size == 0
-        # Do nothing
-      elsif xp_name[-1] == 's' # List of objects
-        puts "Handling list of objects #{xp.name}"
+        attributes[xp_name] = ''
+      elsif xp_name[-1] == 's' or xp_name == 'value_frame' # List of objects
         reference_from[xp_name] = []
         xp.children.each do |child|
           if child.element?
-            reference_from[xp_name].append(node_to_db(child, false))
+            reference_from[xp_name].append(node_to_db(child, true))
           end
         end
       else # Single object
-        puts "Handling single object #{xp.name}"
         child_data = node_to_db(xp, false)
-        puts child_data.inspect
         child_data[:attributes].each do |key, value|
-          attributes[xp_name + '_' + key] = value
+          if ['date', 'gdate'].include? key
+            attr_name = xp_name
+          else
+            attr_name = wash_attribute_name(xp_name + '_' + key)
+          end
+          attributes[attr_name] = value
         end
-        puts attributes.inspect
+        child_data[:reference_from].each do |key, value|
+          name = wash_attribute_name(xp_name + '_' + key)
+          reference_from[name] = value
+        end
       end
     end
   end
@@ -83,27 +109,11 @@ def node_to_db(node, make_object = true)
   if make_object
     node_name = wash_model_name(node.name)
     model_name = node_name.titleize.delete(' ')
-    puts model_name
-    puts attributes.inspect
-    puts reference_from.inspect
 
     obj = model_name.constantize.new(attributes)
     reference_from.each do |key, vals|
       vals.each do |val|
-        puts "Bah"
-        puts key, val
-        if val[:attributes].key?("account_id_")
-          account_id = val[:attributes]["account_id_"]
-          val[:attributes].except!("account_id_")
-        else
-          account_id = nil
-        end
-
-        child = obj.send(key).build(val[:attributes])
-
-        if account_id != nil
-          child.account = Account.where(id_: account_id)[0]
-        end
+        obj.send(key) << val
       end
     end
     return obj
@@ -121,51 +131,12 @@ count = {}
 ['book'].each do |t|
   count[t] = doc.xpath("gnc-v2/gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
 end
-puts count.inspect
 
 for i in 1..count['book']
+  objects = []
+
   book = doc.xpath("gnc-v2/gnc:book[#{i}]")
-  types = ['commodity', 'account', 'transaction', 'price']
-  types.each do |t|
-    count = book.xpath("gnc:count-data[@cd:type='#{t}']/text()").to_s.to_i
-    puts "============================="
-    puts "Number of #{t}: #{count}"
-
-#    if t == 'transaction' and count > 100
-#      count = 100
-#    end
-    objects = []
-    for ti in 1..count
-      puts "#{t} #{ti}"
-      if t == 'price'
-        node = book.xpath("gnc:pricedb/price[#{ti}]")
-      else
-        node = book.xpath("gnc:#{t}[#{ti}]")
-      end
-      puts node
-      objects.append(node_to_db(node[0]))
-    end
-
-    puts "importing #{t} objects"
-    wash_model_name(t).titleize.constantize.import objects, recursive: true
-  end
-
-  Account.all.each do |account|
-    account.account_parent = Account.where(id_: account.parent)[0]
-    account.save
-  end
+  objects.append(node_to_db(book[0]))
+  puts "importing book objects"
+  Book.import objects, recursive: true
 end
-
-
-# puts "================"
-# ['gnc-v2', 'gnc-v2/gnc:count-data', 'gnc-v2/gnc:book'].each do |xp|
-#   puts "Checking #{xp}"
-#   doc.xpath(xp).each do |row|
-#     puts row.name
-#     row.children.each do |child|
-#       handle_node(child)
-#     end
-#   end
-#   puts "Checked #{xp}"
-#   puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-# end

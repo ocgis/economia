@@ -2,11 +2,18 @@ source 'https://rubygems.org'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '>= 5.2.4.4'
+gem 'rails', '~> 6.0'
 # Use sqlite3 as the database for Active Record
 #gem 'sqlite3'
 
+# Use mysql as the database for Active Record
+gem 'mysql2'
+
+# Use postgres as the database for Active Record
 gem 'pg'
+
+# Composite keys
+gem 'composite_primary_keys'
 
 # Use SCSS for stylesheets
 gem 'sass-rails'
@@ -37,11 +44,12 @@ gem 'spring',        group: :development
 # gem 'unicorn'
 
 # Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-gem 'capistrano'
-gem 'capistrano-bundler'
-gem 'capistrano-rails'
+gem 'capistrano-rails', group: :development
+
+# Add this if you're using rbenv
 gem 'capistrano-rbenv', github: "capistrano/rbenv"
+
+gem 'capistrano-yarn', group: :development
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
