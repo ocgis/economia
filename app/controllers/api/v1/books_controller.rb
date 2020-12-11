@@ -21,10 +21,7 @@ class Api::V1::BooksController < ApplicationController
 
   def import
     params[:files].each do |file|
-      puts file.inspect
-      puts file[:file].inspect
-      puts file[:file].tempfile.inspect
-      import_gnucash(file[:file].tempfile)
+      import_gnucash(file[:file].tempfile, file[:file].original_filename, params[:description])
     end
 
     render json: { }
@@ -43,7 +40,7 @@ class Api::V1::BooksController < ApplicationController
                                  splits: {},
                                  currency: {} } }
     book = Book.preload(preload).find(params[:id])
-    send_data ActiveSupport::Gzip.compress(export_gnucash(book)), type: 'application/gzip', filename: 'export.gnucash'
+    send_data ActiveSupport::Gzip.compress(export_gnucash(book)), type: 'application/x-gnucash', filename: book.filename
   end
 
   private
@@ -178,7 +175,7 @@ class Api::V1::BooksController < ApplicationController
   end
 
 
-  def import_gnucash(fd)
+  def import_gnucash(fd, filename, description)
     puts "Importing book"
     doc = Nokogiri::XML(ActiveSupport::Gzip.decompress(fd.read))
 
@@ -194,6 +191,8 @@ class Api::V1::BooksController < ApplicationController
       book = doc.xpath("gnc-v2/gnc:book[#{i}]")
       objects.append(node_to_db(book[0]))
       puts "importing book objects"
+      objects[0].filename = filename
+      objects[0].description = description
       Book.import objects, recursive: true
     end
   end

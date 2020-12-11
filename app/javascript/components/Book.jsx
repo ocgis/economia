@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Descriptions, Table } from "antd";
+import { Button, Descriptions, Input, Table } from "antd";
 import { TopMenu } from "./TopMenu";
 
 class IndexBook extends React.Component {
@@ -75,6 +75,24 @@ class IndexBook extends React.Component {
             }
         } else {
             const columns = [
+                {
+                    title: 'Description',
+                    key: 'description',
+                    render: (t) => {
+                        return (
+                            <Link to={`/books/${t.id}`}>{t.description}</Link>
+                        );
+                    }
+                },
+                {
+                    title: 'Filename',
+                    key: 'filename',
+                    render: (t) => {
+                        return (
+                            <Link to={`/books/${t.id}`}>{t.filename}</Link>
+                        );
+                    }
+                },
                 {
                     title: 'Id',
                     key: 'id',
@@ -199,10 +217,9 @@ class ImportBook extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            description: '',
             selectedFiles: null
         };
-        this.onChangeHandler = this.onChangeHandler.bind(this);
-        this.onClickHandler = this.onClickHandler.bind(this);
     }
 
 
@@ -210,28 +227,32 @@ class ImportBook extends React.Component {
         return (
             <div>
               <TopMenu />
-              <input type="file" name="file" onChange={this.onChangeHandler} multiple />
-              <button type="button" onClick={this.onClickHandler}>Import</button>
+              <Input onChange={this.onDescriptionChange} />
+              <Input type="file" name="file" onChange={this.onChangeHandler} multiple />
+              <Button type="button" onClick={this.onClickHandler}>Import</Button>
             </div>
         );
     }
 
 
-    onChangeHandler(event) {
-        this.setState({
-            selectedFiles: event.target.files,
-            loaded: 0,
-        });
+    onDescriptionChange = (event) => {
+        this.setState({ description: event.target.value });
     }
 
 
-    onClickHandler() {
+    onChangeHandler = (event) => {
+        this.setState({ selectedFiles: event.target.files });
+    }
+
+
+    onClickHandler = () => {
         const data = new FormData();
         const files = this.state.selectedFiles;
         for (var i = 0; i < files.length; i++) {
             data.append('files[][file]', files[i]);
             data.append('files[][last_modified]', files[i].lastModified);
         }
+        data.append('description', this.state.description);
 
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
