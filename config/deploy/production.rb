@@ -1,23 +1,3 @@
-# Simple Role Syntax
-# ==================
-# Supports bulk-adding hosts to roles, the primary
-# server in each group is considered to be the first
-# unless any hosts have the primary property set.
-# Don't declare `role :all`, it's a meta role
-role :app, %w{economia@127.0.0.1}
-role :web, %w{economia@127.0.0.1}
-role :db,  %w{economia@127.0.0.1}
-
-# Extended Server Syntax
-# ======================
-# This can be used to drop a more detailed server
-# definition into the server list. The second argument
-# something that quacks like a hash can be used to set
-# extended properties on the server.
-set :stage, :production
-
-server '127.0.0.1', user: 'economia', roles: %w{web app}
-
 # server-based syntax
 # ======================
 # Defines a single server with a list of roles and multiple properties.
@@ -41,6 +21,10 @@ server '127.0.0.1', user: 'economia', roles: %w{web app}
 # role :web, %w{user1@primary.com user2@additional.com}, other_property: :other_value
 # role :db,  %w{deploy@example.com}
 
+role :app, %w{rails@127.0.0.1}
+role :web, %w{rails@127.0.0.1}
+role :db,  %w{rails@127.0.0.1}
+
 
 
 # Configuration
@@ -62,7 +46,7 @@ server '127.0.0.1', user: 'economia', roles: %w{web app}
 # Global options
 # --------------
 #  set :ssh_options, {
-#    keys: %w(/home/rlisowski/.ssh/id_rsa),
+#    keys: %w(/home/user_name/.ssh/id_rsa),
 #    forward_agent: false,
 #    auth_methods: %w(password)
 #  }
@@ -79,3 +63,10 @@ server '127.0.0.1', user: 'economia', roles: %w{web app}
 #     auth_methods: %w(publickey password)
 #     # password: "please use keys"
 #   }
+
+server '127.0.0.1', user: 'rails', roles: %w{web app}
+
+set :stage, :production
+set :rails_env, "production"
+set :deploy_to, '/home/rails/economia'
+set :branch, 'production'
