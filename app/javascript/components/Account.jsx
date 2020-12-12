@@ -237,7 +237,7 @@ class ShowAccount extends React.Component {
                         } else {
                             return moment(t.etransaction.date_posted).format('YYYY-MM-DD');
                         }
-                    }
+                    },
                 },
                 {
                     title: 'Num',
@@ -297,6 +297,7 @@ class ShowAccount extends React.Component {
                 balance = Number(data[i].value) + Number(balance);
                 data[i].balance = balance.toFixed(2);
             }
+            data.reverse();
 
             return (
                 <div>

@@ -1,5 +1,6 @@
 # coding: utf-8
 class Account < ApplicationRecord
+  belongs_to :book
   belongs_to :account_parent, :class_name => 'Account', :foreign_key => :parent_id
   has_many :account_children, :class_name => 'Account'
   belongs_to :commodity, foreign_key: [:commodity_id, :commodity_space, :book_id]
@@ -37,7 +38,7 @@ class Account < ApplicationRecord
 
   def full_name
     accounts_map = {}
-    Account.all.each do |account|
+    book.accounts.all.each do |account|
       accounts_map[account.id] = account
     end
 

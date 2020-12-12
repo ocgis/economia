@@ -17,6 +17,7 @@ class Api::V1::AccountsController < ApplicationController
 
   def show
     all_splits = @account.splits.preload(:etransaction).joins(:etransaction).order('etransactions.date_posted')
+    accounts_map = @book.accounts.full_name_map
 
     if params.key?(:year)
       year = params[:year].to_i
@@ -35,9 +36,21 @@ class Api::V1::AccountsController < ApplicationController
       splits_objs = all_splits
     end
 
-    splits = splits_objs.map do |split|
-      split.attributes.update({ etransaction: split.etransaction.attributes,
-                                other_account: split.other_account })
+    splits = splits_objs.preload({ etransaction: { splits: :account },
+                                   account: {} }).map do |split|
+      etransaction = split.etransaction.attributes
+      other_splits = split.other_splits
+
+      if other_splits.size > 1
+        other_account = "-- Delad transaktion --"
+      elsif other_splits.size == 0
+        other_account = ""
+      else
+        other_account = accounts_map[other_splits[0].account_id]
+      end
+
+      split.attributes.update({ etransaction: etransaction,
+                                other_account: other_account })
     end
     account = @account.attributes.update({ full_name: @account.full_name,
                                            decrease_name: @account.decrease_name,
@@ -53,7 +66,7 @@ class Api::V1::AccountsController < ApplicationController
   end
 
   def set_account
-    @account = @book.accounts.find(params[:id])
+    @account = @book.accounts.preload(:splits).find(params[:id])
   end
 
 end
