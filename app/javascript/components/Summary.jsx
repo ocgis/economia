@@ -95,7 +95,7 @@ class IndexSummary extends React.Component {
                     render: (t) => {
                         if (t.account_id != null) {
                             return (
-                                <Link to={`/accounts/${t.account_id}?year=${this.state.year}`}>
+                                <Link to={`/books/${bookId}/accounts/${t.account_id}?year=${this.state.year}`}>
                                   {t.title}
                                 </Link>);
                         } else {
@@ -115,7 +115,7 @@ class IndexSummary extends React.Component {
                         render: (t) => {
                             if (t.account_id != null) {
                                 return (
-                                    <Link to={`/accounts/${t.account_id}?year=${this.state.year}&month=${this.state.month_numbers[index]}`}>
+                                    <Link to={`/books/${bookId}/accounts/${t.account_id}?year=${this.state.year}&month=${this.state.month_numbers[index]}`}>
                                       {t.months[index]}
                                     </Link>);
                             } else {
