@@ -1,8 +1,8 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
-import { Link, Redirect } from "react-router-dom";
-import { AutoComplete, DatePicker, Input, InputNumber, Table } from "antd";
+import { Link, Redirect, useHistory } from "react-router-dom";
+import { AutoComplete, Button, DatePicker, Input, InputNumber, Table } from "antd";
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
@@ -619,12 +619,18 @@ class ShowTransaction extends React.Component {
                   <BookMenu bookId={bookId} />
                   <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
+                  <hr />
+                  <BackButton />
                 </div>
             );
         }
     }
 }
 
+function BackButton() {
+    const history = useHistory();
+    return (<Button onClick={() => { history.goBack(); }} >Back</Button>);
+}
 
 class IndexTransaction extends React.Component {
     constructor(props) {
