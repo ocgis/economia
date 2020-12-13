@@ -22,7 +22,7 @@ let mapTransactionToTable = (transaction, splits) => {
                                           id: t.id,
                                           index: index,
                                           memo: t.memo,
-                                          account_id: t.account_id,
+                                          _shown_account: t._shown_account,
                                           reconciled_state: t.reconciled_state,
                                           value: t.value,
                                           from: t.from,
@@ -164,6 +164,14 @@ class ShowTransaction extends React.Component {
     }
 
 
+    calculateStateShownAccount() {
+        var i;
+        for (i = 0; i < this.state.splits.length; i++) {
+            this.state.splits[i]._shown_account = this.state.account_names[this.state.splits[i].account_id];
+        }
+    }
+
+
     calculateStateFromTo() {
         var i;
         for (i = 0; i < this.state.splits.length; i++) {
@@ -192,6 +200,7 @@ class ShowTransaction extends React.Component {
         Object.keys(this.state.account_names).forEach((t) => {
             this.state.account_ids[this.state.account_names[t]] = t;
         });
+        this.calculateStateShownAccount();
         this.calculateStateFromTo();
         this.setState(this.state);
     }
@@ -264,6 +273,7 @@ class ShowTransaction extends React.Component {
                 this.state.splits[i]._destroy = true;
             }
             this.state.key = Date.now();
+            this.calculateStateShownAccount();
             this.calculateStateFromTo();
             this.submitTransaction();
         }
@@ -294,6 +304,7 @@ class ShowTransaction extends React.Component {
             this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
 
             this.state.key = Date.now();
+            this.calculateStateShownAccount();
             this.calculateStateFromTo();
             this.submitTransaction();
         }
@@ -325,6 +336,7 @@ class ShowTransaction extends React.Component {
             
             if ((event.relatedTarget == null) || (event.target.parentElement.parentElement != event.relatedTarget.parentElement.parentElement)) {
                 this.calculateStateValueQuantity();
+                this.calculateStateShownAccount();
                 this.calculateStateFromTo();
                 this.submitTransaction();
             }
@@ -380,13 +392,26 @@ class ShowTransaction extends React.Component {
     }
 
 
+    onAutoCompleteChangeHandler = (reference, index, field) => {
+        return  (event) => {
+            if (index == null) {
+                this.state[reference][field] = event;
+            } else {
+                this.state[reference][index][field] = event;
+            }
+            this.setState(this.state);
+        }
+    }
+
+
     onAccountChangeHandler(index) {
         return  (value) => {
+            this.state.splits[index]._shown_account = value;
             let new_id = this.state.account_ids[value];
             if (new_id != null) {
                 this.state.splits[index].account_id = new_id;
-                this.setState(this.state);
             }
+            this.setState(this.state);
         }
     }
 
@@ -424,6 +449,7 @@ class ShowTransaction extends React.Component {
 
         let addSplitHandler = () => {
             this.state.splits.push({account_id: null,
+                                    _shown_account: "",
                                     action: "",
                                     etransaction_id: this.state.transaction.id,
                                     from: "",
@@ -505,11 +531,12 @@ class ShowTransaction extends React.Component {
                     render: t => {
                         if (t.reference == 'transaction') {
                             return (<AutoComplete
-                                    defaultValue={t.description}
+                                    value={t.description}
                                     bordered={false}
                                     style={{ width: 200 }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
+                                    onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
                                     onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
                                     onSearch={(search) => this.searchAccountDescriptions(search)}
                                     onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
@@ -518,11 +545,12 @@ class ShowTransaction extends React.Component {
                                     />);
                         } else {
                             return (<AutoComplete
-                                    defaultValue={t.memo}
+                                    value={t.memo}
                                     bordered={false}
                                     style={{ width: 200 }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
+                                    onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
                                     onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
                                     onSearch={(search) => this.searchSplitMemos(search)}
                                     onFocus={(event) => this.searchSplitMemos(event.target.value)}
@@ -540,7 +568,7 @@ class ShowTransaction extends React.Component {
                             let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
                             return (<AutoComplete
                                     key={this.state.key}
-                                    defaultValue={this.state.account_names[t.account_id]}
+                                    value={t._shown_account}
                                     bordered={false}
                                     style={{ width: 200 }}
                                     options={options}
