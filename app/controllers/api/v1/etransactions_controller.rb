@@ -56,7 +56,8 @@ class Api::V1::EtransactionsController < ApplicationController
 
 
   def search
-    etransactions = @book.etransactions.where("LOWER(description) LIKE ?", "%" + params[:query].downcase + "%").order(updated_at: :desc).limit(10)
+    latest_sql = @book.etransactions.select('DISTINCT ON (description) etransactions.*').order('description, updated_at DESC').to_sql
+    etransactions = Etransaction.select('*').where("LOWER(description) LIKE ?", "%" + params[:query].downcase + "%").from("(#{latest_sql}) as latest_sql").order(updated_at: :desc).limit(10)
     result = etransactions.map do |etransaction|
       { value: etransaction.description,
         key: etransaction.id }
