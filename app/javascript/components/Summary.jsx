@@ -141,8 +141,8 @@ class IndexSummary extends React.Component {
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Link to={`/summary?year=${this.state.year-1}`}>&lt;</Link>
-                  <Link to={`/summary?year=${this.state.year+1}`}>&gt;</Link>
+                  <Link to={`/books/${bookId}/summary?year=${this.state.year-1}`}>&lt;</Link>
+                  <Link to={`/books/${bookId}/summary?year=${this.state.year+1}`}>&gt;</Link>
                   <Table id="summaryTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
