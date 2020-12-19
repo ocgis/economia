@@ -570,7 +570,7 @@ class ShowTransaction extends React.Component {
                                     key={this.state.key}
                                     value={t._shown_account}
                                     bordered={false}
-                                    style={{ width: 200 }}
+                                    style={{ width: 320 }}
                                     options={options}
                                     placeholder="välj konto"
                                     filterOption={(inputValue, option) =>
