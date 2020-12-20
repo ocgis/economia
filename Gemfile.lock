@@ -69,9 +69,6 @@ GEM
     airbrussh (1.4.0)
       sshkit (>= 1.6.1, != 1.7.0)
     bcrypt (3.1.16)
-    best_in_place (3.1.1)
-      actionpack (>= 3.2)
-      railties (>= 3.2)
     builder (3.2.4)
     cancancan (3.1.0)
     capistrano (3.14.1)
@@ -86,14 +83,6 @@ GEM
       capistrano-bundler (>= 1.1, < 3)
     capistrano-yarn (2.0.2)
       capistrano (~> 3.0)
-    cocoon (1.2.15)
-    coffee-rails (5.0.0)
-      coffee-script (>= 2.2.0)
-      railties (>= 5.2.0)
-    coffee-script (2.4.1)
-      coffee-script-source
-      execjs
-    coffee-script-source (1.12.2)
     composite_primary_keys (12.0.3)
       activerecord (~> 6.0.0)
     concurrent-ruby (1.1.7)
@@ -105,27 +94,14 @@ GEM
       responders
       warden (~> 1.2.3)
     erubi (1.10.0)
-    execjs (2.7.0)
     faraday (1.1.0)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
-    ffi (1.13.1)
-    formtastic (3.1.5)
-      actionpack (>= 3.2.13)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
     hashie (4.1.0)
     i18n (1.8.5)
       concurrent-ruby (~> 1.0)
-    jbuilder (2.10.1)
-      activesupport (>= 5.0.0)
-    jquery-rails (4.4.0)
-      rails-dom-testing (>= 1, < 3)
-      railties (>= 4.2.0)
-      thor (>= 0.14, < 2.0)
-    jquery-ui-rails (6.0.1)
-      railties (>= 3.2.16)
-    json (1.8.6)
     jwt (2.2.2)
     loofah (2.7.0)
       crass (~> 1.0.2)
@@ -144,7 +120,6 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.6.0)
     multipart-post (2.1.1)
-    mysql2 (0.5.3)
     net-scp (3.0.0)
       net-ssh (>= 2.6.5, < 7.0.0)
     net-ssh (6.1.0)
@@ -199,25 +174,11 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.20.3, < 2.0)
     rake (13.0.1)
-    rdoc (4.3.0)
     responders (3.0.1)
       actionpack (>= 5.0)
       railties (>= 5.0)
     role_model (0.8.2)
     ruby2_keywords (0.0.2)
-    sass-rails (6.0.0)
-      sassc-rails (~> 2.1, >= 2.1.1)
-    sassc (2.4.0)
-      ffi (~> 1.9)
-    sassc-rails (2.1.2)
-      railties (>= 4.0.0)
-      sassc (>= 2.0)
-      sprockets (> 3.0)
-      sprockets-rails
-      tilt
-    sdoc (0.4.2)
-      json (~> 1.7, >= 1.7.7)
-      rdoc (~> 4.0)
     semantic_range (2.3.0)
     spring (2.1.1)
     sprockets (4.0.2)
@@ -230,17 +191,10 @@ GEM
     sshkit (1.21.0)
       net-scp (>= 1.1.2)
       net-ssh (>= 2.8.0)
-    tabulator-rails (1.1.2)
     thor (1.0.1)
     thread_safe (0.3.6)
-    tilt (2.0.10)
-    turbolinks (5.2.1)
-      turbolinks-source (~> 5.2)
-    turbolinks-source (5.2.0)
     tzinfo (1.2.8)
       thread_safe (~> 0.1)
-    uglifier (4.2.0)
-      execjs (>= 0.3.0, < 3)
     warden (1.2.9)
       rack (>= 2.0.9)
     webpacker (5.2.1)
@@ -258,32 +212,19 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import
-  best_in_place
   cancancan
   capistrano-rails
   capistrano-rbenv!
   capistrano-yarn
-  cocoon
-  coffee-rails
   composite_primary_keys
   devise
-  formtastic
-  jbuilder (~> 2.0)
-  jquery-rails
-  jquery-ui-rails
   momentjs-rails
-  mysql2
   nokogiri
   omniauth-facebook
   pg
   rails (~> 6.0)
   role_model
-  sass-rails
-  sdoc (~> 0.4.0)
   spring
-  tabulator-rails (~> 1.1)
-  turbolinks
-  uglifier (>= 1.3.0)
   webpacker
 
 BUNDLED WITH
