@@ -505,6 +505,7 @@ class ShowTransaction extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
+                    width: '11em',
                     key: 'date_posted',
                     render: t => {
                         if (t.date_posted == null) {
@@ -516,6 +517,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Num',
+                    width: '6em',
                     key: 'num',
                     render: t => {
                         if (t.num == null) {
@@ -533,7 +535,7 @@ class ShowTransaction extends React.Component {
                             return (<AutoComplete
                                     value={t.description}
                                     bordered={false}
-                                    style={{ width: 200 }}
+                                    style={{ width: '10em' }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
                                     onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
@@ -547,7 +549,7 @@ class ShowTransaction extends React.Component {
                             return (<AutoComplete
                                     value={t.memo}
                                     bordered={false}
-                                    style={{ width: 200 }}
+                                    style={{ width: '10em' }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
                                     onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
@@ -570,7 +572,7 @@ class ShowTransaction extends React.Component {
                                     key={this.state.key}
                                     value={t._shown_account}
                                     bordered={false}
-                                    style={{ width: 320 }}
+                                    style={{ width: '25em' }}
                                     options={options}
                                     placeholder="välj konto"
                                     filterOption={(inputValue, option) =>
@@ -586,6 +588,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Avstämt',
+                    width: '6em',
                     key: 'reconciled_state',
                     render: t => {
                         if (t.reconciled_state == null) {
@@ -597,6 +600,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Till',
+                    width: '8em',
                     key: 'to',
                     render: t => {
                         return (<Input value={t.to} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'to')} onBlur={this.onBlurHandler(t.reference, t.index, 'to')} onKeyDown={this.onKeyDownHandler} />);
@@ -604,6 +608,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Från',
+                    width: '8em',
                     key: 'from',
                     render: t => {
                         return (<Input value={t.from} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'from')} onBlur={this.onBlurHandler(t.reference, t.index, 'from')} onKeyDown={this.onKeyDownHandler} />);
@@ -611,6 +616,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Balansera',
+                    width: '6em',
                     key: 'balance',
                     render: t => {
                         if (t.reference == "splits") {
@@ -624,6 +630,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Ta bort',
+                    width: '6em',
                     key: 'remove',
                     render: t => {
                         if (t.reference == "splits") {
