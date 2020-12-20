@@ -33,6 +33,7 @@ set :rbenv_ruby, File.read('.ruby-version').strip
 
 # require "capistrano/chruby"
 require "capistrano/bundler"
+require "capistrano/rails/assets"
 require "capistrano/rails/migrations"
 require "capistrano/yarn"
 # require "capistrano/passenger"
