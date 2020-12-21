@@ -1,0 +1,12 @@
+.ant-input-borderless {
+    padding: 0em !important;
+}
+
+.ant-select-selector {
+    padding: 0em !important;
+}
+
+.ant-select-selection-search {
+    left: 0em !important;
+    right: 0em !important;
+}
