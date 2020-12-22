@@ -11,13 +11,17 @@ import { throttle } from "throttle-debounce";
 import { BookMenu } from "./Book";
 
 
-let mapTransactionToTable = (transaction, splits) => {
+let mapTransactionToTable = (transaction) => {
     let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
                                                    id: t.id,
                                                    date_posted: t.date_posted,
                                                    num: t.num,
                                                    description: t.description,
                                                    value: 0 }));
+    return data;
+}
+
+let mapSplitsToTable = (splits) => {
     splits.sort((a, b) => { return a.id - b.id });
     splits =  splits.map((t, index) => ({ reference: 'splits',
                                           id: t.id,
@@ -28,9 +32,7 @@ let mapTransactionToTable = (transaction, splits) => {
                                           value: t.value,
                                           from: t.from,
                                           to: t.to }));
-    data = data.concat(splits);
-
-    return data;
+    return splits;
 }
 
 
@@ -503,7 +505,7 @@ class ShowTransaction extends React.Component {
             }
         } else {
             let splits = this.state.splits;
-            const columns = [
+            const transactionColumns = [
                 {
                     title: 'Datum',
                     width: '10ch',
@@ -532,35 +534,40 @@ class ShowTransaction extends React.Component {
                     title: 'Beskrivning',
                     key: 'description',
                     render: t => {
-                        if (t.reference == 'transaction') {
-                            return (<AutoComplete
-                                    value={t.description}
-                                    bordered={false}
-                                    style={{ width: '35ch' }}
-                                    options={this.state.descriptionOptions}
-                                    placeholder="skriv beskrivning"
-                                    onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
-                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
-                                    onSearch={(search) => this.searchAccountDescriptions(search)}
-                                    onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
-                                    onSelect={(value, object) => { this.searchAccountDescriptions(value);
-                                                                   this.copyTransaction(object.key); }}
-                                    />);
-                        } else {
-                            return (<AutoComplete
-                                    value={t.memo}
-                                    bordered={false}
-                                    style={{ width: '35ch' }}
-                                    options={this.state.descriptionOptions}
-                                    placeholder="skriv beskrivning"
-                                    onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
-                                    onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
-                                    onSearch={(search) => this.searchSplitMemos(search)}
-                                    onFocus={(event) => this.searchSplitMemos(event.target.value)}
-                                    onSelect={(value, object) => { this.searchSplitMemos(value);
-                                                                   this.copySplit(t.index, object.key) }}
-                                    />);
-                        }
+                        return (<AutoComplete
+                                value={t.description}
+                                bordered={false}
+                                style={{ width: '35ch' }}
+                                options={this.state.descriptionOptions}
+                                placeholder="skriv beskrivning"
+                                onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
+                                onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                onSearch={(search) => this.searchAccountDescriptions(search)}
+                                onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                                onSelect={(value, object) => { this.searchAccountDescriptions(value);
+                                                               this.copyTransaction(object.key); }}
+                                />);
+                    }
+                }
+            ];
+            const splitsColumns = [
+                {
+                    title: 'Beskrivning',
+                    key: 'description',
+                    render: t => {
+                        return (<AutoComplete
+                                value={t.memo}
+                                bordered={false}
+                                style={{ width: '35ch' }}
+                                options={this.state.descriptionOptions}
+                                placeholder="skriv beskrivning"
+                                onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
+                                onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
+                                onSearch={(search) => this.searchSplitMemos(search)}
+                                onFocus={(event) => this.searchSplitMemos(event.target.value)}
+                                onSelect={(value, object) => { this.searchSplitMemos(value);
+                                                               this.copySplit(t.index, object.key) }}
+                                />);
                     }
                 },
                 {
@@ -568,24 +575,20 @@ class ShowTransaction extends React.Component {
                     width: '15ch',
                     key: 'account_id',
                     render: t => {
-                        if (t.reference == 'splits') {
-                            let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
-                            return (<AutoComplete
-                                    key={this.state.key}
-                                    value={t._shown_account}
-                                    bordered={false}
-                                    style={{ width: '40ch' }}
-                                    options={options}
-                                    placeholder="välj konto"
-                                    filterOption={(inputValue, option) =>
-                                                  option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                                                 }
-                                    onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
-                                    onChange={this.onAccountChangeHandler(t.index)}
-                                    />);
-                        } else {
-                            return null;
-                        }
+                        let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+                        return (<AutoComplete
+                                key={this.state.key}
+                                value={t._shown_account}
+                                bordered={false}
+                                style={{ width: '40ch' }}
+                                options={options}
+                                placeholder="välj konto"
+                                filterOption={(inputValue, option) =>
+                                              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                             }
+                                onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
+                                onChange={this.onAccountChangeHandler(t.index)}
+                                />);
                     }
                 },
                 {
@@ -646,15 +649,20 @@ class ShowTransaction extends React.Component {
                 }
             ];
 
-            let data = mapTransactionToTable(transaction, splits);
-            for (var i = 0; i < data.length; i++) {
-                data[i].key = i;
+            let transactionData = mapTransactionToTable(transaction);
+            for (var i = 0; i < transactionData.length; i++) {
+                transactionData[i].key = i;
+            }
+            let splitsData = mapSplitsToTable(splits);
+            for (var i = 0; i < splitsData.length; i++) {
+                splitsData[i].key = i;
             }
 
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Table id="transactionTable" columns={columns} dataSource={data} pagination={false} />
+                  <Table id="transactionTable" columns={transactionColumns} dataSource={transactionData} pagination={false} />
+                  <Table id="splitsTable" columns={splitsColumns} dataSource={splitsData} pagination={false} />
                   <PlusCircleOutlined onClick={addSplitHandler} />
                   <hr />
                   <BackButton />
@@ -745,7 +753,8 @@ class IndexTransaction extends React.Component {
         } else {
             let data = [];
             this.state.transactions.forEach((t) => {
-                data = data.concat(mapTransactionToTable(t, t.splits));
+                data = data.concat(mapTransactionToTable(t));
+                data = data.concat(mapSplitsToTable(t.splits));
             });
 
             for (var i = 0; i < data.length; i++) {
