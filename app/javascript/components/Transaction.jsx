@@ -506,19 +506,19 @@ class ShowTransaction extends React.Component {
             const columns = [
                 {
                     title: 'Datum',
-                    width: '11em',
+                    width: '10ch',
                     key: 'date_posted',
                     render: t => {
                         if (t.date_posted == null) {
                             return null;
                         } else {
-                            return (<DatePicker value={moment(t.date_posted)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted')} onKeyDown={this.onKeyDownHandler} />);
+                            return (<DatePicker value={moment(t.date_posted)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted')} onKeyDown={this.onKeyDownHandler} suffixIcon={null} />);
                         }
                     }
                 },
                 {
-                    title: 'Num',
-                    width: '6em',
+                    title: 'Num.',
+                    width: '3.5ch',
                     key: 'num',
                     render: t => {
                         if (t.num == null) {
@@ -536,7 +536,7 @@ class ShowTransaction extends React.Component {
                             return (<AutoComplete
                                     value={t.description}
                                     bordered={false}
-                                    style={{ width: '10em' }}
+                                    style={{ width: '35ch' }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
                                     onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
@@ -550,7 +550,7 @@ class ShowTransaction extends React.Component {
                             return (<AutoComplete
                                     value={t.memo}
                                     bordered={false}
-                                    style={{ width: '10em' }}
+                                    style={{ width: '35ch' }}
                                     options={this.state.descriptionOptions}
                                     placeholder="skriv beskrivning"
                                     onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
@@ -565,6 +565,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Konto',
+                    width: '15ch',
                     key: 'account_id',
                     render: t => {
                         if (t.reference == 'splits') {
@@ -573,7 +574,7 @@ class ShowTransaction extends React.Component {
                                     key={this.state.key}
                                     value={t._shown_account}
                                     bordered={false}
-                                    style={{ width: '25em' }}
+                                    style={{ width: '40ch' }}
                                     options={options}
                                     placeholder="välj konto"
                                     filterOption={(inputValue, option) =>
@@ -588,8 +589,8 @@ class ShowTransaction extends React.Component {
                     }
                 },
                 {
-                    title: 'Avstämt',
-                    width: '6em',
+                    title: 'Avs.',
+                    width: '3.5ch',
                     key: 'reconciled_state',
                     render: t => {
                         if (t.reconciled_state == null) {
@@ -601,7 +602,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Till',
-                    width: '8em',
+                    width: '10ch',
                     key: 'to',
                     render: t => {
                         return (<Input value={t.to} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'to')} onBlur={this.onBlurHandler(t.reference, t.index, 'to')} onKeyDown={this.onKeyDownHandler} />);
@@ -609,15 +610,15 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Från',
-                    width: '8em',
+                    width: '10ch',
                     key: 'from',
                     render: t => {
                         return (<Input value={t.from} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'from')} onBlur={this.onBlurHandler(t.reference, t.index, 'from')} onKeyDown={this.onKeyDownHandler} />);
                     }
                 },
                 {
-                    title: 'Balansera',
-                    width: '6em',
+                    title: 'Bal.',
+                    width: '3.5ch',
                     key: 'balance',
                     render: t => {
                         if (t.reference == "splits") {
@@ -631,7 +632,7 @@ class ShowTransaction extends React.Component {
                 },
                 {
                     title: 'Ta bort',
-                    width: '6em',
+                    width: '4ch',
                     key: 'remove',
                     render: t => {
                         if (t.reference == "splits") {
