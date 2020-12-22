@@ -10,3 +10,7 @@
     left: 0em !important;
     right: 0em !important;
 }
+
+.ant-table-cell {
+    padding: 0em !important;
+}
