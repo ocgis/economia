@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link, Redirect, useHistory } from "react-router-dom";
-import { AutoComplete, Button, DatePicker, Input, InputNumber, Table } from "antd";
+import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Row, Table } from "antd";
 import "./transaction.css"
 import "antd/dist/antd.css";
 import * as math from 'mathjs';
@@ -442,7 +442,125 @@ class ShowTransaction extends React.Component {
         }
         return elements;
     }
-        
+
+
+    removeSplitHandler = (index) => {
+        return (() => {
+            this.state.splits[index]._destroy = true;
+            this.submitTransaction();
+        });
+    }
+
+
+    balanceSplitHandler = (index) => {
+        return (() => {
+            let newValue = this.state.splits[index].value;
+            this.state.splits.forEach((split) => {
+                newValue = newValue - split.value;
+                });
+            this.state.splits[index].value = newValue;
+            this.state.splits[index].quantity = newValue;
+            this.calculateStateFromTo();
+            this.submitTransaction();
+        });
+    }
+
+
+    renderSplit = (index) => {
+        let split = this.state.splits[index];
+        let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+        return (
+            <Row key={index} >
+              <Col>
+                <Row key='account'>
+                  <AutoComplete
+                    key={this.state.key}
+                    value={split._shown_account}
+                    bordered={false}
+                    style={{ width: '40ch' }}
+                    options={options}
+                    placeholder="välj konto"
+                    filterOption={(inputValue, option) =>
+                                  option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                  }
+                                  onBlur={this.onBlurHandler('splits', index, 'account_id')}
+                                  onChange={this.onAccountChangeHandler(index)}
+                                  />
+                </Row>
+                <Row key='description'>
+                  <AutoComplete
+                    value={split.memo}
+                    bordered={false}
+                    style={{ width: '35ch' }}
+                    options={this.state.descriptionOptions}
+                    placeholder="skriv beskrivning"
+                    onChange={this.onAutoCompleteChangeHandler('splits', index, 'memo')}
+                  onBlur={this.onBlurHandler('splits', index, 'description')}
+                    onSearch={(search) => this.searchSplitMemos(search)}
+                    onFocus={(event) => this.searchSplitMemos(event.target.value)}
+                    onSelect={(value, object) => { this.searchSplitMemos(value);
+                    this.copySplit(index, object.key) }}
+                    />
+                </Row>
+              </Col>
+              <Col>
+                <Input value={split.reconciled_state} bordered={false} onBlur={this.onBlurHandler('splits', index, 'reconciled_state')} onChange={this.onTextChangeHandler('splits', index, 'reconciled_state')} onKeyDown={this.onKeyDownHandler} />
+              </Col>
+              <Col>
+                <Input value={split.to} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'to')} onBlur={this.onBlurHandler('splits', index, 'to')} onKeyDown={this.onKeyDownHandler} />
+              </Col>
+              <Col>
+                <Input value={split.from} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'from')} onBlur={this.onBlurHandler('splits', index, 'from')} onKeyDown={this.onKeyDownHandler} />
+              </Col>
+              <Col>
+                <ThunderboltOutlined onClick={this.balanceSplitHandler(index)} />
+              </Col>
+              <Col>
+                <MinusCircleOutlined onClick={this.removeSplitHandler(index)} />
+              </Col>
+            </Row>
+        );
+    }
+
+
+    renderSplits = () => {
+        let transaction = this.state.transaction;
+        let splitsElements = [];
+
+        for (var i = 0; i < this.state.splits.length; i++) {
+            splitsElements.push(this.renderSplit(i));
+        }
+        return (
+            <div>
+              <Row>
+                <Col>
+                  <DatePicker value={moment(transaction.date_posted)} bordered={false} onBlur={this.onBlurHandler('transaction', null, 'date_posted')} onChange={this.onDateChangeHandler('transaction', null, 'date_posted')} onKeyDown={this.onKeyDownHandler} suffixIcon={null} />
+                </Col>
+                <Col>
+                  <Input value={transaction.num} bordered={false} onBlur={this.onBlurHandler('transaction', null, 'num')} onChange={this.onTextChangeHandler('transaction', null, 'num')} onKeyDown={this.onKeyDownHandler} />
+                </Col>
+                <Col>
+                  <AutoComplete
+                    value={transaction.description}
+                    bordered={false}
+                    style={{ width: '35ch' }}
+                    options={this.state.descriptionOptions}
+                    placeholder="skriv beskrivning"
+                    onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
+                    onBlur={this.onBlurHandler('transaction', null, 'description')}
+                    onSearch={(search) => this.searchAccountDescriptions(search)}
+                    onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+              onSelect={(value, object) => { this.searchAccountDescriptions(value);
+              this.copyTransaction(object.key); }}
+              />
+</Col>
+</Row>
+              { splitsElements }
+            </div>
+        );
+    }
+
+
     render () {
         const {
             match: {
@@ -466,26 +584,6 @@ class ShowTransaction extends React.Component {
             this.submitTransaction();
         }
 
-        let removeSplitHandler = (t) => {
-            return (() => {
-                this.state.splits[t.index]._destroy = true;
-                this.submitTransaction();
-            });
-        }
- 
-        let balanceSplitHandler = (t) => {
-            return (() => {
-                let newValue = this.state.splits[t.index].value;
-                this.state.splits.forEach((split) => {
-                    newValue = newValue - split.value;
-                });
-                this.state.splits[t.index].value = newValue;
-                this.state.splits[t.index].quantity = newValue;
-                this.calculateStateFromTo();
-                this.submitTransaction();
-            });
-        }
-
         const transaction = this.state.transaction;
         if (transaction == null) {
             if (this.state.error != null) {
@@ -504,167 +602,13 @@ class ShowTransaction extends React.Component {
                 );
             }
         } else {
-            let splits = this.state.splits;
-            const transactionColumns = [
-                {
-                    title: 'Datum',
-                    width: '10ch',
-                    key: 'date_posted',
-                    render: t => {
-                        if (t.date_posted == null) {
-                            return null;
-                        } else {
-                            return (<DatePicker value={moment(t.date_posted)} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'date_posted')} onChange={this.onDateChangeHandler(t.reference, t.index, 'date_posted')} onKeyDown={this.onKeyDownHandler} suffixIcon={null} />);
-                        }
-                    }
-                },
-                {
-                    title: 'Num.',
-                    width: '3.5ch',
-                    key: 'num',
-                    render: t => {
-                        if (t.num == null) {
-                            return null;
-                        } else {
-                            return (<Input value={t.num} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'num')} onChange={this.onTextChangeHandler(t.reference, t.index, 'num')} onKeyDown={this.onKeyDownHandler} />);
-                        }
-                    }
-                },
-                {
-                    title: 'Beskrivning',
-                    key: 'description',
-                    render: t => {
-                        return (<AutoComplete
-                                value={t.description}
-                                bordered={false}
-                                style={{ width: '35ch' }}
-                                options={this.state.descriptionOptions}
-                                placeholder="skriv beskrivning"
-                                onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'description')}
-                                onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
-                                onSearch={(search) => this.searchAccountDescriptions(search)}
-                                onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
-                                onSelect={(value, object) => { this.searchAccountDescriptions(value);
-                                                               this.copyTransaction(object.key); }}
-                                />);
-                    }
-                }
-            ];
-            const splitsColumns = [
-                {
-                    title: 'Beskrivning',
-                    key: 'description',
-                    render: t => {
-                        return (<AutoComplete
-                                value={t.memo}
-                                bordered={false}
-                                style={{ width: '35ch' }}
-                                options={this.state.descriptionOptions}
-                                placeholder="skriv beskrivning"
-                                onChange={this.onAutoCompleteChangeHandler(t.reference, t.index, 'memo')}
-                                onBlur={this.onBlurHandler(t.reference, t.index, 'description')}
-                                onSearch={(search) => this.searchSplitMemos(search)}
-                                onFocus={(event) => this.searchSplitMemos(event.target.value)}
-                                onSelect={(value, object) => { this.searchSplitMemos(value);
-                                                               this.copySplit(t.index, object.key) }}
-                                />);
-                    }
-                },
-                {
-                    title: 'Konto',
-                    width: '15ch',
-                    key: 'account_id',
-                    render: t => {
-                        let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
-                        return (<AutoComplete
-                                key={this.state.key}
-                                value={t._shown_account}
-                                bordered={false}
-                                style={{ width: '40ch' }}
-                                options={options}
-                                placeholder="välj konto"
-                                filterOption={(inputValue, option) =>
-                                              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                                             }
-                                onBlur={this.onBlurHandler(t.reference, t.index, 'account_id')}
-                                onChange={this.onAccountChangeHandler(t.index)}
-                                />);
-                    }
-                },
-                {
-                    title: 'Avs.',
-                    width: '3.5ch',
-                    key: 'reconciled_state',
-                    render: t => {
-                        if (t.reconciled_state == null) {
-                            return null;
-                        } else {
-                            return (<Input value={t.reconciled_state} bordered={false} onBlur={this.onBlurHandler(t.reference, t.index, 'reconciled_state')} onChange={this.onTextChangeHandler(t.reference, t.index, 'reconciled_state')} onKeyDown={this.onKeyDownHandler} />);
-                        }
-                    }
-                },
-                {
-                    title: 'Till',
-                    width: '10ch',
-                    key: 'to',
-                    render: t => {
-                        return (<Input value={t.to} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'to')} onBlur={this.onBlurHandler(t.reference, t.index, 'to')} onKeyDown={this.onKeyDownHandler} />);
-                    }
-                },
-                {
-                    title: 'Från',
-                    width: '10ch',
-                    key: 'from',
-                    render: t => {
-                        return (<Input value={t.from} bordered={false} onChange={this.onTextChangeHandler(t.reference, t.index, 'from')} onBlur={this.onBlurHandler(t.reference, t.index, 'from')} onKeyDown={this.onKeyDownHandler} />);
-                    }
-                },
-                {
-                    title: 'Bal.',
-                    width: '3.5ch',
-                    key: 'balance',
-                    render: t => {
-                        if (t.reference == "splits") {
-                            return (
-                                <ThunderboltOutlined onClick={balanceSplitHandler(t)} />
-                            );
-                        } else {
-                            return null;
-                        }
-                    }
-                },
-                {
-                    title: 'Ta bort',
-                    width: '4ch',
-                    key: 'remove',
-                    render: t => {
-                        if (t.reference == "splits") {
-                            return (
-                                <MinusCircleOutlined onClick={removeSplitHandler(t)} />
-                            );
-                        } else {
-                            return null;
-                        }
-                    }
-                }
-            ];
-
-            let transactionData = mapTransactionToTable(transaction);
-            for (var i = 0; i < transactionData.length; i++) {
-                transactionData[i].key = i;
-            }
-            let splitsData = mapSplitsToTable(splits);
-            for (var i = 0; i < splitsData.length; i++) {
-                splitsData[i].key = i;
-            }
-
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Table id="transactionTable" columns={transactionColumns} dataSource={transactionData} pagination={false} />
-                  <Table id="splitsTable" columns={splitsColumns} dataSource={splitsData} pagination={false} />
-                  <PlusCircleOutlined onClick={addSplitHandler} />
                   <hr />
+                  { this.renderSplits() }
+                  <hr />
+                  <PlusCircleOutlined onClick={addSplitHandler} />
                   <BackButton />
                 </div>
             );
