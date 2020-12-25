@@ -469,7 +469,7 @@ class ShowTransaction extends React.Component {
         let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
         return (
             <Row key={index} >
-              <Col span={15} >
+              <Col span={14} >
                 <Row key='account'>
                   <AutoComplete
                     key={this.state.key}
@@ -501,13 +501,10 @@ class ShowTransaction extends React.Component {
                     />
                 </Row>
               </Col>
-              <Col span={1} >
-                <Input value={split.reconciled_state} bordered={false} onBlur={this.onBlurHandler('splits', index, 'reconciled_state')} onChange={this.onTextChangeHandler('splits', index, 'reconciled_state')} onKeyDown={this.onKeyDownHandler} />
-              </Col>
-              <Col span={3} >
+              <Col span={4} >
                 <Input value={split.to} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'to')} onBlur={this.onBlurHandler('splits', index, 'to')} onKeyDown={this.onKeyDownHandler} />
               </Col>
-              <Col span={3} >
+              <Col span={4} >
                 <Input value={split.from} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'from')} onBlur={this.onBlurHandler('splits', index, 'from')} onKeyDown={this.onKeyDownHandler} />
               </Col>
               <Col span={1} >
