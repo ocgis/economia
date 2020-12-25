@@ -3,8 +3,6 @@ import moment from "moment";
 import React from "react";
 import { Link, Redirect, useHistory } from "react-router-dom";
 import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Row, Table } from "antd";
-import "./transaction.css"
-import "antd/dist/antd.css";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from "throttle-debounce";
