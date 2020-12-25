@@ -40,9 +40,11 @@ default: &default
     - .sass
     - .scss
     - .css
+    - .less
     - .module.sass
     - .module.scss
     - .module.css
+    - .module.less
     - .png
     - .svg
     - .gif
