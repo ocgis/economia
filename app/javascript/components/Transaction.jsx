@@ -488,12 +488,12 @@ class ShowTransaction extends React.Component {
                 <Row key='description'>
                   <AutoComplete
                     value={split.memo}
+                    placeholder="memo"
                     bordered={false}
                     style={{ width: '35ch' }}
                     options={this.state.descriptionOptions}
-                    placeholder="skriv beskrivning"
                     onChange={this.onAutoCompleteChangeHandler('splits', index, 'memo')}
-                  onBlur={this.onBlurHandler('splits', index, 'description')}
+                    onBlur={this.onBlurHandler('splits', index, 'description')}
                     onSearch={(search) => this.searchSplitMemos(search)}
                     onFocus={(event) => this.searchSplitMemos(event.target.value)}
                     onSelect={(value, object) => { this.searchSplitMemos(value);
@@ -501,14 +501,27 @@ class ShowTransaction extends React.Component {
                     />
                 </Row>
               </Col>
-              <Col span={4} >
-                <Input value={split.to} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'to')} onBlur={this.onBlurHandler('splits', index, 'to')} onKeyDown={this.onKeyDownHandler} />
-              </Col>
-              <Col span={4} >
-                <Input value={split.from} bordered={false} onChange={this.onTextChangeHandler('splits', index, 'from')} onBlur={this.onBlurHandler('splits', index, 'from')} onKeyDown={this.onKeyDownHandler} />
-              </Col>
               <Col span={1} >
                 <ThunderboltOutlined onClick={this.balanceSplitHandler(index)} />
+              </Col>
+              <Col span={4} >
+                <Input
+                  value={split.to}
+                  placeholder="to"
+                  bordered={false}
+                  onChange={this.onTextChangeHandler('splits', index, 'to')}
+                  onBlur={this.onBlurHandler('splits', index, 'to')}
+                  onKeyDown={this.onKeyDownHandler}
+                  />
+              </Col>
+              <Col span={4} >
+                <Input
+                  value={split.from}
+                  placeholder="from"
+                  bordered={false}
+                  onChange={this.onTextChangeHandler('splits', index, 'from')}
+                  onBlur={this.onBlurHandler('splits', index, 'from')}
+                  onKeyDown={this.onKeyDownHandler} />
               </Col>
               <Col span={1} >
                 <MinusCircleOutlined onClick={this.removeSplitHandler(index)} />
@@ -519,7 +532,6 @@ class ShowTransaction extends React.Component {
 
 
     renderSplits = () => {
-        let transaction = this.state.transaction;
         let splitsElements = [];
 
         for (var i = 0; i < this.state.splits.length; i++) {
@@ -527,29 +539,6 @@ class ShowTransaction extends React.Component {
         }
         return (
             <div>
-              <Row>
-                <Col>
-                  <DatePicker value={moment(transaction.date_posted)} bordered={false} onBlur={this.onBlurHandler('transaction', null, 'date_posted')} onChange={this.onDateChangeHandler('transaction', null, 'date_posted')} onKeyDown={this.onKeyDownHandler} suffixIcon={null} />
-                </Col>
-                <Col>
-                  <Input value={transaction.num} bordered={false} onBlur={this.onBlurHandler('transaction', null, 'num')} onChange={this.onTextChangeHandler('transaction', null, 'num')} onKeyDown={this.onKeyDownHandler} />
-                </Col>
-                <Col>
-                  <AutoComplete
-                    value={transaction.description}
-                    bordered={false}
-                    style={{ width: '35ch' }}
-                    options={this.state.descriptionOptions}
-                    placeholder="skriv beskrivning"
-                    onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
-                    onBlur={this.onBlurHandler('transaction', null, 'description')}
-                    onSearch={(search) => this.searchAccountDescriptions(search)}
-                    onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
-              onSelect={(value, object) => { this.searchAccountDescriptions(value);
-              this.copyTransaction(object.key); }}
-              />
-</Col>
-</Row>
               { splitsElements }
             </div>
         );
@@ -597,13 +586,50 @@ class ShowTransaction extends React.Component {
                 );
             }
         } else {
+            let transaction = this.state.transaction;
             return (
                 <div>
                   <BookMenu bookId={bookId} />
                   <hr />
+                  <Row>
+                    <Col span={4} >
+                      <DatePicker
+                        value={moment(transaction.date_posted)}
+                        bordered={false}
+                        onBlur={this.onBlurHandler('transaction', null, 'date_posted')}
+                        onChange={this.onDateChangeHandler('transaction', null, 'date_posted')}
+                        onKeyDown={this.onKeyDownHandler} suffixIcon={null}
+                        />
+                    </Col>
+                    <Col span={3} >
+                      <Input
+                        value={transaction.num}
+                        placeholder="number"
+                        bordered={false}
+                        onBlur={this.onBlurHandler('transaction', null, 'num')}
+                        onChange={this.onTextChangeHandler('transaction', null, 'num')}
+                        onKeyDown={this.onKeyDownHandler}
+                        />
+                    </Col>
+                    <Col span={17} >
+                      <AutoComplete
+                        value={transaction.description}
+                        bordered={false}
+                        style={{ width: '35ch' }}
+                        options={this.state.descriptionOptions}
+                        placeholder="description"
+                        onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
+                        onBlur={this.onBlurHandler('transaction', null, 'description')}
+                        onSearch={(search) => this.searchAccountDescriptions(search)}
+                        onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                        onSelect={(value, object) => { this.searchAccountDescriptions(value);
+                        this.copyTransaction(object.key); }}
+                        />
+                    </Col>
+                  </Row>
                   { this.renderSplits() }
-                  <hr />
                   <PlusCircleOutlined onClick={addSplitHandler} />
+                  <hr />
                   <BackButton />
                 </div>
             );
