@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Col, Descriptions, Row, Table } from "antd";
+import { Col, Descriptions, Input, Row, Table } from "antd";
 import { BookMenu } from "./Book";
 
 class IndexAccount extends React.Component {
@@ -29,7 +29,8 @@ class IndexAccount extends React.Component {
         this.state = {
             accounts: null,
             accounts_map: null,
-            error: null
+            error: null,
+            filter: ''
         };
     }
 
@@ -58,6 +59,11 @@ class IndexAccount extends React.Component {
                     this.props.history.push("/");
                 }
             });
+    }
+
+
+    updateFilter = (event) => {
+        this.setState({ filter: event.target.value });
     }
 
 
@@ -132,10 +138,11 @@ class IndexAccount extends React.Component {
                 }
             ];
 
-            let data = this.state.accounts;
+            let data = this.state.accounts.filter(account => this.state.accounts_map[account.id].toLowerCase().includes(this.state.filter.toLowerCase()));
             return (
                 <div>
                   <BookMenu bookId={bookId} />
+                  <Input placeholder="filter accounts" onChange={this.updateFilter} />
                   <Table id="accountsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
