@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Descriptions, Table } from "antd";
+import { Col, Descriptions, Row, Table } from "antd";
 import { BookMenu } from "./Book";
 
 class IndexAccount extends React.Component {
@@ -184,7 +184,16 @@ class ShowAccount extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/books/${bookId}/accounts/${id}${this.props.location.search}`)
+        let search = this.props.location.search;
+        if (search == '') {
+            search = search + '?';
+        } else {
+            search = search + '&';
+        }
+        search = search + 'limit=100';
+        console.log(search);
+
+        axios.get(`/api/v1/books/${bookId}/accounts/${id}${search}`)
             .then(response => {
                 this.state = { account: response.data.account,
                                splits: response.data.splits };
@@ -198,6 +207,64 @@ class ShowAccount extends React.Component {
                     this.props.history.push("/");
                 }
             });
+    }
+
+
+    renderSplit = (split) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        if (split.value > 0) {
+            split.from = null;
+            split.to = Number(split.value).toFixed(2);
+        } else if (split.value < 0) {
+            split.from = Number(-split.value).toFixed(2);
+            split.to = null;
+        } else {
+            split.from = null;
+            split.to = null;
+        }
+
+        return (
+            <Row key={split.id} >
+              <Col span={2} >
+                { moment(split.etransaction.date_posted).format('YYYY-MM-DD') }
+              </Col>
+              <Col span={1} >
+                { split.etransaction.num }
+              </Col>
+              <Col span={5} >
+                <Link to={`/books/${bookId}/etransactions/${split.etransaction_id}`}>{split.etransaction.description}</Link>
+              </Col>
+              <Col span={4} >
+                { split.memo }
+              </Col>
+              <Col span={5} >
+                { split.other_account }
+              </Col>
+              <Col span={1} >
+                { split.reconciled_state }
+              </Col>
+              <Col span={2} >
+                { split.to }
+              </Col>
+              <Col span={2} >
+                { split.from }
+              </Col>
+              <Col span={2} >
+                { split.balance }
+              </Col>
+            </Row>
+        );
+    }
+
+
+    renderSplits = () => {
+        let elements = this.state.splits.map(split => this.renderSplit(split));
+        return elements;
     }
 
 
@@ -227,78 +294,6 @@ class ShowAccount extends React.Component {
                 );
             }
         } else {
-            const columns = [
-                {
-                    title: 'Datum',
-                    key: 'date_posted',
-                    render: t => {
-                        if (t.etransaction.date_posted == null) {
-                            return null;
-                        } else {
-                            return moment(t.etransaction.date_posted).format('YYYY-MM-DD');
-                        }
-                    },
-                },
-                {
-                    title: 'Num',
-                    key: 'num',
-                    render: t => t.etransaction.num
-                },
-                {
-                    title: 'Beskrivning',
-                    key: 'description',
-                    render: t => (
-                        <Link to={`/books/${bookId}/etransactions/${t.etransaction_id}`}>{t.etransaction.description}</Link>
-                    )
-                },
-                {
-                    title: 'Memo',
-                    dataIndex: 'memo'
-                },
-                {
-                    title: 'Överföring',
-                    dataIndex: 'other_account'
-                },
-                {
-                    title: 'Avstämt',
-                    dataIndex: 'reconciled_state',
-                },
-                {
-                    title: account.decrease_name,
-                    key: 'decrease',
-                    render: split => {
-                        if (split.value > 0) {
-                            return Number(split.value).toFixed(2);
-                        } else {
-                            return null;
-                        }
-                    }
-                },
-                {
-                    title: account.increase_name,
-                    key: 'increase',
-                    render: split => {
-                        if (split.value < 0) {
-                            return Number(-split.value).toFixed(2);
-                        } else {
-                            return null;
-                        }
-                    }
-                },
-                {
-                    title: 'Saldo',
-                    dataIndex: 'balance'
-                }
-            ];
-
-            let balance = 0;
-            let data = this.state.splits;
-            for (var i = 0; i < data.length; i++) {
-                balance = Number(data[i].value) + Number(balance);
-                data[i].balance = balance.toFixed(2);
-            }
-            data.reverse();
-
             return (
                 <div>
                   <BookMenu bookId={bookId} />
@@ -313,7 +308,7 @@ class ShowAccount extends React.Component {
                     <Descriptions.Item label="Commodity id">{account.commodity_id}</Descriptions.Item>
                     <Descriptions.Item label="Commodity space">{account.commodity_space}</Descriptions.Item>
                   </Descriptions>
-                  <Table id="splitsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
+                  { this.renderSplits() }
                 </div>
             );
         }

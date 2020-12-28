@@ -16,8 +16,9 @@ class Api::V1::AccountsController < ApplicationController
   end
 
   def show
-    all_splits = @account.splits.preload(:etransaction).joins(:etransaction).order('etransactions.date_posted')
     accounts_map = @book.accounts.full_name_map
+
+    account_splits = @account.splits.joins(:etransaction).order('etransactions.date_posted DESC').select(:etransaction_id)
 
     if params.key?(:year)
       year = params[:year].to_i
@@ -29,36 +30,60 @@ class Api::V1::AccountsController < ApplicationController
         start_date = DateTime.new(year, 1, 1)
         end_date = start_date + 1.year
       end
-      splits_objs = all_splits.where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
+      account_splits = account_splits.where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
                              { time_from: start_date,
                                time_to: end_date })
-    else
-      splits_objs = all_splits
     end
 
-    splits = splits_objs.preload({ etransaction: { splits: :account },
-                                   account: {} }).map do |split|
-      etransaction = split.etransaction.attributes
-      other_splits = split.other_splits
+    balance_splits = account_splits
 
-      if other_splits.size > 1
-        other_account = "-- Delad transaktion --"
-      elsif other_splits.size == 0
-        other_account = ""
-      else
-        other_account = accounts_map[other_splits[0].account_id]
+    if params.key?(:limit)
+      account_splits = account_splits.limit(params[:limit])
+    end
+
+    all_splits = Split.where("etransaction_id in (#{account_splits.to_sql})")
+
+    all_splits_grouped = all_splits.group_by(&:etransaction_id)
+
+    etransactions = Etransaction.where("etransactions.id in (#{account_splits.to_sql})").order(date_posted: :desc)
+
+    splits = []
+
+    etransactions.each do |etransaction|
+      splits_regrouped = all_splits_grouped[etransaction.id].group_by { |split| split.account_id == @account.id ? :account : :other }
+
+      num_splits = all_splits_grouped[etransaction.id].size
+
+      splits_regrouped[:account].each do |split|
+        if num_splits > 2
+          other_account = "-- Delad transaktion --"
+        elsif num_splits == 1
+          other_account = ""
+        else
+          if splits_regrouped[:other].size > 0
+            other_account = accounts_map[splits_regrouped[:other][0].account_id]
+          else
+            other_account = accounts_map[@account.id]
+          end
+        end
+        splits.append(split.attributes.update({ etransaction: etransaction,
+                                                other_account: other_account }))
       end
-
-      split.attributes.update({ etransaction: etransaction,
-                                other_account: other_account })
     end
-    account = @account.attributes.update({ full_name: @account.full_name,
-                                           decrease_name: @account.decrease_name,
-                                           increase_name: @account.increase_name })
+
+    account = @account.attributes.update({ full_name: accounts_map[@account.id] })
+
+    end_balance = @account.splits.where("etransaction_id in (#{balance_splits.to_sql})").calculate(:sum, :value)
+
+    splits.each do |split|
+      split[:balance] = end_balance
+      end_balance = end_balance - split['value']
+    end
+
     render json: { account: account,
                    splits: splits }
   end
-  
+
   private
 
   def set_book
@@ -66,7 +91,7 @@ class Api::V1::AccountsController < ApplicationController
   end
 
   def set_account
-    @account = @book.accounts.preload(:splits).find(params[:id])
+    @account = @book.accounts.find(params[:id])
   end
 
 end
