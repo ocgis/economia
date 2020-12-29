@@ -88,6 +88,14 @@ class IndexSummary extends React.Component {
             }
         } else {
             let header = this.state.rows[0];
+            let linkBase = (t) => {
+                var include = '';
+                if (t.included_accounts != null) {
+                    include = '&include=' + t.included_accounts.join(',');
+                }
+                return `/books/${bookId}/accounts/${t.account_id}?year=${this.state.year}${include}`
+            };
+
             const columns = [
                 {
                     title: header.title,
@@ -95,7 +103,7 @@ class IndexSummary extends React.Component {
                     render: (t) => {
                         if (t.account_id != null) {
                             return (
-                                <Link to={`/books/${bookId}/accounts/${t.account_id}?year=${this.state.year}`}>
+                                <Link to={linkBase(t)}>
                                   {t.title}
                                 </Link>);
                         } else {
@@ -115,7 +123,7 @@ class IndexSummary extends React.Component {
                         render: (t) => {
                             if (t.account_id != null) {
                                 return (
-                                    <Link to={`/books/${bookId}/accounts/${t.account_id}?year=${this.state.year}&month=${this.state.month_numbers[index]}`}>
+                                    <Link to={`${linkBase(t)}&month=${this.state.month_numbers[index]}`}>
                                       {t.months[index]}
                                     </Link>);
                             } else {

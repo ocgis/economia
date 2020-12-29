@@ -91,16 +91,19 @@ class Api::V1::SummaryController < ApplicationController
     collapses.each do |collapse|
       new_row = {title: collapse,
                  incoming: '',
+                 included_accounts: [],
                  months: Array.new(number_of_months, BigDecimal(0)),
                  average: BigDecimal(0),
                  sum: BigDecimal(0)}
       delete_rows = []
       all_rows.each do |row|
-        if row[:title] == new_row[:title]
-          new_row[:account_id] = row[:account_id]
-        end
-
         if row[:title].start_with?(new_row[:title])
+          if row[:title] == new_row[:title]
+            new_row[:account_id] = row[:account_id]
+          else
+            new_row[:included_accounts].append(row[:account_id])
+          end
+
           new_row[:months] = sum_lists(new_row[:months], row[:months])
           delete_rows.append(row)
         end
