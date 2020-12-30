@@ -18,7 +18,7 @@ class Api::V1::AccountsController < ApplicationController
   def show
     accounts_map = @book.accounts.full_name_map
 
-    account_ids = [params[:id]]
+    account_ids = [@account.id]
     if params.key?(:include)
       account_ids = account_ids + params[:include].split(',')
     end
@@ -58,21 +58,18 @@ class Api::V1::AccountsController < ApplicationController
     splits = []
 
     etransactions.each do |etransaction|
-      splits_regrouped = all_splits_grouped[etransaction.id].group_by { |split| (account_ids.include? split.account_id) ? :account : :other }
-
       num_splits = all_splits_grouped[etransaction.id].size
+
+      splits_regrouped = all_splits_grouped[etransaction.id].group_by { |split| (account_ids.include? split.account_id) ? :account : :other }
 
       splits_regrouped[:account].each do |split|
         if num_splits > 2
           other_account = "-- Delad transaktion --"
-        elsif num_splits == 1
-          other_account = ""
+        elsif num_splits == 2
+          index = (split.account_id == all_splits_grouped[etransaction.id][0].account_id) ? 1 : 0
+          other_account = accounts_map[all_splits_grouped[etransaction.id][index].account_id]
         else
-          if splits_regrouped[:other].size > 0
-            other_account = accounts_map[splits_regrouped[:other][0].account_id]
-          else
-            other_account = accounts_map[@account.id]
-          end
+          other_account = ""
         end
         splits.append(split.attributes.update({ etransaction: etransaction,
                                                 other_account: other_account }))
