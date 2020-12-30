@@ -6,10 +6,27 @@ class Api::V1::AccountsController < ApplicationController
   before_action :set_account, only: [:show]
 
   def index
-    accounts = @book.accounts.map do |account|
-      account.attributes
-    end
     accounts_map = @book.accounts.full_name_map
+
+    mapped = {}
+    @book.accounts.each do |account|
+      mapped[account[:id]] = {}
+      mapped[account[:id]][:balance] = BigDecimal(0)
+      mapped[account[:id]][:parent] = account.parent_id
+    end
+    balances = Split.joins(:account).where('accounts.book_id = ?', @book.id).select(:account_id, :value).group(:account_id).calculate(:sum, :value)
+
+    # Include children balances in parent balance
+    balances.each do |id, balance|
+      while not id.nil?
+        mapped[id][:balance] += balance
+        id = mapped[id][:parent]
+      end
+    end
+
+    accounts = @book.accounts.map do |account|
+      account.attributes.update({ balance: mapped[account.id][:balance] })
+    end
 
     render json: { accounts: accounts,
                    accounts_map: accounts_map }

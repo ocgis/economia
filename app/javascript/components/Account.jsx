@@ -47,9 +47,10 @@ class IndexAccount extends React.Component {
 
         axios.get(`/api/v1/books/${bookId}/accounts`)
             .then(response => {
-                this.state = { accounts: response.data.accounts,
-                               accounts_map: response.data.accounts_map };
-                this.setState(this.state);
+                let accounts = response.data.accounts.sort((a, b) => response.data.accounts_map[a.id].localeCompare(response.data.accounts_map[b.id]));
+
+                this.setState({ accounts: accounts,
+                                accounts_map: response.data.accounts_map });
             })
             .catch(error => {
                 if (error.response) {
@@ -107,6 +108,10 @@ class IndexAccount extends React.Component {
                 {
                     title: 'Description',
                     dataIndex: 'description'
+                },
+                {
+                    title: 'Balance',
+                    dataIndex: 'balance'
                 },
                 {
                     title: 'Type',
