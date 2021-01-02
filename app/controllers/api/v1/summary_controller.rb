@@ -8,20 +8,6 @@ class Api::V1::SummaryController < ApplicationController
   before_action :set_book
 
   def index
-    accounts = @book.accounts
-
-    if params.key?(:collapse)
-      collapses = params[:collapse].split(',')
-    else
-      collapses = 'Tillgångar,Lån,Utgifter:Mat,Utgifter:Hemmet,Utgifter:Hälsa,Inkomster:Lön,Utgifter:Fritid,Utgifter:Läsning,Utgifter:Kommunikation,Utgifter:Försäkringar,Utgifter:Nöjen,Resultat,Utgifter:Värdepappersinköp'.split(',')
-    end
-
-    if params.key?(:hide)
-      hides = params[:hide].split(',')
-    else
-      hides = 'Root Account,Resultat,Utgifter,Inkomster,Imbalance-SEK,Obalans-SEK,Föräldralös-SEK,Utgifter:Bil'.split(',')
-    end
-
     if params.key?(:year)
       year = params[:year].to_i
     else
@@ -29,273 +15,29 @@ class Api::V1::SummaryController < ApplicationController
     end
     number_of_months = 12
     @year = year
-    @prev_year = year - 1
-    @next_year = year + 1
-
-    all_rows = []
+    
+    @rows = []
+    @month_nrs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     start_date = DateTime.new(year, 1, 1)
     end_date = start_date + number_of_months.month
-    splits = Split.preload(:etransaction).joins(:etransaction).where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
-                                              { time_from: start_date,
-                                                time_to: end_date })
-    account_splits = {}
-    accounts.each do |account|
-      account_splits[account.id] = {}
-      current_date = start_date
-      number_of_months.times do
-        account_splits[account.id][[current_date.year, current_date.month]] = []
-        current_date = current_date + 1.month
-      end
-    end
 
-    splits.each do |split|
-      date = split.etransaction.date_posted
-      if date.nil? or split.account_id.nil?
-        if date.nil?
-          puts "ERROR: date_posted is nil"
-          puts split.etransaction.inspect
-        end
-        if split.account_id.nil?
-          puts "ERROR: account_id is nil"
-          puts split.inspect
-        end
-      else
-        account_splits[split.account_id][[date.year, date.month]].append(split)
-      end
-    end
+    report = @book.reports.includes(rows: { row_items: :item })[0]
+    accounts_to_load = get_accounts_to_load(report)
 
-    accounts_map = @book.accounts.full_name_map
-    accounts.each do |account|
-      row = { title: accounts_map[account.id],
-              account_id: account.id,
-              incoming: '',
-              months: [],
-              average: BigDecimal(0),
-              sum: BigDecimal(0)}
-      start_date = DateTime.new(year, 1, 1)
-      number_of_months.times do
-        end_date = start_date + 1.month
-        total = BigDecimal(0)
-        account_splits[account.id][[start_date.year, start_date.month]].each do |split|
-          total = total + split[:value]
-        end
-        row[:months].append(total)
-        start_date = end_date
-      end
-      calculate_sum_and_average(row)
-      
-      all_rows.append(row)
-    end
+    result_accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load[:result]).select(:id).to_sql
 
-    collapses.each do |collapse|
-      new_row = {title: collapse,
-                 incoming: '',
-                 included_accounts: [],
-                 months: Array.new(number_of_months, BigDecimal(0)),
-                 average: BigDecimal(0),
-                 sum: BigDecimal(0)}
-      delete_rows = []
-      all_rows.each do |row|
-        if row[:title].start_with?(new_row[:title])
-          if row[:title] == new_row[:title]
-            new_row[:account_id] = row[:account_id]
-          else
-            new_row[:included_accounts].append(row[:account_id])
-          end
+    results = Split.includes(:etransaction).where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
+                                                 { time_from: start_date,
+                                                   time_to: end_date }).where("splits.account_id in (#{result_accounts_in_book_sql})").select(:account_id, :value).group(:account_id, "to_char(date_posted, 'MM')").calculate(:sum, :value)
 
-          new_row[:months] = sum_lists(new_row[:months], row[:months])
-          delete_rows.append(row)
-        end
-      end
+    balance_accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load[:balance]).select(:id).to_sql
 
-      delete_rows.each do |delete_row|
-        all_rows.delete(delete_row)
-      end
-      calculate_sum_and_average(new_row)
-      all_rows.append(new_row)
-    end
+    balances = Split.includes(:etransaction).where("etransactions.date_posted < :time_from",
+                                                 { time_from: start_date,
+                                                   time_to: end_date }).where("splits.account_id in (#{balance_accounts_in_book_sql})").select(:account_id, :value).group(:account_id).calculate(:sum, :value)
 
-    hides.each do |hide|
-      delete_rows = []
-      all_rows.each do |row|
-        if row[:title] == hide
-          delete_rows.append(row)
-        end
-      end
-
-      delete_rows.each do |delete_row|
-        all_rows.delete(delete_row)
-      end      
-    end
-    
-    @rows = [{ title: year.to_s,
-               incoming: 'Ingående',
-               months: ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'],
-               average: 'Medel',
-               sum: 'Totalt'}]
-    @month_nrs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-    living_titles = ['Utgifter:Bostadsköp', 'Utgifter:Skatt:Vinstskatt']
-    income_tax_titles = ['Utgifter:Skatt:Inkomstskatt']
-
-    expenses = []
-    all_rows.each do |row|
-      if row[:title].start_with?('Utgifter') and not (living_titles + income_tax_titles).include? row[:title]
-        expenses.append(row)
-      end
-    end
-    expenses.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-    expenses = expenses.sort_by { |f| [f[:title]] }
-
-    expenses_sums = { title: "Summa utgifter",
-                      incoming: '',
-                      months: Array.new(number_of_months, BigDecimal(0)),
-                      average: BigDecimal(0),
-                      sum: BigDecimal(0)}
-    expenses.each do |expense|
-      expense[:title] = expense[:title]['Utgifter:'.length..-1]
-      expenses_sums[:months] = sum_lists(expenses_sums[:months], expense[:months])
-    end
-    calculate_sum_and_average(expenses_sums)
-
-    @rows = @rows + expenses
-    puts @rows.inspect
-    @rows.append(expenses_sums)
-
-    living_expenses = []
-    all_rows.each do |row|
-      if living_titles.include? row[:title]
-        living_expenses.append(row)
-      end
-    end
-    living_expenses.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-    living_expenses = living_expenses.sort_by { |f| [f[:title]] }
-
-    living_expenses_sums = { title: "Totala utgifter",
-                             incoming: '',
-                             months: Array.new(number_of_months, BigDecimal(0)),
-                             average: BigDecimal(0),
-                             sum: BigDecimal(0) }
-    (living_expenses + [expenses_sums]).each do |living_expense|
-      living_expenses_sums[:months] = sum_lists(living_expenses_sums[:months], living_expense[:months])
-    end
-    calculate_sum_and_average(living_expenses_sums)
-
-    living_expenses.each do |living_expense|
-      living_expense[:title] = living_expense[:title]['Utgifter:'.length..-1]
-    end
-    @rows = @rows + living_expenses
-    
-    @rows.append(living_expenses_sums)
-    
-    incomes = []
-    all_rows.each do |row|
-      if row[:title].start_with?('Inkomster')
-        incomes.append(row)
-      end
-    end
-    incomes.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-    incomes = incomes.sort_by { |f| [f[:title]] }
-
-    incomes_sums = { title: "Total inkomst",
-                     incoming: '',
-                     months: Array.new(number_of_months, BigDecimal(0)),
-                     average: BigDecimal(0),
-                     sum: BigDecimal(0)}
-    incomes.each do |income|
-      income[:title] = income[:title]['Inkomster:'.length..-1]
-    end
-    incomes.each do |income|
-      for i in 0..number_of_months-1
-        income[:months][i] = -income[:months][i]
-      end
-    end
-    incomes.each do |income|
-      incomes_sums[:months] = sum_lists(incomes_sums[:months], income[:months])
-    end
-    calculate_sum_and_average(incomes_sums)
-
-    @rows = @rows + incomes
-    @rows.append(incomes_sums)
-
-    income_taxes = []
-    all_rows.each do |row|
-      if income_tax_titles.include? row[:title]
-        income_taxes.append(row)
-      end
-    end
-    income_taxes.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-    income_taxes = income_taxes.sort_by { |f| [f[:title]] }
-
-    income_taxes_sums = { title: "Inkomst efter skatt",
-                          incoming: '',
-                          months: Array.new(number_of_months, BigDecimal(0)),
-                          average: BigDecimal(0),
-                          sum: BigDecimal(0) }
-    income_taxes_sums[:months] = sum_lists(income_taxes_sums[:months], incomes_sums[:months])
-    income_taxes.each do |income_tax|
-      income_taxes_sums[:months] = subtract_lists(income_taxes_sums[:months], income_tax[:months])
-    end
-    calculate_sum_and_average(income_taxes_sums)    
-
-    income_taxes.each do |income_tax|
-      income_tax[:title] = income_tax[:title]['Utgifter:'.length..-1]
-    end
-
-    @rows = @rows + income_taxes
-    @rows.append(income_taxes_sums)
-
-    loans = []
-    
-    loans_sums = { title: "Inlånat",
-                   incoming: '',
-                   months: Array.new(number_of_months, BigDecimal(0)),
-                   average: BigDecimal(0),
-                   sum: BigDecimal(0) }
-    all_rows.each do |row|
-      if row[:title] == "Lån"
-        loans.append(row)
-        loans_sums[:months] = subtract_lists(loans_sums[:months], row[:months])
-      end        
-    end
-    calculate_sum_and_average(loans_sums)
-
-    loans.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-    
-    @rows.append(loans_sums)
-    
-    assets = []
-    assets_sums = { title: "Bank",
-                    incoming: '',
-                    months: Array.new(number_of_months, BigDecimal(0)),
-                    average: BigDecimal(0),
-                    sum: BigDecimal(0) }
-    all_rows.each do |row|
-      if row[:title] == "Tillgångar"
-        assets.append(row)
-        assets_sums[:months] = sum_lists(assets_sums[:months], row[:months])
-      end        
-    end
-    calculate_sum_and_average(assets_sums)
-    
-    assets.each do |delete_row|
-      all_rows.delete(delete_row)
-    end
-
-    @rows.append(assets_sums)
-    
-    @rows = @rows + all_rows
+    @rows.concat(present_report(report, results, balances))
 
     render json: {
              rows: @rows,
@@ -310,25 +52,93 @@ class Api::V1::SummaryController < ApplicationController
     @book = Book.find(params[:book_id])
   end
 
-  def sum_lists(list1, list2)
-    return (Vector.elements(list1) + Vector.elements(list2)).to_a
+
+  def get_accounts_from_row(row)
+    value = {}
+    row.row_items.each do |row_item|
+      if row_item.item.is_a?(Row)
+        row_value = get_accounts_from_row(row_item.item)
+        row_value.each do |k, v|
+          value[k] = value.fetch(k, []).concat(v)
+        end
+      elsif row_item.item.is_a?(Account)
+        value[row.kind.to_sym] = value.fetch(row.kind.to_sym, []).append(row_item.item.id)
+      else
+        Rails.logger.warn("Class #{row_item.item.class.to_s} not handled!")
+      end
+    end
+
+    return value
   end
 
-  def subtract_lists(list1, list2)
-    return (Vector.elements(list1) - Vector.elements(list2)).to_a
+
+  def get_accounts_to_load(report)
+    value = {}
+    report.rows.each do |row|
+      row_value = get_accounts_from_row(row)
+      row_value.each do |k, v|
+        value[k] = value.fetch(k, []).concat(v)
+      end
+    end
+
+    value.each do |k, v|
+      value[k] = v.uniq
+    end
+    return value
   end
 
-  def average(list)
-    return sum(list) / list.length
-  end
-
-  def sum(list)
-    return list.inject(BigDecimal(0)) { |sum, x| sum + x }
-  end
-
-  def calculate_sum_and_average(row)
-    row[:average] = average(row[:months]).round(2)
-    row[:sum] = sum(row[:months]).round(2)
+  def present_report(report, results, balances)
+    present_rows = []
+    report.rows.each do |row|
+      account_ids = get_accounts_from_row(row)
+      if row[:kind] == 'year_header'
+        present_rows.append({ title: @year.to_s,
+                              incoming: 'Incoming',
+                              months: Date::MONTHNAMES[1..],
+                              average: 'Average',
+                              sum: 'Sum'})
+      elsif row[:kind] == 'result'
+        month_results = (1..12).to_a.map do |month_num|
+          account_ids[:result].sum do |account_id|
+            results.fetch([account_id, format("%02d", month_num)], BigDecimal(0))
+          end
+        end
+        sum = month_results.sum
+        average = sum / month_results.size
+        present_rows.append({ title: row.title,
+                              account_id: account_ids[:result][0],
+                              included_accounts: account_ids[:result][1..-1],
+                              incoming: '',
+                              months: month_results.map{ |result| format("%.2f", result) },
+                              average: format("%.2f", average),
+                              sum: format("%.2f", sum) })
+      elsif row[:kind] == 'balance'
+        month_balances = []
+        current_balance = account_ids[:balance].sum{ |account_id| balances.fetch(account_id, BigDecimal(0)) }
+        for month_num in 1..12 do
+          current_balance += account_ids[:balance].sum do |account_id|
+            results.fetch([account_id, format("%02d", month_num)], BigDecimal(0))
+          end
+          month_balances << current_balance
+        end
+        present_rows.append({ title: row.title,
+                              account_id: account_ids[:balance][0],
+                              included_accounts: account_ids[:balance][1..-1],
+                              incoming: '',
+                              months: month_balances.map{ |balance| format("%.2f", balance) },
+                              average: '',
+                              sum: '' })
+      else
+        present_rows.append({ title: "WARNING: unhandled type \"#{row[:kind]}\"",
+                              account_id: '',
+                              included_accounts: [],
+                              incoming: '',
+                              months: (1..12).to_a,
+                              average: '0.00',
+                              sum: '0.00' })
+      end
+    end
+    return present_rows
   end
 
 end

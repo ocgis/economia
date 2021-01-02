@@ -4,4 +4,5 @@ class Book < ApplicationRecord
   has_many :accounts, dependent: :destroy
   has_many :etransactions, dependent: :destroy
   has_many :prices, dependent: :delete_all
+  has_many :reports, dependent: :destroy
 end

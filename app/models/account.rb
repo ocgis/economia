@@ -2,7 +2,7 @@
 class Account < ApplicationRecord
   belongs_to :book
   belongs_to :account_parent, :class_name => 'Account', :foreign_key => :parent_id
-  has_many :account_children, :class_name => 'Account'
+  has_many :account_children, :class_name => 'Account', foreign_key: :parent_id
   belongs_to :commodity, foreign_key: [:commodity_id, :commodity_space, :book_id]
   has_many :splits, dependent: :delete_all
   has_many :slots, dependent: :destroy

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 100) do
+ActiveRecord::Schema.define(version: 130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -80,6 +80,34 @@ ActiveRecord::Schema.define(version: 100) do
     t.index ["book_id"], name: "index_prices_on_book_id"
   end
 
+  create_table "reports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.uuid "book_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["book_id"], name: "index_reports_on_book_id"
+  end
+
+  create_table "row_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "row_id"
+    t.string "item_type"
+    t.uuid "item_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["item_type", "item_id"], name: "index_row_items_on_item_type_and_item_id"
+    t.index ["row_id"], name: "index_row_items_on_row_id"
+  end
+
+  create_table "rows", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "kind"
+    t.string "title"
+    t.integer "index"
+    t.uuid "report_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["report_id"], name: "index_rows_on_report_id"
+  end
+
   create_table "slots", id: :serial, force: :cascade do |t|
     t.string "key"
     t.integer "value_integer"
@@ -131,6 +159,9 @@ ActiveRecord::Schema.define(version: 100) do
   add_foreign_key "commodities", "books"
   add_foreign_key "etransactions", "books"
   add_foreign_key "prices", "books"
+  add_foreign_key "reports", "books"
+  add_foreign_key "row_items", "rows"
+  add_foreign_key "rows", "reports"
   add_foreign_key "slots", "accounts"
   add_foreign_key "slots", "books"
   add_foreign_key "slots", "etransactions"
