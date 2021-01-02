@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Table } from "antd";
 import { BookMenu } from "./Book";
 
+
 class IndexReport extends React.Component {
 
     constructor(props) {
@@ -26,14 +27,12 @@ class IndexReport extends React.Component {
 
     resetState() {
         this.state = {
-            rows: null,
-            year: null,
-            month_numbers: null,
+            reports: null,
             error: null
         };
     }
 
-    
+
     loadData() {
         const {
             match: {
@@ -44,7 +43,120 @@ class IndexReport extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/books/${bookId}/reports${window.location.search}`)
+        axios.get(`/api/v1/books/${bookId}/reports`)
+            .then(response => {
+                this.setState({ reports: response.data.reports });
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    render() {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+        const reports = this.state.reports;
+        if (reports == null) {
+
+            if (this.state.error != null) {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Could not load content: {this.state.error}</h1>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                      <BookMenu bookId={bookId} />
+                      <h1>Loading</h1>
+                    </div>
+                );
+            }
+        } else {
+            const columns = [
+                {
+                    title: 'Name',
+                    key: 'name',
+                    render: (t) => {
+                        return (
+                            <Link to={`/books/${bookId}/reports/${t.id}`}>{t.name}</Link>
+                        );
+                    }
+                },
+                {
+                    title: 'Id',
+                    key: 'id',
+                    render: (t) => {
+                        return (
+                            <Link to={`/books/${bookId}/reports/${t.id}`}>{t.id}</Link>
+                        );
+                    }
+                }
+            ];
+
+            let data = this.state.reports;
+            return (
+                <div>
+                  <BookMenu bookId={bookId} />
+                  <Table id="reportsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
+                </div>
+            );
+        }
+    }
+}
+
+
+class ShowReport extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.resetState();
+    }
+
+
+    componentDidMount() {
+        this.loadData();
+    }
+
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location.search !== prevProps.location.search) {
+            this.loadData();
+        }
+    }
+
+
+    resetState() {
+        this.state = {
+            rows: null,
+            year: null,
+            month_numbers: null,
+            error: null
+        };
+    }
+
+
+    loadData() {
+        const {
+            match: {
+                params: { bookId, id }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.get(`/api/v1/books/${bookId}/reports/${id}${window.location.search}`)
             .then(response => {
                 this.state = { rows: response.data.rows,
                                year: response.data.year,
@@ -65,7 +177,7 @@ class IndexReport extends React.Component {
     render() {
         const {
             match: {
-                params: { bookId }
+                params: { bookId, id }
             }
         } = this.props;
 
@@ -149,8 +261,8 @@ class IndexReport extends React.Component {
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Link to={`/books/${bookId}/reports?year=${this.state.year-1}`}>&lt;</Link>
-                  <Link to={`/books/${bookId}/reports?year=${this.state.year+1}`}>&gt;</Link>
+                  <Link to={`/books/${bookId}/reports/${id}?year=${this.state.year-1}`}>&lt;</Link>
+                  <Link to={`/books/${bookId}/reports/${id}?year=${this.state.year+1}`}>&gt;</Link>
                   <Table id="reportsTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
@@ -159,4 +271,4 @@ class IndexReport extends React.Component {
 }
 
     
-export { IndexReport };
+export { IndexReport, ShowReport };

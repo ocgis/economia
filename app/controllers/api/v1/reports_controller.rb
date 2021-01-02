@@ -7,7 +7,15 @@ class Api::V1::ReportsController < ApplicationController
 
   before_action :set_book
 
+
   def index
+    reports = Report.all
+    render json: { reports: reports }
+  end
+
+
+  def show
+    id = params[:id]
     if params.key?(:year)
       year = params[:year].to_i
     else
@@ -22,7 +30,7 @@ class Api::V1::ReportsController < ApplicationController
     start_date = DateTime.new(year, 1, 1)
     end_date = start_date + number_of_months.month
 
-    report = @book.reports.includes(rows: { row_items: :item })[0]
+    report = @book.reports.includes(rows: { row_items: :item }).find(id)
     accounts_to_load = get_accounts_to_load(report)
 
     result_accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load[:result]).select(:id).to_sql
