@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { IndexBook, ShowBook, ImportBook, ExportBook } from "../components/Book"
 import { IndexAccount, ShowAccount } from "../components/Account"
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
-import { IndexSummary } from "../components/Summary"
+import { IndexReport } from "../components/Report"
 import TopMenu from "../components/TopMenu"
 
 export default (
@@ -64,9 +64,9 @@ export default (
           />
 
         <Route
-          path="/books/:bookId/summary"
+          path="/books/:bookId/reports"
           exact
-          component={IndexSummary}
+          component={IndexReport}
           />
 
       </Switch>

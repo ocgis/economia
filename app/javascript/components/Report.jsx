@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Table } from "antd";
 import { BookMenu } from "./Book";
 
-class IndexSummary extends React.Component {
+class IndexReport extends React.Component {
 
     constructor(props) {
         super(props);
@@ -44,7 +44,7 @@ class IndexSummary extends React.Component {
         const csrfToken = document.querySelector('[name=csrf-token]').content;
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/books/${bookId}/summary${window.location.search}`)
+        axios.get(`/api/v1/books/${bookId}/reports${window.location.search}`)
             .then(response => {
                 this.state = { rows: response.data.rows,
                                year: response.data.year,
@@ -149,9 +149,9 @@ class IndexSummary extends React.Component {
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Link to={`/books/${bookId}/summary?year=${this.state.year-1}`}>&lt;</Link>
-                  <Link to={`/books/${bookId}/summary?year=${this.state.year+1}`}>&gt;</Link>
-                  <Table id="summaryTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />
+                  <Link to={`/books/${bookId}/reports?year=${this.state.year-1}`}>&lt;</Link>
+                  <Link to={`/books/${bookId}/reports?year=${this.state.year+1}`}>&gt;</Link>
+                  <Table id="reportsTable" rowKey='title' columns={columns} dataSource={data} pagination={false} />
                 </div>
             );
         }
@@ -159,4 +159,4 @@ class IndexSummary extends React.Component {
 }
 
     
-export { IndexSummary };
+export { IndexReport };

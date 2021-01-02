@@ -1,9 +1,9 @@
 # coding: utf-8
 require 'matrix'
 
-class Api::V1::SummaryController < ApplicationController
+class Api::V1::ReportsController < ApplicationController
 
-  authorize_resource class: false
+  load_and_authorize_resource
 
   before_action :set_book
 

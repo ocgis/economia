@@ -38,7 +38,7 @@ class Ability
       can [:index, :show], Account
       can [:index, :show, :new, :update, :search], Etransaction
       can [:show, :search], Split
-      can [:index], :summary
+      can [:index, :show], Report
     end
   end
 end

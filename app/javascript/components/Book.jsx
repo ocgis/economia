@@ -119,7 +119,7 @@ class IndexBook extends React.Component {
 let BookMenu = (props) => {
     let bookEntries = [<Link to={`/books/${props.bookId}/etransactions/new`}>New transaction</Link>,
                        <Link to={`/books/${props.bookId}/accounts`}>Accounts</Link>,
-                       <Link to={`/books/${props.bookId}/summary`}>Summary</Link>,
+                       <Link to={`/books/${props.bookId}/reports`}>Reports</Link>,
                        <Link to={`/books/${props.bookId}/etransactions`}>Transactions</Link>,
                        <Link to={`/books/${props.bookId}/export`}>Export</Link>];
                          

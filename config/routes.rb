@@ -13,7 +13,7 @@ Rails.application.routes.draw do
         end
 
         resources :accounts, only: [:show, :index]
-        resources :summary, only: [:index]
+        resources :reports, only: [:show, :index]
         resources :etransactions, only: [:show, :update, :new, :index] do
           collection do
             get 'search'
