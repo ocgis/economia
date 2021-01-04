@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :books, only: [:show, :index] do
+      resources :books, only: [:show, :index, :destroy] do
         collection do
           post :import
         end
@@ -13,6 +13,8 @@ Rails.application.routes.draw do
         end
 
         resources :accounts, only: [:show, :index]
+        resources :commodities, only: [:index]
+        resources :prices, only: [:index]
         resources :reports, only: [:show, :index]
         resources :etransactions, only: [:show, :update, :new, :index] do
           collection do

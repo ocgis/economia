@@ -4,7 +4,7 @@ class Api::V1::BooksController < ApplicationController
 
   load_and_authorize_resource
 
-  before_action :set_book, only: [:show]
+  before_action :set_book, only: [:show, :destroy]
 
   def index
     books = Book.all.map do |book|
@@ -17,6 +17,15 @@ class Api::V1::BooksController < ApplicationController
   def show
     book = @book.attributes
     render json: { book: book }
+  end
+
+  def destroy
+    @book.destroy
+    books = Book.all.map do |book|
+      book.attributes
+    end
+
+    render json: { books: books }
   end
 
   def import
@@ -131,7 +140,9 @@ class Api::V1::BooksController < ApplicationController
           end
 
         elsif xp.children.size == 0
-          attributes[xp_name] = ''
+          if (xp_name != 'value_frame')
+            attributes[xp_name] = ''
+          end
         elsif xp_name[-1] == 's' or xp_name == 'value_frame' # List of objects
           reference_from[xp_name] = []
           xp.children.each do |child|

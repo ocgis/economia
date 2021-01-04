@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button, Descriptions, Input, Table } from "antd";
+import { Button, Descriptions, Input, Popconfirm, Table } from "antd";
 import { TopMenu } from "./TopMenu";
 
 class IndexBook extends React.Component {
@@ -38,6 +38,26 @@ class IndexBook extends React.Component {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         axios.get(`/api/v1/books`)
+            .then(response => {
+                this.state = { books: response.data.books };
+                this.setState(this.state);
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
+
+
+    destroyBook = (bookId) => {
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.delete(`/api/v1/books/${bookId}`)
             .then(response => {
                 this.state = { books: response.data.books };
                 this.setState(this.state);
@@ -94,6 +114,21 @@ class IndexBook extends React.Component {
                     }
                 },
                 {
+                    title: 'Delete',
+                    key: 'delete',
+                    render: (t) => {
+                        return (
+                            <Popconfirm
+                              placement="bottom"
+                              title={`Delete ${t.description}?`}
+                              onConfirm={ () => { this.destroyBook(t.id); } }
+                              >
+                              <Button>Delete</Button>
+                            </Popconfirm>
+                        );
+                    }
+                },
+                {
                     title: 'Id',
                     key: 'id',
                     render: (t) => {
@@ -120,6 +155,8 @@ let BookMenu = (props) => {
     let bookEntries = [<Link to={`/books/${props.bookId}/etransactions/new`}>New transaction</Link>,
                        <Link to={`/books/${props.bookId}/accounts`}>Accounts</Link>,
                        <Link to={`/books/${props.bookId}/reports`}>Reports</Link>,
+                       <Link to={`/books/${props.bookId}/commodities`}>Commodities</Link>,
+                       <Link to={`/books/${props.bookId}/prices`}>Prices</Link>,
                        <Link to={`/books/${props.bookId}/etransactions`}>Transactions</Link>,
                        <Link to={`/books/${props.bookId}/export`}>Export</Link>];
                          

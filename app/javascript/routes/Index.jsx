@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { IndexBook, ShowBook, ImportBook, ExportBook } from "../components/Book"
 import { IndexAccount, ShowAccount } from "../components/Account"
+import { IndexCommodity } from "../components/Commodity"
+import { IndexPrice } from "../components/Price"
 import { IndexTransaction, NewTransaction, ShowTransaction } from "../components/Transaction"
 import { IndexReport, ShowReport } from "../components/Report"
 import TopMenu from "../components/TopMenu"
@@ -43,6 +45,18 @@ export default (
           path="/books/:bookId/accounts"
           exact
           component={IndexAccount}
+          />
+
+        <Route
+          path="/books/:bookId/commodities"
+          exact
+          component={IndexCommodity}
+          />
+
+        <Route
+          path="/books/:bookId/prices"
+          exact
+          component={IndexPrice}
           />
 
         <Route
