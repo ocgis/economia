@@ -165,31 +165,28 @@ class ShowTransaction extends React.Component {
     }
 
 
-    calculateStateShownAccount() {
-        var i;
-        for (i = 0; i < this.state.splits.length; i++) {
-            this.state.splits[i]._shown_account = this.state.account_names[this.state.splits[i].account_id];
-        }
+    calculateStateShownAccount = () => {
+        this.state.splits.forEach(split => {
+            split._shown_account = this.state.account_names[split.account_id];
+        });
     }
 
 
-    calculateStateFromTo() {
-        var i;
-        for (i = 0; i < this.state.splits.length; i++) {
-            this.state.splits[i].value_from = this.state.splits[i].value < 0 ? Number(-this.state.splits[i].value).toFixed(2) : '';
-            this.state.splits[i].value_to = this.state.splits[i].value > 0 ? Number(this.state.splits[i].value).toFixed(2) : '';
-        }
+    calculateStateFromTo = () => {
+        this.state.splits.forEach(split => {
+            split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
+            split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
+        });
     }
 
 
-    calculateStateValueQuantity() {
-        var i;
-        for (i = 0; i < this.state.splits.length; i++) {
-            let value_to = this.state.splits[i].value_to === "" ? 0 : this.state.splits[i].value_to;
-            let value_from = this.state.splits[i].value_from === "" ? 0 : this.state.splits[i].value_from;
-            this.state.splits[i].value = value_to - value_from;
-            this.state.splits[i].quantity = this.state.splits[i].value;
-        }
+    calculateStateValueQuantity = () => {
+        this.state.splits.forEach(split => {
+            let value_to = split.value_to === "" ? 0 : split.value_to;
+            let value_from = split.value_from === "" ? 0 : split.value_from;
+            split.value = value_to - value_from;
+            split.quantity = split.value;
+        });
     }
 
 
@@ -680,16 +677,15 @@ class IndexTransaction extends React.Component {
     }
 
 
-    calculateStateFromTo() {
-        var i;
-        var j;
-        for (j = 0; j < this.state.transactions.length; j++) {
-            for (i = 0; i < this.state.transactions[j].splits.length; i++) {
-                this.state.transactions[j].splits[i].value_from = this.state.transactions[j].splits[i].value < 0 ? Number(-this.state.transactions[j].splits[i].value).toFixed(2) : '';
-                this.state.transactions[j].splits[i].value_to = this.state.transactions[j].splits[i].value > 0 ? Number(this.state.transactions[j].splits[i].value).toFixed(2) : '';
-            }
-        }
+    calculateStateFromTo = () => {
+        this.state.transactions.forEach(transaction => {
+            transaction.splits.forEach(split => {
+                split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
+                split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
+            });
+        });
     }
+
 
     render() {
         const {
@@ -774,11 +770,11 @@ class IndexTransaction extends React.Component {
                 },
                 {
                     title: 'Till',
-                    dataIndex: 'to'
+                    dataIndex: 'value_to'
                 },
                 {
                     title: 'Från',
-                    dataIndex: 'from'
+                    dataIndex: 'value_from'
                 }
             ];
 
