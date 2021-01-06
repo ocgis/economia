@@ -28,8 +28,8 @@ let mapSplitsToTable = (splits) => {
                                           _shown_account: t._shown_account,
                                           reconciled_state: t.reconciled_state,
                                           value: t.value,
-                                          from: t.from,
-                                          to: t.to }));
+                                          value_from: t.value_from,
+                                          value_to: t.value_to }));
     return splits;
 }
 
@@ -176,8 +176,8 @@ class ShowTransaction extends React.Component {
     calculateStateFromTo() {
         var i;
         for (i = 0; i < this.state.splits.length; i++) {
-            this.state.splits[i].from = this.state.splits[i].value < 0 ? Number(-this.state.splits[i].value).toFixed(2) : '';
-            this.state.splits[i].to = this.state.splits[i].value > 0 ? Number(this.state.splits[i].value).toFixed(2) : '';
+            this.state.splits[i].value_from = this.state.splits[i].value < 0 ? Number(-this.state.splits[i].value).toFixed(2) : '';
+            this.state.splits[i].value_to = this.state.splits[i].value > 0 ? Number(this.state.splits[i].value).toFixed(2) : '';
         }
     }
 
@@ -185,9 +185,9 @@ class ShowTransaction extends React.Component {
     calculateStateValueQuantity() {
         var i;
         for (i = 0; i < this.state.splits.length; i++) {
-            let to = this.state.splits[i].to === "" ? 0 : this.state.splits[i].to;
-            let from = this.state.splits[i].from === "" ? 0 : this.state.splits[i].from;
-            this.state.splits[i].value = to - from;
+            let value_to = this.state.splits[i].value_to === "" ? 0 : this.state.splits[i].value_to;
+            let value_from = this.state.splits[i].value_from === "" ? 0 : this.state.splits[i].value_from;
+            this.state.splits[i].value = value_to - value_from;
             this.state.splits[i].quantity = this.state.splits[i].value;
         }
     }
@@ -327,7 +327,7 @@ class ShowTransaction extends React.Component {
 
     onBlurHandler(reference, index, field) {
         return  (event) => {
-            if ((reference == "splits") && ['from', 'to'].includes(field)) {
+            if ((reference == "splits") && ['value_from', 'value_to'].includes(field)) {
                 if (this.state.splits[index][field] != '') {
                     let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
                     this.state.splits[index][field] = result == null ? '' : result;
@@ -506,21 +506,21 @@ class ShowTransaction extends React.Component {
               </Col>
               <Col span={4} >
                 <Input
-                  value={split.to}
-                  placeholder="to"
+                  value={split.value_to}
+                  placeholder="value_to"
                   bordered={false}
-                  onChange={this.onTextChangeHandler('splits', index, 'to')}
-                  onBlur={this.onBlurHandler('splits', index, 'to')}
+                  onChange={this.onTextChangeHandler('splits', index, 'value_to')}
+                  onBlur={this.onBlurHandler('splits', index, 'value_to')}
                   onKeyDown={this.onKeyDownHandler}
                   />
               </Col>
               <Col span={4} >
                 <Input
-                  value={split.from}
-                  placeholder="from"
+                  value={split.value_from}
+                  placeholder="value_from"
                   bordered={false}
-                  onChange={this.onTextChangeHandler('splits', index, 'from')}
-                  onBlur={this.onBlurHandler('splits', index, 'from')}
+                  onChange={this.onTextChangeHandler('splits', index, 'value_from')}
+                  onBlur={this.onBlurHandler('splits', index, 'value_from')}
                   onKeyDown={this.onKeyDownHandler} />
               </Col>
               <Col span={1} >
@@ -685,8 +685,8 @@ class IndexTransaction extends React.Component {
         var j;
         for (j = 0; j < this.state.transactions.length; j++) {
             for (i = 0; i < this.state.transactions[j].splits.length; i++) {
-                this.state.transactions[j].splits[i].from = this.state.transactions[j].splits[i].value < 0 ? Number(-this.state.transactions[j].splits[i].value).toFixed(2) : '';
-                this.state.transactions[j].splits[i].to = this.state.transactions[j].splits[i].value > 0 ? Number(this.state.transactions[j].splits[i].value).toFixed(2) : '';
+                this.state.transactions[j].splits[i].value_from = this.state.transactions[j].splits[i].value < 0 ? Number(-this.state.transactions[j].splits[i].value).toFixed(2) : '';
+                this.state.transactions[j].splits[i].value_to = this.state.transactions[j].splits[i].value > 0 ? Number(this.state.transactions[j].splits[i].value).toFixed(2) : '';
             }
         }
     }
