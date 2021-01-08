@@ -167,7 +167,7 @@ class ShowTransaction extends React.Component {
 
     calculateStateShownAccount = () => {
         this.state.splits.forEach(split => {
-            split._shown_account = this.state.accounts[split.account_id].full_name;
+            split._shown_account = split.account_id ? this.state.accounts[split.account_id].full_name : undefined;
         });
     }
 
@@ -185,8 +185,12 @@ class ShowTransaction extends React.Component {
     commodityMatchesCurrency = (split) => {
         let transaction = this.state.transaction;
         let account = this.state.accounts[split.account_id];
-        return ((account.commodity_space == transaction.currency_space) &&
-                (account.commodity_id == transaction.currency_id));
+        if (account != null) {
+            return ((account.commodity_space == transaction.currency_space) &&
+                    (account.commodity_id == transaction.currency_id));
+        } else {
+            return true;
+        }
     }
 
 
