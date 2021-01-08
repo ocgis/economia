@@ -6,7 +6,10 @@ class Api::V1::EtransactionsController < ApplicationController
   before_action :set_transaction, only: [:show, :update]
 
   def new
-    transaction = @book.etransactions.build(date_posted: DateTime.now);
+    default_commodity = @book.accounts.get_default_commodity
+    transaction = @book.etransactions.build(date_posted: DateTime.now,
+                                            currency_space: default_commodity[:space],
+                                            currency_id: default_commodity[:id]);
     transaction.save
     render json: { transaction: transaction.attributes }
   end

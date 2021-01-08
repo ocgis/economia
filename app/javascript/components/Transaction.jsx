@@ -664,7 +664,7 @@ class ShowTransaction extends React.Component {
                         onKeyDown={this.onKeyDownHandler}
                         />
                     </Col>
-                    <Col span={17} >
+                    <Col span={12} >
                       <AutoComplete
                         value={transaction.description || undefined}
                         bordered={false}
@@ -678,6 +678,9 @@ class ShowTransaction extends React.Component {
                         onSelect={(value, object) => { this.searchAccountDescriptions(value);
                         this.copyTransaction(object.key); }}
                         />
+                    </Col>
+                    <Col span={5} >
+                      {`${transaction.currency_space} ${transaction.currency_id}`}
                     </Col>
                   </Row>
                   { this.renderSplits() }

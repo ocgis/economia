@@ -73,4 +73,14 @@ class Account < ApplicationRecord
   end
 
 
+  def self.get_default_commodity
+    commodity_list_sorted = all.group_by{ |account| { space: account.commodity_space, id: account.commodity_id} }.each_pair.sort{ |a, b| b[1].size <=> a[1].size }
+    if commodity_list_sorted.size >= 1
+      return commodity_list_sorted[0][0]
+    else
+      return { space: nil, id: nil }
+    end
+  end
+
+
 end
