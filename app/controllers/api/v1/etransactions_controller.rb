@@ -16,7 +16,7 @@ class Api::V1::EtransactionsController < ApplicationController
     splits = @transaction.splits.map {
       |split| split.attributes
     }
-    accounts_map = @book.accounts.full_name_map
+    accounts_map = @book.accounts.accounts_map
 
     render json: { transaction: @transaction.attributes,
                    splits: splits,
@@ -29,7 +29,7 @@ class Api::V1::EtransactionsController < ApplicationController
       splits = @transaction.splits.map {
         |split| split.attributes
       }
-      accounts_map = @book.accounts.full_name_map
+      accounts_map = @book.accounts.accounts_map
 
       render json: { transaction: @transaction.attributes,
                      splits: splits,

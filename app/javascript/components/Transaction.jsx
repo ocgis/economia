@@ -167,7 +167,7 @@ class ShowTransaction extends React.Component {
 
     calculateStateShownAccount = () => {
         this.state.splits.forEach(split => {
-            split._shown_account = this.state.account_names[split.account_id];
+            split._shown_account = this.state.accounts[split.account_id].full_name;
         });
     }
 
@@ -176,7 +176,17 @@ class ShowTransaction extends React.Component {
         this.state.splits.forEach(split => {
             split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
             split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
+            split.quantity_from = split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '';
+            split.quantity_to = split.quantity > 0 ? Number(split.quantity).toFixed(2) : '';
         });
+    }
+
+
+    commodityMatchesCurrency = (split) => {
+        let transaction = this.state.transaction;
+        let account = this.state.accounts[split.account_id];
+        return ((account.commodity_space == transaction.currency_space) &&
+                (account.commodity_id == transaction.currency_id));
     }
 
 
@@ -185,7 +195,13 @@ class ShowTransaction extends React.Component {
             let value_to = split.value_to === "" ? 0 : split.value_to;
             let value_from = split.value_from === "" ? 0 : split.value_from;
             split.value = value_to - value_from;
-            split.quantity = split.value;
+            if (this.commodityMatchesCurrency(split)) {
+                split.quantity = split.value;
+            } else {
+                let quantity_to = split.quantity_to === "" ? 0 : split.quantity_to;
+                let quantity_from = split.quantity_from === "" ? 0 : split.quantity_from;
+                split.quantity = quantity_to - quantity_from;
+            }
         });
     }
 
@@ -193,10 +209,10 @@ class ShowTransaction extends React.Component {
     setStateFromResponse(response) {
         this.state.transaction = response.data.transaction;
         this.state.splits = response.data.splits;
-        this.state.account_names = response.data.accounts;
+        this.state.accounts = response.data.accounts;
         this.state.account_ids = {}
-        Object.keys(this.state.account_names).forEach((t) => {
-            this.state.account_ids[this.state.account_names[t]] = t;
+        Object.keys(this.state.accounts).forEach((t) => {
+            this.state.account_ids[this.state.accounts[t].full_name] = t;
         });
         this.calculateStateShownAccount();
         this.calculateStateFromTo();
@@ -461,13 +477,46 @@ class ShowTransaction extends React.Component {
     }
 
 
+    renderQuantity = (index) => {
+        let split = this.state.splits[index];
+
+        if(this.commodityMatchesCurrency(split)) {
+            return null;
+        } else {
+            return (
+                <React.Fragment>
+                  <Col span={4} >
+                    <Input
+                      value={split.quantity_to}
+                      placeholder="quantity to"
+                      bordered={false}
+                      onChange={this.onTextChangeHandler('splits', index, 'quantity_to')}
+                      onBlur={this.onBlurHandler('splits', index, 'quantity_to')}
+                      onKeyDown={this.onKeyDownHandler}
+                      />
+                  </Col>
+                  <Col span={4} >
+                    <Input
+                      value={split.quantity_from}
+                      placeholder="quantity from"
+                      bordered={false}
+                      onChange={this.onTextChangeHandler('splits', index, 'quantity_from')}
+                      onBlur={this.onBlurHandler('splits', index, 'quantity_from')}
+                      onKeyDown={this.onKeyDownHandler} />
+                  </Col>
+                </React.Fragment>
+            );
+        }
+    }
+
+
     renderSplit = (index) => {
         let split = this.state.splits[index];
-        let options = Object.keys(this.state.account_names).map((t) => ({ value: this.state.account_names[t] }));
+        let options = Object.keys(this.state.accounts).map((t) => ({ value: this.state.accounts[t].full_name }));
         return (
-            <Row key={index} >
-              <Col span={14} >
-                <Row key='account'>
+            <React.Fragment key={index} >
+              <Row key={`account${index}`} >
+                <Col span={14} >
                   <AutoComplete
                     key={this.state.key}
                     value={split._shown_account}
@@ -481,8 +530,35 @@ class ShowTransaction extends React.Component {
                                   onBlur={this.onBlurHandler('splits', index, 'account_id')}
                                   onChange={this.onAccountChangeHandler(index)}
                                   />
-                </Row>
-                <Row key='description'>
+                </Col>
+                <Col span={1} >
+                  <ThunderboltOutlined onClick={this.balanceSplitHandler(index)} />
+                </Col>
+                <Col span={4} >
+                  <Input
+                    value={split.value_to}
+                    placeholder="value to"
+                    bordered={false}
+                    onChange={this.onTextChangeHandler('splits', index, 'value_to')}
+                    onBlur={this.onBlurHandler('splits', index, 'value_to')}
+                    onKeyDown={this.onKeyDownHandler}
+                    />
+                </Col>
+                <Col span={4} >
+                  <Input
+                    value={split.value_from}
+                    placeholder="value from"
+                    bordered={false}
+                    onChange={this.onTextChangeHandler('splits', index, 'value_from')}
+                    onBlur={this.onBlurHandler('splits', index, 'value_from')}
+                    onKeyDown={this.onKeyDownHandler} />
+                </Col>
+                <Col span={1} >
+                  <MinusCircleOutlined onClick={this.removeSplitHandler(index)} />
+                </Col>
+              </Row>
+              <Row key={`description${index}`} >
+                <Col span={15} >
                   <AutoComplete
                     value={split.memo}
                     placeholder="memo"
@@ -496,34 +572,10 @@ class ShowTransaction extends React.Component {
                     onSelect={(value, object) => { this.searchSplitMemos(value);
                     this.copySplit(index, object.key) }}
                     />
-                </Row>
-              </Col>
-              <Col span={1} >
-                <ThunderboltOutlined onClick={this.balanceSplitHandler(index)} />
-              </Col>
-              <Col span={4} >
-                <Input
-                  value={split.value_to}
-                  placeholder="value_to"
-                  bordered={false}
-                  onChange={this.onTextChangeHandler('splits', index, 'value_to')}
-                  onBlur={this.onBlurHandler('splits', index, 'value_to')}
-                  onKeyDown={this.onKeyDownHandler}
-                  />
-              </Col>
-              <Col span={4} >
-                <Input
-                  value={split.value_from}
-                  placeholder="value_from"
-                  bordered={false}
-                  onChange={this.onTextChangeHandler('splits', index, 'value_from')}
-                  onBlur={this.onBlurHandler('splits', index, 'value_from')}
-                  onKeyDown={this.onKeyDownHandler} />
-              </Col>
-              <Col span={1} >
-                <MinusCircleOutlined onClick={this.removeSplitHandler(index)} />
-              </Col>
-            </Row>
+                </Col>
+                { this.renderQuantity(index) }
+              </Row>
+            </React.Fragment>
         );
     }
 
@@ -682,6 +734,8 @@ class IndexTransaction extends React.Component {
             transaction.splits.forEach(split => {
                 split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
                 split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
+                split.quantity_from = split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '';
+                split.quantity_to = split.quantity > 0 ? Number(split.quantity).toFixed(2) : '';
             });
         });
     }

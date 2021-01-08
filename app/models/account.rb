@@ -17,6 +17,21 @@ class Account < ApplicationRecord
     return self.full_name_by_map(accounts_map)
   end
 
+
+  def self.accounts_map
+    accounts_map = {}
+    all.each do |account|
+      accounts_map[account.id] = account
+    end
+
+    account_attrs_map = {}
+    all.each do |account|
+      account_attrs_map[account.id] = account.attributes.update(full_name: account.full_name_by_map(accounts_map))
+    end
+    return account_attrs_map
+  end
+
+
   def self.full_name_map
     all_accounts = all
     accounts_map = {}
