@@ -662,7 +662,7 @@ class ShowTransaction extends React.Component {
                     </Col>
                     <Col span={17} >
                       <AutoComplete
-                        value={transaction.description}
+                        value={transaction.description || undefined}
                         bordered={false}
                         style={{ width: '35ch' }}
                         options={this.state.descriptionOptions}
