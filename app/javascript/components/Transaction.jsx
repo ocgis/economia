@@ -774,7 +774,7 @@ class IndexTransaction extends React.Component {
             }
         } else {
             let data = [];
-            this.state.transactions.forEach((t) => {
+            this.state.transactions.reverse().forEach((t) => {
                 data = data.concat(mapTransactionToTable(t));
                 data = data.concat(mapSplitsToTable(t.splits));
             });
@@ -791,7 +791,11 @@ class IndexTransaction extends React.Component {
                         if (t.date_posted == null) {
                             return null;
                         } else {
-                            return moment(t.date_posted).format('YYYY-MM-DD');
+                            return (
+                                <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+                                  { moment(t.date_posted).format('YYYY-MM-DD') }
+                                </Link>
+                            );
                         }
                     }
                 },
