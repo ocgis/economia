@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 140) do
+ActiveRecord::Schema.define(version: 150) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -40,7 +40,7 @@ ActiveRecord::Schema.define(version: 140) do
   end
 
   create_table "commodities", id: false, force: :cascade do |t|
-    t.string "id"
+    t.string "id_"
     t.string "space"
     t.string "name"
     t.string "xcode"
@@ -51,7 +51,7 @@ ActiveRecord::Schema.define(version: 140) do
     t.uuid "book_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.index ["id", "space", "book_id"], name: "index_commodities_on_id_and_space_and_book_id", unique: true
+    t.index ["id_", "space", "book_id"], name: "index_commodities_on_id__and_space_and_book_id", unique: true
   end
 
   create_table "etransactions", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|

@@ -86,7 +86,7 @@ class IndexCommodity extends React.Component {
             const columns = [
                 {
                     title: 'Id',
-                    dataIndex: 'id'
+                    dataIndex: 'id_'
                 },
                 {
                     title: 'Space',

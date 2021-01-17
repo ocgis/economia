@@ -71,7 +71,13 @@ class Api::V1::BooksController < ApplicationController
   def wash_attribute_name(name)
     washed = name.gsub('-', '_')
     if washed == 'type'
-      washed = 'type_'
+      washed = 'type_' # Type is reserved in rails
+    elsif washed == 'id'
+      washed = 'id_'
+    elsif washed == 'commodity_id_'
+      washed = 'commodity_id'
+    elsif washed == 'currency_id_'
+      washed = 'currency_id'
     elsif washed == 'id_guid'
       washed = 'id'
     elsif washed == 'account_guid'
@@ -217,7 +223,7 @@ class Api::V1::BooksController < ApplicationController
     commodities.each do |record|
       xml['gnc'].commodity(version: version) do
         attributes = record.attributes
-        keys = ['space', 'id', 'name', 'xcode', 'fraction', 'get_quotes', 'quote_source', 'quote_tz']
+        keys = ['space', 'id_', 'name', 'xcode', 'fraction', 'get_quotes', 'quote_source', 'quote_tz']
         keys.each do |key|
           value = attributes[key]
           if not value.nil?
@@ -245,11 +251,11 @@ class Api::V1::BooksController < ApplicationController
           end
           xml[ns].commodity do
             xml['cmdty'].space(record.commodity.space)
-            xml['cmdty'].id(record.commodity.id)
+            xml['cmdty'].id(record.commodity.id_)
           end
           xml[ns].currency do
             xml['cmdty'].space(record.currency.space)
-            xml['cmdty'].id(record.currency.id)
+            xml['cmdty'].id(record.currency.id_)
           end
           xml[ns].time do
             xml['ts'].date(attributes['time'].strftime('%F %T %z'))
@@ -277,7 +283,7 @@ class Api::V1::BooksController < ApplicationController
         if not record.commodity.nil?
           xml[ns].commodity do
             xml['cmdty'].space(record.commodity.space)
-            xml['cmdty'].id(record.commodity.id)
+            xml['cmdty'].id(record.commodity.id_)
           end
         end
         if not attributes['commodity_scu'].nil?
@@ -321,7 +327,7 @@ class Api::V1::BooksController < ApplicationController
         if not record.currency.nil?
           xml[ns].currency do
             xml['cmdty'].space(record.currency.space)
-            xml['cmdty'].id(record.currency.id)
+            xml['cmdty'].id(record.currency.id_)
           end
         end
         if not attributes['num'].nil?
@@ -464,7 +470,7 @@ class Api::V1::BooksController < ApplicationController
           xml['book'].slots do
             keep_ns = xml.parent.namespace
             xml.parent.namespace = nil
-            book.slots do |slot|
+            book.slots.each do |slot|
               list_slot(xml, slot)
             end
             xml.parent.namespace = keep_ns
