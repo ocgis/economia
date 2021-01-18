@@ -75,7 +75,7 @@ class IndexBook extends React.Component {
 
     render() {
         const books = this.state.books;
-        let extraEntries = [<a href={"/books/import"}>Import file</a>];
+        let extraEntries = [<Link to={"/books/import"}>Import file</Link>];
         if (books == null) {
 
             if (this.state.error != null) {
@@ -264,7 +264,7 @@ class ImportBook extends React.Component {
         return (
             <div>
               <TopMenu />
-              <Input onChange={this.onDescriptionChange} />
+              <Input placeholder="description" onChange={this.onDescriptionChange} />
               <Input type="file" name="file" onChange={this.onChangeHandler} multiple />
               <Button type="button" onClick={this.onClickHandler}>Import</Button>
             </div>
