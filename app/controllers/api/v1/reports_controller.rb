@@ -33,19 +33,18 @@ class Api::V1::ReportsController < ApplicationController
     report = @book.reports.includes(rows: { row_items: :item }).find(id)
     accounts_to_load = get_accounts_to_load(report)
 
-    result_accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load[:result]).select(:id).to_sql
+    accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load).select(:id).to_sql
 
     results = Split.includes(:etransaction).where("etransactions.date_posted >= :time_from and etransactions.date_posted < :time_to",
                                                  { time_from: start_date,
-                                                   time_to: end_date }).where("splits.account_id in (#{result_accounts_in_book_sql})").select(:account_id, :value).group(:account_id, "to_char(date_posted, 'MM')").calculate(:sum, :value)
-
-    balance_accounts_in_book_sql = @book.accounts.where("id in (?)", accounts_to_load[:balance]).select(:id).to_sql
+                                                   time_to: end_date }).where("splits.account_id in (#{accounts_in_book_sql})").select(:account_id, :quantity).group(:account_id, "to_char(date_posted, 'MM')").calculate(:sum, :quantity)
 
     balances = Split.includes(:etransaction).where("etransactions.date_posted < :time_from",
-                                                 { time_from: start_date,
-                                                   time_to: end_date }).where("splits.account_id in (#{balance_accounts_in_book_sql})").select(:account_id, :value).group(:account_id).calculate(:sum, :value)
+                                                   { time_from: start_date }).where("splits.account_id in (#{accounts_in_book_sql})").select(:account_id, :quantity).group(:account_id).calculate(:sum, :quantity)
 
-    @rows.concat(present_report(report, results, balances))
+    prices = self.get_prices(accounts_to_load)
+
+    @rows.concat(present_report(report, accounts_to_load, results, balances, prices))
 
     render json: {
              rows: @rows,
@@ -81,21 +80,40 @@ class Api::V1::ReportsController < ApplicationController
 
 
   def get_accounts_to_load(report)
-    value = {}
+    account_ids = []
     report.rows.each do |row|
       row_value = get_accounts_from_row(row)
       row_value.each do |k, v|
-        value[k] = value.fetch(k, []).concat(v)
+        account_ids = account_ids.concat(v)
       end
     end
 
-    value.each do |k, v|
-      value[k] = v.uniq
-    end
-    return value
+    return account_ids.uniq
   end
 
-  def present_report(report, results, balances)
+
+  def present_report(report, accounts_to_load, results_quantity, initial_balances_quantity, prices)
+    balances_quantity = {}
+
+    accounts_to_load.each do |account_id|
+      balances_quantity[account_id] = {}
+      quantity = initial_balances_quantity.fetch(account_id, BigDecimal(0))
+      for idx in 0..12
+        quantity += results_quantity.fetch([account_id, format("%02d", idx)], BigDecimal(0))
+        balances_quantity[account_id][idx] = quantity
+      end
+    end
+
+    balances_value = {}
+    balances_quantity.each do |account_id, values_quantity|
+      balances_value[account_id] = {}
+      values_quantity.each do |month_idx, value_quantity|
+        balance_quantity = balances_quantity[account_id][month_idx]
+        price = prices.fetch(account_id, {}).fetch(month_idx, BigDecimal(1))
+        balances_value[account_id][month_idx] = balance_quantity * price
+      end
+    end
+
     present_rows = []
     report.rows.each do |row|
       account_ids = get_accounts_from_row(row)
@@ -108,7 +126,8 @@ class Api::V1::ReportsController < ApplicationController
       elsif row[:kind] == 'result'
         month_results = (1..12).to_a.map do |month_num|
           account_ids[:result].sum do |account_id|
-            results.fetch([account_id, format("%02d", month_num)], BigDecimal(0))
+            balances_value.fetch(account_id, {}).fetch(month_num, BigDecimal(0)) -
+            balances_value.fetch(account_id, {}).fetch(month_num - 1, BigDecimal(0))
           end
         end
         sum = month_results.sum
@@ -122,12 +141,10 @@ class Api::V1::ReportsController < ApplicationController
                               sum: format("%.2f", sum) })
       elsif row[:kind] == 'balance'
         month_balances = []
-        current_balance = account_ids[:balance].sum{ |account_id| balances.fetch(account_id, BigDecimal(0)) }
         for month_num in 1..12 do
-          current_balance += account_ids[:balance].sum do |account_id|
-            results.fetch([account_id, format("%02d", month_num)], BigDecimal(0))
+          month_balances << account_ids[:balance].sum do |account_id|
+            balances_value.fetch(account_id, {}).fetch(month_num, BigDecimal(0))
           end
-          month_balances << current_balance
         end
         present_rows.append({ title: row.title,
                               account_id: account_ids[:balance][0],
@@ -148,5 +165,41 @@ class Api::V1::ReportsController < ApplicationController
     end
     return present_rows
   end
+
+
+  def get_prices(accounts_to_load)
+    default_commodity = @book.accounts.get_default_commodity
+    priced_accounts_sql = @book.accounts.where("id in (?) and ((commodity_id <> ?) or (commodity_space <> ?))", accounts_to_load, default_commodity[:id], default_commodity[:space]).select(:id, :commodity_space, :commodity_id).to_sql
+    all_prices = @book.prices.joins("INNER JOIN (#{priced_accounts_sql}) AS accounts ON ((prices.commodity_id = accounts.commodity_id) AND (prices.commodity_space = accounts.commodity_space))").order(time: :desc).pluck('accounts.id, prices.value, prices.time').map{ |o| { account_id: o[0], value: o[1], time: o[2] } }.group_by{ |o| o[:account_id] }
+
+    prices = {}
+    year_start = DateTime.new(@year, 1, 1)
+    all_prices.each do |account_id, values|
+      if not prices.keys.include? account_id
+        prices[account_id] = {}
+      end
+      month_idx = DateTime.new(@year, 12, 1)
+
+      values.each do |value|
+        month_dt = value[:time].beginning_of_month
+
+        while month_dt <= month_idx do
+          if month_idx < year_start
+            prices[account_id][0] = value[:value]
+            break
+          end
+          prices[account_id][month_idx.month] = value[:value]
+          month_idx -= 1.month
+        end
+
+        if month_dt.year < @year
+          break
+        end
+      end
+    end
+
+    return prices
+  end
+
 
 end
