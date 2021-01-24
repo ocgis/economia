@@ -68,7 +68,8 @@ ActiveRecord::Schema.define(version: 150) do
 
   create_table "prices", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
     t.string "source"
-    t.string "value"
+    t.decimal "value"
+    t.string "type_"
     t.string "commodity_id"
     t.string "commodity_space"
     t.string "currency_id"
@@ -77,7 +78,6 @@ ActiveRecord::Schema.define(version: 150) do
     t.datetime "time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "type_"
     t.index ["book_id"], name: "index_prices_on_book_id"
   end
 
