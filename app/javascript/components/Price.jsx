@@ -1,5 +1,6 @@
 import axios from "axios";
 import React from "react";
+import moment from "moment";
 import { Table } from "antd";
 import { BookMenu } from "./Book";
 
@@ -43,7 +44,7 @@ class IndexPrice extends React.Component {
 
         axios.get(`/api/v1/books/${bookId}/prices`)
             .then(response => {
-                let prices = response.data.prices;
+                let prices = response.data.prices.sort((a, b) => { return moment(b.time) - moment(a.time) });
 
                 this.setState({ prices: prices });
             })
@@ -51,6 +52,7 @@ class IndexPrice extends React.Component {
                 if (error.response) {
                     this.setState({ error: `${error.response.status} ${error.response.statusText}` });
                 } else {
+                    console.log(error);
                     console.log("Push /");
                     this.props.history.push("/");
                 }
@@ -86,7 +88,8 @@ class IndexPrice extends React.Component {
             const columns = [
                 {
                     title: 'Time',
-                    dataIndex: 'time'
+                    dataIndex: 'time',
+                    render: t => moment(t).format('YYYY-MM-DD')
                 },
                 {
                     title: 'Commodity id',
