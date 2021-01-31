@@ -5,17 +5,35 @@ class Api::V1::PricesController < ApplicationController
   before_action :set_book
 
   def index
-    prices = @book.prices.map do |price|
+    prices = @book.prices.order(time: :desc).limit(100).map do |price|
       price.attributes
     end
 
-    render json: { prices: prices }
+    commodities = @book.commodities.map do |commodity|
+      commodity.attributes
+    end
+
+    render json: { prices: prices,
+                   commodities: commodities }
   end
+
+
+  def create
+    price = @book.prices.build(price_params)
+    price.save
+
+    render json: { price: price.attributes }
+  end
+
 
   private
 
   def set_book
     @book = Book.find(params[:book_id])
+  end
+
+  def price_params
+    params.require(:price).permit(:time, :currency_space, :currency_id, :commodity_space, :commodity_id, :source, :type_, :value)
   end
 
 end

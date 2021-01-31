@@ -154,7 +154,7 @@ class ShowTransaction extends React.Component {
         transaction.splits_attributes = this.state.splits;
 
         if(transaction.id == null) {
-            axios.post('/api/v1/books/${bookId}/etransactions', { transaction: transaction })
+            axios.post(`/api/v1/books/${bookId}/etransactions`, { transaction: transaction })
                 .then(response => this.setStateFromResponse(response))
                 .catch(error => console.log(error))
         } else {
