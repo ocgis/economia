@@ -250,23 +250,15 @@ class ShowAccount extends React.Component {
               <Col span={5} >
                 <Link to={`/books/${bookId}/etransactions/${split.etransaction_id}`}>{split.etransaction.description}</Link>
               </Col>
-              <Col span={4} >
-                { split.memo }
-              </Col>
-              <Col span={5} >
-                { split.other_account }
-              </Col>
-              <Col span={1} >
-                { split.reconciled_state }
+              <Col span={2} >
+                <div style={{ 'float': 'right' }} >
+                  { Number(split.value).toFixed(2) }
+                </div>
               </Col>
               <Col span={2} >
-                { split.to }
-              </Col>
-              <Col span={2} >
-                { split.from }
-              </Col>
-              <Col span={2} >
-                { split.balance }
+                <div style={{ 'float': 'right' }} >
+                  { Number(split.balance).toFixed(2) }
+                </div>
               </Col>
             </Row>
         );
@@ -309,15 +301,7 @@ class ShowAccount extends React.Component {
                 <div>
                   <BookMenu bookId={bookId} />
                   <Descriptions title="Account Information">
-                    <Descriptions.Item label="Name">{account.full_name}</Descriptions.Item>
-                    <Descriptions.Item label="Description">{account.description}</Descriptions.Item>
-                    <Descriptions.Item label="Type">{account.type_}</Descriptions.Item>
-                    <Descriptions.Item label="Id">{account.id}</Descriptions.Item>
-                    <Descriptions.Item label="Commodity scu">{account.commodity_scu}</Descriptions.Item>
-                    <Descriptions.Item label="Code">{account.code}</Descriptions.Item>
-                    <Descriptions.Item label="Parent">{account.parent}</Descriptions.Item>
-                    <Descriptions.Item label="Commodity id">{account.commodity_id}</Descriptions.Item>
-                    <Descriptions.Item label="Commodity space">{account.commodity_space}</Descriptions.Item>
+                    <Descriptions.Item label="Account">{account.full_name}</Descriptions.Item>
                   </Descriptions>
                   { this.renderSplits() }
                 </div>
