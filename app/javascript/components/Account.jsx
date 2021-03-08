@@ -241,21 +241,18 @@ class ShowAccount extends React.Component {
 
         return (
             <Row key={split.id} >
-              <Col span={2} >
+              <Col span={4} >
                 { moment(split.etransaction.date_posted).format('YYYY-MM-DD') }
               </Col>
-              <Col span={1} >
-                { split.etransaction.num }
-              </Col>
-              <Col span={5} >
+              <Col span={12} >
                 <Link to={`/books/${bookId}/etransactions/${split.etransaction_id}`}>{split.etransaction.description}</Link>
               </Col>
-              <Col span={2} >
+              <Col span={4} >
                 <div style={{ 'float': 'right' }} >
                   { Number(split.value).toFixed(2) }
                 </div>
               </Col>
-              <Col span={2} >
+              <Col span={4} >
                 <div style={{ 'float': 'right' }} >
                   { Number(split.balance).toFixed(2) }
                 </div>
