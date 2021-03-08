@@ -241,10 +241,10 @@ class ShowAccount extends React.Component {
 
         return (
             <Row key={split.id} >
-              <Col span={4} >
+              <Col span={5} >
                 { moment(split.etransaction.date_posted).format('YYYY-MM-DD') }
               </Col>
-              <Col span={12} >
+              <Col span={11} >
                 <Link to={`/books/${bookId}/etransactions/${split.etransaction_id}`}>{split.etransaction.description}</Link>
               </Col>
               <Col span={4} >
