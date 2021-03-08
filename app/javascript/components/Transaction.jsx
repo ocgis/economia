@@ -23,6 +23,7 @@ let mapSplitsToTable = (splits) => {
     splits.sort((a, b) => { return a.id - b.id });
     splits =  splits.map((t, index) => ({ reference: 'splits',
                                           id: t.id,
+                                          account_id: t.account_id,
                                           index: index,
                                           memo: t.memo,
                                           _shown_account: t._shown_account,
