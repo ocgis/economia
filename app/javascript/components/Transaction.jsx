@@ -2,37 +2,11 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link, Redirect, useHistory } from "react-router-dom";
-import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Row, Table } from "antd";
+import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Row } from "antd";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from "throttle-debounce";
 import { BookMenu } from "./Book";
-
-
-let mapTransactionToTable = (transaction) => {
-    let data = [transaction].map((t, index) =>  ({ reference: 'transaction',
-                                                   id: t.id,
-                                                   date_posted: t.date_posted,
-                                                   num: t.num,
-                                                   description: t.description,
-                                                   value: 0 }));
-    return data;
-}
-
-let mapSplitsToTable = (splits) => {
-    splits.sort((a, b) => { return a.id - b.id });
-    splits =  splits.map((t, index) => ({ reference: 'splits',
-                                          id: t.id,
-                                          account_id: t.account_id,
-                                          index: index,
-                                          memo: t.memo,
-                                          _shown_account: t._shown_account,
-                                          reconciled_state: t.reconciled_state,
-                                          value: t.value,
-                                          value_from: t.value_from,
-                                          value_to: t.value_to }));
-    return splits;
-}
 
 
 class NewTransaction extends React.Component {
@@ -694,6 +668,7 @@ class ShowTransaction extends React.Component {
     }
 }
 
+
 function BackButton() {
     const history = useHistory();
     return (<Button onClick={() => { history.goBack(); }} >Back</Button>);
@@ -723,7 +698,6 @@ class IndexTransaction extends React.Component {
             .then(response => {
                 this.state = { transactions: response.data.transactions,
                                account_names: response.data.accounts };
-                this.calculateStateFromTo();
                 this.setState(this.state);
             })
             .catch(error => {
@@ -734,18 +708,6 @@ class IndexTransaction extends React.Component {
                     this.props.history.push("/");
                 }
             });
-    }
-
-
-    calculateStateFromTo = () => {
-        this.state.transactions.forEach(transaction => {
-            transaction.splits.forEach(split => {
-                split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
-                split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
-                split.quantity_from = split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '';
-                split.quantity_to = split.quantity > 0 ? Number(split.quantity).toFixed(2) : '';
-            });
-        });
     }
 
 
@@ -774,83 +736,69 @@ class IndexTransaction extends React.Component {
                 );
             }
         } else {
-            let data = [];
-            this.state.transactions.reverse().forEach((t) => {
-                data = data.concat(mapTransactionToTable(t));
-                data = data.concat(mapSplitsToTable(t.splits));
-            });
-
-            for (var i = 0; i < data.length; i++) {
-                data[i].key = i;
-            }
-
-            const columns = [
-                {
-                    title: 'Datum',
-                    key: 'date_posted',
-                    render: t => {
-                        if (t.date_posted == null) {
-                            return null;
-                        } else {
-                            return (
-                                <Link to={`/books/${bookId}/etransactions/${t.id}`}>
-                                  { moment(t.date_posted).format('YYYY-MM-DD') }
-                                </Link>
-                            );
-                        }
-                    }
-                },
-                {
-                    title: 'Num',
-                    dataIndex: 'num'
-                },
-                {
-                    title: 'Beskrivning',
-                    key: 'description',
-                    render: t => {
-                        if (t.reference == 'transaction') {
-                            return (
-                                <Link to={`/books/${bookId}/etransactions/${t.id}`}>
-                                  {t.description}
-                                </Link>
-                            );
-                        } else {
-                            return t.memo;
-                        }
-                    }
-                },
-                {
-                    title: 'Konto',
-                    key: 'account_id',
-                    render: t => {
-                        if (t.reference == 'splits') {
-                            return this.state.account_names[t.account_id];
-                        } else {
-                            return null;
-                        }
-                    }
-                },
-                {
-                    title: 'Avstämt',
-                    dataIndex: 'reconciled_state',
-                },
-                {
-                    title: 'Till',
-                    dataIndex: 'value_to'
-                },
-                {
-                    title: 'Från',
-                    dataIndex: 'value_from'
-                }
-            ];
-
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Table id="transactionsTable" columns={columns} dataSource={data} pagination={false} />
+                  { this.renderTransactions() }
                 </div>
             );
         }
+    }
+
+
+    renderTransactions = () => {
+        return this.state.transactions.reverse().map((t) => {
+            return this.renderTransaction(t);
+        });
+    }
+
+
+    renderTransaction = (t) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        return (
+            <React.Fragment key={`t_${t.id}`}>
+              <Row>
+                <Col span={5}>
+                  <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+                    { moment(t.date_posted).format('YYYY-MM-DD') }
+                  </Link>
+                </Col>
+                <Col>
+                  <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+                    {t.description}
+                  </Link>
+                </Col>
+              </Row>
+              { this.renderSplits(t.splits) }
+              <hr />
+            </React.Fragment>
+        );
+    }
+
+
+    renderSplits = (splits) => {
+        return splits.map(s => this.renderSplit(s));
+    }
+
+
+    renderSplit = (s) => {
+        return (
+            <Row>
+              <Col span={20}>
+                { this.state.account_names[s.account_id] }
+              </Col>
+              <Col span={4}>
+                <div style={{ 'float': 'right' }} >
+                  { Number(s.value).toFixed(2) }
+                </div>
+              </Col>
+            </Row>
+        );
     }
 }
 
