@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link, Redirect, useHistory } from "react-router-dom";
-import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Row } from "antd";
+import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Popconfirm, Row } from "antd";
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from "throttle-debounce";
@@ -237,6 +237,32 @@ class ShowTransaction extends React.Component {
                 console.log("ERROR", error);
             });
     });
+
+
+    destroyTransaction = () => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.delete(`/api/v1/books/${bookId}/etransactions/${this.state.transaction.id}`)
+            .then(response => {
+                this.props.history.goBack();
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log(error);
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
+    }
 
 
     copyTransaction(id) {
@@ -661,18 +687,20 @@ class ShowTransaction extends React.Component {
                   { this.renderSplits() }
                   <PlusCircleOutlined onClick={addSplitHandler} />
                   <hr />
-                  <BackButton />
+                  <Button onClick={this.props.history.goBack}>Back</Button>
+                  <Popconfirm
+                    placement="bottom"
+                    title={`Delete transaction?`}
+                    onConfirm={this.destroyTransaction}
+                    >
+                    <Button>Delete</Button>
+                  </Popconfirm>
                 </div>
             );
         }
     }
 }
 
-
-function BackButton() {
-    const history = useHistory();
-    return (<Button onClick={() => { history.goBack(); }} >Back</Button>);
-}
 
 class IndexTransaction extends React.Component {
     constructor(props) {
@@ -788,7 +816,7 @@ class IndexTransaction extends React.Component {
 
     renderSplit = (s) => {
         return (
-            <Row>
+            <Row key={s.id}>
               <Col span={20}>
                 { this.state.account_names[s.account_id] }
               </Col>

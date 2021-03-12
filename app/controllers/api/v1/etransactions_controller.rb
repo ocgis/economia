@@ -3,7 +3,7 @@ class Api::V1::EtransactionsController < ApplicationController
   load_and_authorize_resource
 
   before_action :set_book
-  before_action :set_transaction, only: [:show, :update]
+  before_action :set_transaction, only: [:show, :update, :destroy]
 
   def new
     default_commodity = @book.accounts.get_default_commodity
@@ -66,6 +66,13 @@ class Api::V1::EtransactionsController < ApplicationController
         key: etransaction.id }
     end
     render json: { result: result }
+  end
+
+
+  def destroy
+    @transaction.destroy
+
+    render json: { }
   end
 
 

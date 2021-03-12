@@ -16,7 +16,7 @@ Rails.application.routes.draw do
         resources :commodities, only: [:index]
         resources :prices, only: [:index, :create]
         resources :reports, only: [:show, :index]
-        resources :etransactions, only: [:show, :update, :new, :index] do
+        resources :etransactions, only: [:show, :update, :new, :index, :destroy] do
           collection do
             get 'search'
           end
