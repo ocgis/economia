@@ -1,7 +1,7 @@
 import axios from "axios";
 import React from "react";
 import moment from "moment";
-import { Button, Col, DatePicker, Input, Row, Select, Table } from "antd";
+import { Button, Col, DatePicker, Input, Row, Select } from "antd";
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { BookMenu } from "./Book";
 
@@ -88,45 +88,12 @@ class IndexPrice extends React.Component {
                 );
             }
         } else {
-            const columns = [
-                {
-                    title: 'Time',
-                    dataIndex: 'time',
-                    render: t => moment(t).format('YYYY-MM-DD')
-                },
-                {
-                    title: 'Commodity id',
-                    dataIndex: 'commodity_id'
-                },
-                {
-                    title: 'Commodity space',
-                    dataIndex: 'commodity_space'
-                },
-                {
-                    title: 'Currency id',
-                    dataIndex: 'currency_id'
-                },
-                {
-                    title: 'Currency space',
-                    dataIndex: 'currency_space'
-                },
-                {
-                    title: 'Source',
-                    dataIndex: 'source'
-                },
-                {
-                    title: 'Value',
-                    dataIndex: 'value'
-                }
-            ];
-
-            let data = this.state.prices;
             return (
                 <div>
                   <BookMenu bookId={bookId} />
                   { this.renderAddPrice() }
                   <br />
-                  <Table id="pricesTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
+                  { this.renderPrices() }
                 </div>
             );
         }
@@ -152,6 +119,29 @@ class IndexPrice extends React.Component {
     }
 
 
+    renderPrices = () => {
+        return this.state.prices.map((price) => this.renderPrice(price));
+    }
+
+
+    renderPrice = (price) => {
+        return (
+            <Row key={ price.id }>
+              <Col span={ 5 }>
+                { moment(price.time).format('YYYY-MM-DD') }
+              </Col>
+              <Col span={ 6 }>
+                <div style={{ 'float': 'right' }}>
+                  { Number(price.value).toFixed(4) }
+                </div>
+              </Col>
+              <Col span={ 1 } />
+              <Col span={ 12 }>
+                { price.currency_id } / { price.commodity_id }
+              </Col>
+            </Row>
+        );
+    }
 }
 
 
@@ -178,38 +168,41 @@ class AddPrice extends React.Component {
         let options = commodities.map((t, i) => {
             return (
                 <Select.Option value={i} key={i}>
-                  { `${t.id_} (${t.space})` }
+                  { t.id_ }
+                  <br />
+                  ({ t.space })
                 </Select.Option>
             );
         });
 
         return (
-            <Row>
-              <Col span={1}>
-                <DatePicker defaultValue={ this.state.values.time } bordered={false} suffixIcon={null}
-                            onChange={ m => { this.state.values.time = m; } } />
-              </Col>
-              <Col span={1}>
-                <Input defaultValue={ Number(this.state.values.value).toFixed(2) } placeholder="price" bordered={false}
-                       onChange={ event => { this.state.values.value = Number(event.target.value); } } />
-              </Col>
-              <Col span={2}>
-                <Select defaultValue={this.state.values.currency} bordered={false} onChange={id => { this.state.values.currency = id; } }>
+            <div>
+              <Row>
+                <Col span={5}>
+                  <DatePicker defaultValue={ this.state.values.time } bordered={false} suffixIcon={null}
+                              onChange={ m => { this.state.values.time = m; } } />
+                </Col>
+                <Col span={6}>
+                  <Input defaultValue={ Number(this.state.values.value).toFixed(2) } placeholder="price" bordered={false}
+                         onChange={ event => { this.state.values.value = Number(event.target.value); } } />
+                </Col>
+                <Col span={1}/>
+                <Col span={12}>
+                  <Select defaultValue={this.state.values.currency} bordered={false} onChange={id => { this.state.values.currency = id; } }>
                   {options}
-                </Select>
-              </Col>
-              <Col span={1}>
-                /
-              </Col>
-              <Col span={2}>
-                <Select defaultValue={this.state.values.commodity} bordered={false} onChange={id => { this.state.values.commodity = id; } }>
-                  {options}
-                </Select>
-              </Col>
-              <Col span={1}>
-                <Button onClick={ () => { this.createPrice(this.props.onSubmit); } } >Submit</Button>
-              </Col>
-            </Row>
+                  </Select>
+                  /
+                  <Select defaultValue={this.state.values.commodity} bordered={false} onChange={id => { this.state.values.commodity = id; } }>
+                    {options}
+                  </Select>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={2}>
+                  <Button onClick={ () => { this.createPrice(this.props.onSubmit); } } >Submit</Button>
+                </Col>
+              </Row>
+            </div>
         );
     }
 
