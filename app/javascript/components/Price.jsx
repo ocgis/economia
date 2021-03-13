@@ -1,8 +1,8 @@
 import axios from "axios";
 import React from "react";
 import moment from "moment";
-import { Button, Col, DatePicker, Input, Row, Select } from "antd";
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { Button, Col, DatePicker, Input, Popconfirm, Row, Select } from "antd";
+import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { BookMenu } from "./Book";
 
 class IndexPrice extends React.Component {
@@ -136,11 +136,49 @@ class IndexPrice extends React.Component {
                 </div>
               </Col>
               <Col span={ 1 } />
-              <Col span={ 12 }>
+              <Col span={ 11 }>
                 { price.currency_id } / { price.commodity_id }
+              </Col>
+              <Col span={ 1 }>
+                <Popconfirm
+                  placement="bottom"
+                  title={`Delete price?`}
+                  onConfirm={() => { this.destroyPrice(price.id); }}
+                  >
+                  <MinusCircleOutlined />
+                </Popconfirm>
               </Col>
             </Row>
         );
+    }
+
+
+    destroyPrice = (priceId) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content;
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+        axios.delete(`/api/v1/books/${bookId}/prices/${priceId}`)
+            .then(response => {
+                let prices = response.data.prices.sort((a, b) => { return moment(b.time) - moment(a.time) });
+
+                this.setState({ prices: prices,
+                                commodities: response.data.commodities });
+            })
+            .catch(error => {
+                if (error.response) {
+                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+                } else {
+                    console.log(error);
+                    console.log("Push /");
+                    this.props.history.push("/");
+                }
+            });
     }
 }
 

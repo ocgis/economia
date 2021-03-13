@@ -14,7 +14,7 @@ Rails.application.routes.draw do
 
         resources :accounts, only: [:show, :index]
         resources :commodities, only: [:index]
-        resources :prices, only: [:index, :create]
+        resources :prices, only: [:index, :create, :destroy]
         resources :reports, only: [:show, :index]
         resources :etransactions, only: [:show, :update, :new, :index, :destroy] do
           collection do

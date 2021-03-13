@@ -40,7 +40,7 @@ class Ability
       can [:show, :search], Split
       can [:index, :show], Report
       can [:index], Commodity
-      can [:index, :create], Price
+      can [:index, :create, :destroy], Price
     end
   end
 end

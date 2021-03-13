@@ -3,6 +3,7 @@ class Api::V1::PricesController < ApplicationController
   load_and_authorize_resource
 
   before_action :set_book
+  before_action :set_price, only: [:destroy]
 
   def index
     prices = @book.prices.order(time: :desc).limit(100).map do |price|
@@ -26,10 +27,30 @@ class Api::V1::PricesController < ApplicationController
   end
 
 
+  def destroy
+    @price.destroy
+
+    prices = @book.prices.order(time: :desc).limit(100).map do |price|
+      price.attributes
+    end
+
+    commodities = @book.commodities.map do |commodity|
+      commodity.attributes
+    end
+
+    render json: { prices: prices,
+                   commodities: commodities }
+  end
+
+
   private
 
   def set_book
     @book = Book.find(params[:book_id])
+  end
+
+  def set_price
+    @price = @book.prices.find(params[:id])
   end
 
   def price_params
