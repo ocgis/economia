@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Col, Descriptions, Input, Row, Table } from "antd";
+import { Col, Descriptions, Input, Row } from "antd";
 import { BookMenu } from "./Book";
 
 class IndexAccount extends React.Component {
@@ -93,65 +93,48 @@ class IndexAccount extends React.Component {
                 );
             }
         } else {
-            const columns = [
-                {
-                    title: 'Name',
-                    key: 'id',
-                    render: (t) => {
-                        return (
-                            <Link to={`/books/${bookId}/accounts/${t.id}`}>
-                              {this.state.accounts_map[t.id]}
-                            </Link>
-                        );
-                    }
-                },
-                {
-                    title: 'Description',
-                    dataIndex: 'description'
-                },
-                {
-                    title: 'Balance',
-                    dataIndex: 'balance'
-                },
-                {
-                    title: 'Type',
-                    dataIndex: 'type_'
-                },
-                {
-                    title: 'Id',
-                    dataIndex: 'id'
-                },
-                {
-                    title: 'Commodity scu',
-                    dataIndex: 'commodity_scu'
-                },
-                {
-                    title: 'Code',
-                    dataIndex: 'code'
-                },
-                {
-                    title: 'Parent',
-                    dataIndex: 'parent'
-                },
-                {
-                    title: 'Commodity id',
-                    dataIndex: 'commodity_id'
-                },
-                {
-                    title: 'Commodity space',
-                    dataIndex: 'commodity_space'
-                }
-            ];
-
             let data = this.state.accounts.filter(account => this.state.accounts_map[account.id].toLowerCase().includes(this.state.filter.toLowerCase()));
             return (
                 <div>
                   <BookMenu bookId={bookId} />
-                  <Input placeholder="filter accounts" onChange={this.updateFilter} />
-                  <Table id="accountsTable" rowKey='id' columns={columns} dataSource={data} pagination={false} />
+                  <div style={{"padding": "1em 0.5em"}}>
+                    <Input placeholder="filter accounts" onChange={this.updateFilter} />
+                  </div>
+                  {this.renderAccounts(data)}
                 </div>
             );
         }
+    }
+
+
+    renderAccounts = (accounts) => {
+        return accounts.map((account) => this.renderAccount(account));
+    }
+
+
+    renderAccount = (account) => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        return (
+            <React.Fragment key={account.id}>
+              <Row>
+                <Col span={18}>
+                  <Link to={`/books/${bookId}/accounts/${account.id}`}>
+                    {this.state.accounts_map[account.id]}
+                  </Link>
+                </Col>
+                <Col span={6}>
+                  <div style={{"float": "right"}}>
+                    {Number(account.balance).toFixed(2)}
+                  </div>
+                </Col>
+              </Row>
+            </React.Fragment>
+        );
     }
 }
 
