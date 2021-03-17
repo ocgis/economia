@@ -28,8 +28,13 @@ class Api::V1::AccountsController < ApplicationController
       account.attributes.update({ balance: mapped[account.id][:balance] })
     end
 
+    commodities = @book.commodities.map do |commodity|
+      commodity.attributes
+    end
+
     render json: { accounts: accounts,
-                   accounts_map: accounts_map }
+                   accounts_map: accounts_map,
+                   commodities: commodities }
   end
 
   def show
@@ -104,6 +109,16 @@ class Api::V1::AccountsController < ApplicationController
                    splits: splits }
   end
 
+  def create
+    account = @book.accounts.build(account_params)
+    account.save
+
+    accounts_map = @book.accounts.full_name_map
+
+    render json: { account: account.attributes,
+                   accounts_map: accounts_map }
+  end
+
   private
 
   def set_book
@@ -112,6 +127,10 @@ class Api::V1::AccountsController < ApplicationController
 
   def set_account
     @account = @book.accounts.find(params[:id])
+  end
+
+  def account_params
+    params.require(:account).permit(:name, :description, :commodity_scu, :commodity_space, :commodity_id, :type_, :code, :parent_id)
   end
 
 end

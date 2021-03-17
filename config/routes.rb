@@ -12,7 +12,7 @@ Rails.application.routes.draw do
           get :export
         end
 
-        resources :accounts, only: [:show, :index]
+        resources :accounts, only: [:show, :index, :create]
         resources :commodities, only: [:index]
         resources :prices, only: [:index, :create, :destroy]
         resources :reports, only: [:show, :index]

@@ -2,7 +2,8 @@ import axios from "axios";
 import moment from "moment";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Col, Descriptions, Input, Row } from "antd";
+import { Button, Col, Descriptions, Input, Row, Select } from "antd";
+import { PlusCircleOutlined } from '@ant-design/icons';
 import { BookMenu } from "./Book";
 
 class IndexAccount extends React.Component {
@@ -29,6 +30,7 @@ class IndexAccount extends React.Component {
         this.state = {
             accounts: null,
             accounts_map: null,
+            commodities: null,
             error: null,
             filter: ''
         };
@@ -50,7 +52,8 @@ class IndexAccount extends React.Component {
                 let accounts = response.data.accounts.sort((a, b) => response.data.accounts_map[a.id].localeCompare(response.data.accounts_map[b.id]));
 
                 this.setState({ accounts: accounts,
-                                accounts_map: response.data.accounts_map });
+                                accounts_map: response.data.accounts_map,
+                                commodities: response.data.commodities });
             })
             .catch(error => {
                 if (error.response) {
@@ -97,6 +100,7 @@ class IndexAccount extends React.Component {
             return (
                 <div>
                   <BookMenu bookId={bookId} />
+                  {this.renderAddAccount()}
                   <div style={{"padding": "1em 0.5em"}}>
                     <Input placeholder="filter accounts" onChange={this.updateFilter} />
                   </div>
@@ -106,6 +110,27 @@ class IndexAccount extends React.Component {
         }
     }
 
+    renderAddAccount = () => {
+        const {
+            match: {
+                params: { bookId }
+            }
+        } = this.props;
+
+        if (this.state.addAccountVisible) {
+            return (
+                <AddAccount
+                  onSubmit={ (account, accounts_map) => { this.state.accounts.unshift(account); this.setState({ accounts: this.state.accounts, addAccountVisible: false, accounts_map: accounts_map }) } }
+                  accounts={ this.state.accounts_map }
+                  commodities={ this.state.commodities }
+                  bookId={ bookId} />
+            );
+        } else {
+            return (
+                <PlusCircleOutlined onClick={ () => { this.setState({ addAccountVisible: true }) } } />
+            );
+        }
+    }
 
     renderAccounts = (accounts) => {
         return accounts.map((account) => this.renderAccount(account));
@@ -139,6 +164,133 @@ class IndexAccount extends React.Component {
 }
 
     
+class AddAccount extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+    render = () => {
+        const {
+            accounts,
+            commodities
+        } = this.props;
+
+        if (this.state.values == null) {
+            this.state.values = {
+                type: 'BANK',
+                commodity: 0
+            }
+        }
+
+        let parentOptions = [];
+
+        Object.keys(accounts).forEach((id) => {
+            parentOptions = parentOptions.concat(
+                <Select.Option value={id} key={id}>
+                  { accounts[id] }
+                </Select.Option>
+            );
+        });
+
+        let typeOptions = ["ROOT", "BANK", "EQUITY", "INCOME", "LIABILITY", "ASSET", "CASH", "EXPENSE", "PAYABLE", "MUTUAL", "STOCK", "CREDIT"].map((type) => {
+            return (
+                <Select.Option value={type} key={type}>
+                  {type}
+                </Select.Option>
+            );
+        });
+
+        let commodityOptions = commodities.map((t, i) => {
+            return (
+                <Select.Option value={i} key={i}>
+                  { t.id_ }
+                  <br />
+                  ({ t.space })
+                </Select.Option>
+            );
+        });
+
+        return (
+            <div>
+              <Row>
+                <Col span={5}>
+                  <Input
+                    defaultValue={this.state.values.name}
+                    placeholder="name"
+                    bordered={false}
+                    onChange={ event => {this.state.values.name = event.target.value} }
+                    />
+                </Col>
+                <Col span={2}>
+                  <Select
+                    defaultValue={this.state.values.type}
+                    placeholder="type"
+                    bordered={false}
+                    style={{ minWidth: "100%" }}
+                    dropDownStyle={{ minWidth: "100%" }}
+                    onChange={ value => {this.state.values.type = value} }
+                    >
+                    {typeOptions}
+                  </Select>
+                </Col>
+                <Col span={7}>
+                  <Select
+                    bordered={false}
+                    defaultValue={this.state.values.parentId}
+                    placeholder="parent account"
+                    style={{ minWidth: "100%" }}
+                    dropDownStyle={{ minWidth: "100%" }}
+                    onChange={ value => {this.state.values.parentId = value} }
+                    >
+                    {parentOptions}
+                  </Select>
+                </Col>
+                <Col span={10}>
+                  <Select defaultValue={this.state.values.commodity} bordered={false} onChange={id => { this.state.values.commodity = id; } }>
+                    {commodityOptions}
+                  </Select>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={2}>
+                  <Button onClick={ () => { this.createAccount(this.props.onSubmit); } } >Submit</Button>
+                </Col>
+              </Row>
+            </div>
+        );
+    }
+
+
+    createAccount = (onCreated) => {
+        const {
+            commodities,
+            bookId
+        } = this.props;
+
+        let account = {
+            name: this.state.values.name,
+            description: null,
+            type_: this.state.values.type,
+            commodity_scu: 100,
+            code: null,
+            parent_id: this.state.values.parentId,
+            commodity_id: commodities[this.state.values.commodity].id_,
+            commodity_space: commodities[this.state.values.commodity].space,
+        }
+
+        const csrfToken = document.querySelector('[name=csrf-token]').content
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
+
+        axios.post(`/api/v1/books/${bookId}/accounts`, { account: account })
+            .then(response => {
+                onCreated(response.data.account, response.data.accounts_map);
+            })
+            .catch(error => console.log(error))
+    }
+}
+
+
 class ShowAccount extends React.Component {
 
     constructor(props) {
@@ -282,6 +434,7 @@ class ShowAccount extends React.Component {
                   <BookMenu bookId={bookId} />
                   <Descriptions title="Account Information">
                     <Descriptions.Item label="Account">{account.full_name}</Descriptions.Item>
+                    <Descriptions.Item label="Type">{account.type_}</Descriptions.Item>
                   </Descriptions>
                   { this.renderSplits() }
                 </div>
