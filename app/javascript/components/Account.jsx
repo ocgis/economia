@@ -214,7 +214,7 @@ class AddAccount extends React.Component {
         return (
             <div>
               <Row>
-                <Col span={5}>
+                <Col span={4}>
                   <Input
                     defaultValue={this.state.values.name}
                     placeholder="name"
@@ -222,32 +222,38 @@ class AddAccount extends React.Component {
                     onChange={ event => {this.state.values.name = event.target.value} }
                     />
                 </Col>
-                <Col span={2}>
+                <Col span={4}>
                   <Select
                     defaultValue={this.state.values.type}
                     placeholder="type"
                     bordered={false}
                     style={{ minWidth: "100%" }}
-                    dropDownStyle={{ minWidth: "100%" }}
+                    dropdownMatchSelectWidth={true}
                     onChange={ value => {this.state.values.type = value} }
                     >
                     {typeOptions}
                   </Select>
                 </Col>
-                <Col span={7}>
+                <Col span={10}>
                   <Select
                     bordered={false}
                     defaultValue={this.state.values.parentId}
                     placeholder="parent account"
                     style={{ minWidth: "100%" }}
-                    dropDownStyle={{ minWidth: "100%" }}
+                    dropdownMatchSelectWidth={true}
                     onChange={ value => {this.state.values.parentId = value} }
                     >
                     {parentOptions}
                   </Select>
                 </Col>
-                <Col span={10}>
-                  <Select defaultValue={this.state.values.commodity} bordered={false} onChange={id => { this.state.values.commodity = id; } }>
+                <Col span={6}>
+                  <Select
+                    defaultValue={this.state.values.commodity}
+                    bordered={false}
+                    style={{ minWidth: "100%" }}
+                    dropdownMatchSelectWidth={true}
+                    onChange={id => { this.state.values.commodity = id; } }
+                    >
                     {commodityOptions}
                   </Select>
                 </Col>
