@@ -57,24 +57,36 @@ class Api::V1::EtransactionsController < ApplicationController
                    accounts: accounts_map }
   end
 
-
   def search
-    latest_sql = @book.etransactions.select('DISTINCT ON (description) etransactions.*').order('description, updated_at DESC').to_sql
-    etransactions = Etransaction.select('*').where("LOWER(description) LIKE ?", "%" + params[:query].downcase + "%").from("(#{latest_sql}) as latest_sql").order(updated_at: :desc).limit(10)
-    result = etransactions.map do |etransaction|
-      { value: etransaction.description,
-        key: etransaction.id }
+    latest_sql = @book.etransactions.select('etransactions.*').order('description, updated_at DESC').to_sql
+    etransactions = Etransaction.preload(:splits).select('*').where("LOWER(description) LIKE ?", "%" + params[:query].downcase + "%").from("(#{latest_sql}) as latest_sql").order(updated_at: :desc).limit(100)
+    result = []
+
+    count = 0
+    etransactions.each do |etransaction|
+      memos = etransaction.splits.pluck(:memo).compact.sort.join('|')
+      description =
+        if memos.blank?
+          etransaction.description
+        else
+          "#{etransaction.description} : #{memos}"
+        end
+
+      next if result.size.positive? && (result.map { |r| r[:value] }.include? description)
+
+      result.append({ value: description,
+                      key: etransaction.id })
+      count += 1
+      break if count >= 10
     end
     render json: { result: result }
   end
 
-
   def destroy
     @transaction.destroy
 
-    render json: { }
+    render json: {}
   end
-
 
   rescue_from CanCan::AccessDenied do |exception|
     render json: { error: "Access denied"}, status: 403
