@@ -362,7 +362,8 @@ class ShowAccount extends React.Component {
     }
 
 
-    renderSplit = (split) => {
+  renderSplit = (split) => {
+    console.log('renderSplit2', split);
         const {
             match: {
                 params: { bookId }

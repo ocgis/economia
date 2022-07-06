@@ -815,17 +815,33 @@ class IndexTransaction extends React.Component {
 
 
     renderSplit = (s) => {
-        return (
-            <Row key={s.id}>
-              <Col span={20}>
-                { this.state.account_names[s.account_id] }
-              </Col>
-              <Col span={4}>
-                <div style={{ 'float': 'right' }} >
-                  { Number(s.value).toFixed(2) }
-                </div>
+        const renderMemo = (s) => {
+          if (s.memo == null) {
+            return null;
+          }
+          return (
+            <Row key={`${s.id}_memo`}>
+              <Col span={24}>
+                { s.memo }
               </Col>
             </Row>
+          );
+        }
+
+      return (
+        <React.Fragment>
+        <Row key={s.id}>
+        <Col span={20}>
+        { this.state.account_names[s.account_id] }
+        </Col>
+        <Col span={4}>
+        <div style={{ 'float': 'right' }} >
+        { Number(s.value).toFixed(2) }
+                  </div>
+                </Col>
+              </Row>
+              { renderMemo(s) }
+            </React.Fragment>
         );
     }
 }
