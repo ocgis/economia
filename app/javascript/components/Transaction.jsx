@@ -828,21 +828,41 @@ class IndexTransaction extends React.Component {
           );
         }
 
-      return (
+      let base = (
         <React.Fragment>
-        <Row key={s.id}>
-        <Col span={20}>
-        { this.state.account_names[s.account_id] }
-        </Col>
-        <Col span={4}>
-        <div style={{ 'float': 'right' }} >
-        { Number(s.value).toFixed(2) }
-                  </div>
-                </Col>
-              </Row>
-              { renderMemo(s) }
-            </React.Fragment>
+          <Row key={s.id}>
+            <Col span={20}>
+              { this.state.account_names[s.account_id] }
+            </Col>
+            <Col span={4}>
+              <div style={{ 'float': 'right' }} >
+                { Number(s.value).toFixed(2) }
+              </div>
+            </Col>
+          </Row>
+          { renderMemo(s) }
+        </React.Fragment>
+      );
+
+      switch(s.reconciled_state)
+      {
+        case 'y':
+        return (
+          <b key={s.id}>
+            { base }
+          </b>
         );
+
+        case 'c':
+        return base;
+
+        default:
+        return (
+          <i key={s.id}>
+            { base }
+          </i>
+        );
+      }
     }
 }
 

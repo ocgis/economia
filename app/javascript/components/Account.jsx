@@ -363,7 +363,6 @@ class ShowAccount extends React.Component {
 
 
   renderSplit = (split) => {
-    console.log('renderSplit2', split);
         const {
             match: {
                 params: { bookId }
@@ -381,7 +380,7 @@ class ShowAccount extends React.Component {
             split.to = null;
         }
 
-        return (
+        let base = (
             <Row key={split.id} >
               <Col span={5} >
                 { moment(split.etransaction.date_posted).format('YYYY-MM-DD') }
@@ -401,6 +400,26 @@ class ShowAccount extends React.Component {
               </Col>
             </Row>
         );
+
+        switch(split.reconciled_state)
+        {
+          case 'y':
+            return (
+              <b key={split.id}>
+                { base }
+              </b>
+            );
+
+          case 'c':
+          return base;
+
+          default:
+          return (
+            <i key={split.id}>
+              { base }
+            </i>
+          );
+        }
     }
 
 
