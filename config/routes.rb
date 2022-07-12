@@ -13,7 +13,7 @@ Rails.application.routes.draw do
         end
 
         resources :accounts, only: [:show, :index, :create]
-        resources :commodities, only: [:index]
+        resources :commodities, only: %i[index create]
         resources :prices, only: [:index, :create, :destroy]
         resources :reports, only: [:show, :index]
         resources :etransactions, only: [:show, :update, :new, :index, :destroy] do
@@ -93,5 +93,4 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
-
 end
