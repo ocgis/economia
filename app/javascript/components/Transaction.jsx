@@ -1,6 +1,7 @@
 import axios from "axios";
 import moment from "moment";
 import React from "react";
+import PropTypes from 'prop-types';
 import { Link, Redirect, useHistory } from "react-router-dom";
 import { AutoComplete, Button, Col, DatePicker, Input, InputNumber, Popconfirm, Row, Select } from "antd";
 import * as math from 'mathjs';
@@ -75,7 +76,10 @@ class NewTransaction extends React.Component {
     }
   }
 }
-
+NewTransaction.propTypes = {
+  match: PropTypes.shape().isRequired,
+  history: PropTypes.shape().isRequired,
+};
 
 class ShowTransaction extends React.Component {
 
@@ -605,292 +609,300 @@ class ShowTransaction extends React.Component {
 
     return (
       <b>
-      {base}
+        {base}
       </b>
     );
   }
 
 
-    renderSplits = () => {
-        let splitsElements = [];
+  renderSplits = () => {
+    let splitsElements = [];
 
-        for (var i = 0; i < this.state.splits.length; i++) {
-            splitsElements.push(this.renderSplit(i));
-        }
+    for (var i = 0; i < this.state.splits.length; i++) {
+      splitsElements.push(this.renderSplit(i));
+    }
+    return (
+      <div>
+        { splitsElements }
+      </div>
+    );
+  }
+
+
+  render () {
+    const {
+      match: {
+        params: { bookId }
+      }
+    } = this.props;
+
+    let addSplitHandler = () => {
+      this.state.splits.push({account_id: null,
+                              _shown_account: "",
+                              action: "",
+                              etransaction_id: this.state.transaction.id,
+                              from: "",
+                              id: null,
+                              memo: "",
+                              quantity: 0,
+                              reconcile_date: null,
+                              reconciled_state: "n",
+                              to: "",
+                              value: 0});
+      this.submitTransaction();
+    }
+
+    const transaction = this.state.transaction;
+    if (transaction == null) {
+      if (this.state.error != null) {
         return (
-            <div>
-              { splitsElements }
-            </div>
+          <div>
+            <BookMenu bookId={bookId} />
+            <h1>Could not load content: {this.state.error}</h1>
+          </div>
         );
+      } else {
+        return (
+          <div>
+            <BookMenu bookId={bookId} />
+            <h1>Loading</h1>
+          </div>
+        );
+      }
+    } else {
+      let transaction = this.state.transaction;
+      return (
+        <div>
+          <BookMenu bookId={bookId} />
+          <hr />
+          <Row>
+            <Col span={4} >
+              <DatePicker
+                value={moment(transaction.date_posted)}
+                bordered={false}
+                onBlur={this.onBlurHandler('transaction', null, 'date_posted')}
+                onChange={this.onDateChangeHandler('transaction', null, 'date_posted')}
+                onKeyDown={this.onKeyDownHandler} suffixIcon={null}
+              />
+            </Col>
+            <Col span={3} >
+              <Input
+                value={transaction.num}
+                placeholder="number"
+                bordered={false}
+                onBlur={this.onBlurHandler('transaction', null, 'num')}
+                onChange={this.onTextChangeHandler('transaction', null, 'num')}
+                onKeyDown={this.onKeyDownHandler}
+              />
+            </Col>
+            <Col span={12} >
+              <AutoComplete
+                value={transaction.description || undefined}
+                bordered={false}
+                style={{ width: '35ch' }}
+                options={this.state.descriptionOptions}
+                placeholder="description"
+                onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
+                onBlur={this.onBlurHandler('transaction', null, 'description')}
+                onSearch={(search) => this.searchAccountDescriptions(search)}
+                onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                onSelect={(value, object) => { this.searchAccountDescriptions(value);
+                  this.copyTransaction(object.key); }}
+              />
+            </Col>
+            <Col span={5} >
+              {`${transaction.currency_space} ${transaction.currency_id}`}
+            </Col>
+          </Row>
+          { this.renderSplits() }
+          <PlusCircleOutlined onClick={addSplitHandler} />
+          <hr />
+          <Button onClick={this.props.history.goBack}>Back</Button>
+          <Popconfirm
+            placement="bottom"
+            title={`Delete transaction?`}
+            onConfirm={this.destroyTransaction}
+          >
+            <Button>Delete</Button>
+          </Popconfirm>
+        </div>
+      );
     }
-
-
-    render () {
-        const {
-            match: {
-                params: { bookId }
-            }
-        } = this.props;
-
-        let addSplitHandler = () => {
-            this.state.splits.push({account_id: null,
-                                    _shown_account: "",
-                                    action: "",
-                                    etransaction_id: this.state.transaction.id,
-                                    from: "",
-                                    id: null,
-                                    memo: "",
-                                    quantity: 0,
-                                    reconcile_date: null,
-                                    reconciled_state: "n",
-                                    to: "",
-                                    value: 0});
-            this.submitTransaction();
-        }
-
-        const transaction = this.state.transaction;
-        if (transaction == null) {
-            if (this.state.error != null) {
-                return (
-                    <div>
-                      <BookMenu bookId={bookId} />
-                      <h1>Could not load content: {this.state.error}</h1>
-                    </div>
-                );
-            } else {
-                return (
-                    <div>
-                      <BookMenu bookId={bookId} />
-                      <h1>Loading</h1>
-                    </div>
-                );
-            }
-        } else {
-            let transaction = this.state.transaction;
-            return (
-                <div>
-                  <BookMenu bookId={bookId} />
-                  <hr />
-                  <Row>
-                    <Col span={4} >
-                      <DatePicker
-                        value={moment(transaction.date_posted)}
-                        bordered={false}
-                        onBlur={this.onBlurHandler('transaction', null, 'date_posted')}
-                        onChange={this.onDateChangeHandler('transaction', null, 'date_posted')}
-                        onKeyDown={this.onKeyDownHandler} suffixIcon={null}
-                        />
-                    </Col>
-                    <Col span={3} >
-                      <Input
-                        value={transaction.num}
-                        placeholder="number"
-                        bordered={false}
-                        onBlur={this.onBlurHandler('transaction', null, 'num')}
-                        onChange={this.onTextChangeHandler('transaction', null, 'num')}
-                        onKeyDown={this.onKeyDownHandler}
-                        />
-                    </Col>
-                    <Col span={12} >
-                      <AutoComplete
-                        value={transaction.description || undefined}
-                        bordered={false}
-                        style={{ width: '35ch' }}
-                        options={this.state.descriptionOptions}
-                        placeholder="description"
-                        onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
-                        onBlur={this.onBlurHandler('transaction', null, 'description')}
-                        onSearch={(search) => this.searchAccountDescriptions(search)}
-                        onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
-                        onSelect={(value, object) => { this.searchAccountDescriptions(value);
-                        this.copyTransaction(object.key); }}
-                        />
-                    </Col>
-                    <Col span={5} >
-                      {`${transaction.currency_space} ${transaction.currency_id}`}
-                    </Col>
-                  </Row>
-                  { this.renderSplits() }
-                  <PlusCircleOutlined onClick={addSplitHandler} />
-                  <hr />
-                  <Button onClick={this.props.history.goBack}>Back</Button>
-                  <Popconfirm
-                    placement="bottom"
-                    title={`Delete transaction?`}
-                    onConfirm={this.destroyTransaction}
-                    >
-                    <Button>Delete</Button>
-                  </Popconfirm>
-                </div>
-            );
-        }
-    }
+  }
 }
+ShowTransaction.propTypes = {
+  match: PropTypes.shape().isRequired,
+  history: PropTypes.shape().isRequired,
+};
 
 
 class IndexTransaction extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            transactions: null,
-            error: null
-        };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      transactions: null,
+      error: null
+    };
+  }
 
 
-    componentDidMount() {
-        const {
-            match: {
-                params: { bookId }
-            }
-        } = this.props;
+  componentDidMount() {
+    const {
+      match: {
+        params: { bookId }
+      }
+    } = this.props;
 
-        const csrfToken = document.querySelector('[name=csrf-token]').content;
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    const csrfToken = document.querySelector('[name=csrf-token]').content;
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        axios.get(`/api/v1/books/${bookId}/etransactions`)
-            .then(response => {
-                this.state = { transactions: response.data.transactions,
-                               account_names: response.data.accounts };
-                this.setState(this.state);
-            })
-            .catch(error => {
-                if (error.response) {
-                    this.setState({ error: `${error.response.status} ${error.response.statusText}` });
-                } else {
-                    console.log("Push /");
-                    this.props.history.push("/");
-                }
-            });
-    }
-
-
-    render() {
-        const {
-            match: {
-                params: { bookId }
-            }
-        } = this.props;
-
-        const transactions = this.state.transactions;
-        if (transactions == null) {
-            if (this.state.error != null) {
-                return (
-                    <div>
-                      <BookMenu bookId={bookId} />
-                      <h1>Could not load content: {this.state.error}</h1>
-                    </div>
-                );
-            } else {
-                return (
-                    <div>
-                      <BookMenu bookId={bookId} />
-                      <h1>Loading</h1>
-                    </div>
-                );
-            }
-        } else {
-            return (
-                <div>
-                  <BookMenu bookId={bookId} />
-                  { this.renderTransactions() }
-                </div>
-            );
-        }
-    }
+    axios.get(`/api/v1/books/${bookId}/etransactions`)
+         .then(response => {
+           this.state = { transactions: response.data.transactions,
+                          account_names: response.data.accounts };
+           this.setState(this.state);
+         })
+         .catch(error => {
+           if (error.response) {
+             this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+           } else {
+             console.log("Push /");
+             this.props.history.push("/");
+           }
+         });
+  }
 
 
-    renderTransactions = () => {
-        return this.state.transactions.reverse().map((t) => {
-            return this.renderTransaction(t);
-        });
-    }
+  render() {
+    const {
+      match: {
+        params: { bookId }
+      }
+    } = this.props;
 
-
-    renderTransaction = (t) => {
-        const {
-            match: {
-                params: { bookId }
-            }
-        } = this.props;
-
+    const transactions = this.state.transactions;
+    if (transactions == null) {
+      if (this.state.error != null) {
         return (
-            <React.Fragment key={`t_${t.id}`}>
-              <Row>
-                <Col span={5}>
-                  <Link to={`/books/${bookId}/etransactions/${t.id}`}>
-                    { moment(t.date_posted).format('YYYY-MM-DD') }
-                  </Link>
-                </Col>
-                <Col>
-                  <Link to={`/books/${bookId}/etransactions/${t.id}`}>
-                    {t.description}
-                  </Link>
-                </Col>
-              </Row>
-              { this.renderSplits(t.splits) }
-              <hr />
-            </React.Fragment>
+          <div>
+            <BookMenu bookId={bookId} />
+            <h1>Could not load content: {this.state.error}</h1>
+          </div>
         );
-    }
-
-
-    renderSplits = (splits) => {
-        return splits.map(s => this.renderSplit(s));
-    }
-
-
-    renderSplit = (s) => {
-        const renderMemo = (s) => {
-          if (s.memo == null) {
-            return null;
-          }
-          return (
-            <Row key={`${s.id}_memo`}>
-              <Col span={24}>
-                { s.memo }
-              </Col>
-            </Row>
-          );
-        }
-
-      let base = (
-        <React.Fragment>
-          <Row key={s.id}>
-            <Col span={20}>
-              { this.state.account_names[s.account_id] }
-            </Col>
-            <Col span={4}>
-              <div style={{ 'float': 'right' }} >
-                { Number(s.value).toFixed(2) }
-              </div>
-            </Col>
-          </Row>
-          { renderMemo(s) }
-        </React.Fragment>
-      );
-
-      switch(s.reconciled_state)
-      {
-        case 'y':
+      } else {
         return (
-          <b key={s.id}>
-            { base }
-          </b>
-        );
-
-        case 'c':
-        return base;
-
-        default:
-        return (
-          <i key={s.id}>
-            { base }
-          </i>
+          <div>
+            <BookMenu bookId={bookId} />
+            <h1>Loading</h1>
+          </div>
         );
       }
+    } else {
+      return (
+        <div>
+          <BookMenu bookId={bookId} />
+          { this.renderTransactions() }
+        </div>
+      );
     }
+  }
+
+
+  renderTransactions = () => {
+    return this.state.transactions.reverse().map((t) => {
+      return this.renderTransaction(t);
+    });
+  }
+
+
+  renderTransaction = (t) => {
+    const {
+      match: {
+        params: { bookId }
+      }
+    } = this.props;
+
+    return (
+      <React.Fragment key={`t_${t.id}`}>
+        <Row>
+          <Col span={5}>
+            <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+              { moment(t.date_posted).format('YYYY-MM-DD') }
+            </Link>
+          </Col>
+          <Col>
+            <Link to={`/books/${bookId}/etransactions/${t.id}`}>
+              {t.description}
+            </Link>
+          </Col>
+        </Row>
+        { this.renderSplits(t.splits) }
+        <hr />
+      </React.Fragment>
+    );
+  }
+
+
+  renderSplits = (splits) => {
+    return splits.map(s => this.renderSplit(s));
+  }
+
+
+  renderSplit = (s) => {
+    const renderMemo = (s) => {
+      if (s.memo == null) {
+        return null;
+      }
+      return (
+        <Row key={`${s.id}_memo`}>
+          <Col span={24}>
+            { s.memo }
+          </Col>
+        </Row>
+      );
+    }
+
+    let base = (
+      <React.Fragment>
+        <Row key={s.id}>
+          <Col span={20}>
+            { this.state.account_names[s.account_id] }
+          </Col>
+          <Col span={4}>
+            <div style={{ 'float': 'right' }} >
+              { Number(s.value).toFixed(2) }
+            </div>
+          </Col>
+        </Row>
+        { renderMemo(s) }
+      </React.Fragment>
+    );
+
+    switch(s.reconciled_state)
+    {
+      case 'y':
+      return (
+        <b key={s.id}>
+          { base }
+        </b>
+      );
+
+      case 'c':
+      return base;
+
+      default:
+      return (
+        <i key={s.id}>
+          { base }
+        </i>
+      );
+    }
+  }
 }
+IndexTransaction.propTypes = {
+  match: PropTypes.shape().isRequired,
+  history: PropTypes.shape().isRequired,
+};
 
 
 export { IndexTransaction, NewTransaction, ShowTransaction };
