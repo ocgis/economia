@@ -120,7 +120,7 @@ class ShowTransaction extends React.Component {
   }
 
 
-  submitTransaction() {
+  submitTransaction(newTransaction, newSplits) {
     const {
       match: {
         params: { bookId }
@@ -130,8 +130,8 @@ class ShowTransaction extends React.Component {
     const csrfToken = document.querySelector('[name=csrf-token]').content
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
 
-    let { created_at, updated_at, ...transaction } = this.state.transaction;
-    transaction.splits_attributes = this.state.splits;
+    let { created_at, updated_at, ...transaction } = newTransaction;
+    transaction.splits_attributes = newSplits;
 
     if(transaction.id == null) {
       axios.post(`/api/v1/books/${bookId}/etransactions`, { transaction: transaction })
@@ -145,15 +145,15 @@ class ShowTransaction extends React.Component {
   }
 
 
-  calculateStateShownAccount = () => {
-    this.state.splits.forEach(split => {
-      split._shown_account = split.account_id ? this.state.accounts[split.account_id].full_name : undefined;
+  calculateStateShownAccount = (splits, accounts) => {
+    splits.forEach(split => {
+      split._shown_account = split.account_id ? accounts[split.account_id].full_name : undefined;
     });
   }
 
 
-  calculateStateFromTo = () => {
-    this.state.splits.forEach(split => {
+  calculateStateFromTo = (splits) => {
+    splits.forEach(split => {
       split.value_from = split.value < 0 ? Number(-split.value).toFixed(2) : '';
       split.value_to = split.value > 0 ? Number(split.value).toFixed(2) : '';
       split.quantity_from = split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '';
@@ -191,16 +191,18 @@ class ShowTransaction extends React.Component {
 
 
   setStateFromResponse(response) {
-    this.state.transaction = response.data.transaction;
-    this.state.splits = response.data.splits;
-    this.state.accounts = response.data.accounts;
-    this.state.account_ids = {}
-    Object.keys(this.state.accounts).forEach((t) => {
-      this.state.account_ids[this.state.accounts[t].full_name] = t;
+    let newState = {
+      'transaction': response.data.transaction,
+      'splits': response.data.splits,
+      'accounts': response.data.accounts,
+      'account_ids': {}
+    };
+    Object.keys(newState.accounts).forEach((t) => {
+      newState.account_ids[newState.accounts[t].full_name] = t;
     });
-    this.calculateStateShownAccount();
-    this.calculateStateFromTo();
-    this.setState(this.state);
+    this.calculateStateShownAccount(newState.splits, newState.accounts);
+    this.calculateStateFromTo(newState.splits);
+    this.setState(newState);
   }
 
 
@@ -216,8 +218,10 @@ class ShowTransaction extends React.Component {
 
     let encodedSearch = encodeURIComponent(searchString);
     axios.get(`/api/v1/books/${bookId}/etransactions/search?query=${encodedSearch}`)
-         .then(response => { this.state.descriptionOptions = response.data.result;
-           this.setState(this.state); })
+         .then(response => {
+           this.setState({
+             'descriptionOptions': response.data.result
+           }); })
          .catch(error => {
            console.log("ERROR", error);
          });
@@ -236,8 +240,11 @@ class ShowTransaction extends React.Component {
 
     let encodedSearch = encodeURIComponent(searchString);
     axios.get(`/api/v1/books/${bookId}/splits/search?query=${encodedSearch}`)
-         .then(response => { this.state.descriptionOptions = response.data.result;
-           this.setState(this.state); })
+         .then(response => {
+           this.setState({
+             'descriptionOptions': response.data.result
+           });
+         })
          .catch(error => {
            console.log("ERROR", error);
          });
@@ -279,27 +286,27 @@ class ShowTransaction extends React.Component {
 
     let handleResponse = response => {
       let {created_at, updated_at, date_posted, id, ...newTransaction} = response.data.transaction;
-      this.state.transaction = { ...this.state.transaction, ...newTransaction };
+      let updatedTransaction = { ...this.state.transaction, ...newTransaction };
 
       let newSplits = response.data.splits;
+      let updatedSplits = [...this.state.splits];
       // Overwrite existing splits with new splits
-      for(var i = 0; i < Math.min(this.state.splits.length, newSplits.length); i++) {
+      for(var i = 0; i < Math.min(updatedSplits.length, newSplits.length); i++) {
         let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
-        this.state.splits[i] = { ...this.state.splits[i], ...newSplit };
+        updatedSplits[i] = { ...updatedSplits[i], ...newSplit };
       }
       // Append new splits
-      for(var i = this.state.splits.length; i < newSplits.length; i++) {
+      for(var i = updatedSplits.length; i < newSplits.length; i++) {
         let {created_at, updated_at, etransaction_id, id, ...newSplit} = newSplits[i]
-        this.state.splits.push(newSplit);
+        updatedSplits.push(newSplit);
       }
       // Delete existing splits
-      for(var i = newSplits.length; i < this.state.splits.length; i++) {
-        this.state.splits[i]._destroy = true;
+      for(var i = newSplits.length; i < updatedSplits.length; i++) {
+        updatedSplits[i]._destroy = true;
       }
-      this.state.key = Date.now();
-      this.calculateStateShownAccount();
-      this.calculateStateFromTo();
-      this.submitTransaction();
+      this.calculateStateShownAccount(updatedSplits, this.state.accounts);
+      this.calculateStateFromTo(updatedSplits);
+      this.submitTransaction(updatedTransaction, updatedSplits);
     }
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -325,12 +332,13 @@ class ShowTransaction extends React.Component {
 
     let handleResponse = response => {
       let {created_at, updated_at, etransaction_id, id, ...newSplit} = response.data.split;
-      this.state.splits[split_index] = { ...this.state.splits[split_index], ...newSplit };
+      let updatedSplits = [...this.state.splits];
 
-      this.state.key = Date.now();
-      this.calculateStateShownAccount();
-      this.calculateStateFromTo();
-      this.submitTransaction();
+      updatedSplits[split_index] = { ...updatedSplits[split_index], ...newSplit };
+
+      this.calculateStateShownAccount(updatedSplits, this.state.accounts);
+      this.calculateStateFromTo(updatedSplits);
+      this.submitTransaction(this.state.transaction, updatedSplits);
     }
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -351,18 +359,19 @@ class ShowTransaction extends React.Component {
   onBlurHandler(reference, index, field) {
     return  (event) => {
       if ((reference == "splits") && ['value_from', 'value_to'].includes(field)) {
-        if (this.state.splits[index][field] != '') {
-          let result = math.evaluate(this.state.splits[index][field]).toFixed(2);
-          this.state.splits[index][field] = result == null ? '' : result;
-          this.setState(this.state);
+        let splits = [...this.state.splits];
+        if (splits[index][field] != '') {
+          let result = math.evaluate(splits[index][field]).toFixed(2);
+          splits[index][field] = result == null ? '' : result;
+          this.setState({ splits });
         }
       }
 
       if ((event.relatedTarget == null) || (event.target.parentElement.parentElement != event.relatedTarget.parentElement.parentElement)) {
         this.calculateStateValueQuantity();
-        this.calculateStateShownAccount();
-        this.calculateStateFromTo();
-        this.submitTransaction();
+        this.calculateStateShownAccount(this.state.splits, this.state.accounts);
+        this.calculateStateFromTo(this.state.splits);
+        this.submitTransaction(this.state.transaction, this.state.splits);
       }
     }
   }
@@ -406,22 +415,26 @@ class ShowTransaction extends React.Component {
 
   onTextChangeHandler(reference, index, field) {
     return  (event) => {
+      let newState = {};
+      newState[reference] = JSON.parse(JSON.stringify(this.state[reference]));
       if (index == null) {
-        this.state[reference][field] = event.target.value;
+        newState[reference][field] = event.target.value;
       } else {
-        this.state[reference][index][field] = event.target.value;
+        newState[reference][index][field] = event.target.value;
       }
-      this.setState(this.state);
+      this.setState(newState);
     }
   }
 
 
   onAutoCompleteChangeHandler = (reference, index, field) => {
     return  (event) => {
+      let newState = {};
+      newState[reference] = JSON.parse(JSON.stringify(this.state[reference]));
       if (index == null) {
-        this.state[reference][field] = event;
+        newState[reference][field] = event;
       } else {
-        this.state[reference][index][field] = event;
+        newState[reference][index][field] = event;
       }
       this.setState(this.state);
     }
@@ -430,32 +443,38 @@ class ShowTransaction extends React.Component {
 
   onAccountChangeHandler(index) {
     return  (value) => {
-      this.state.splits[index]._shown_account = value;
+      let splits = [...this.state.splits];
+
+      splits[index]._shown_account = value;
       let new_id = this.state.account_ids[value];
       if (new_id != null) {
-        this.state.splits[index].account_id = new_id;
+        splits[index].account_id = new_id;
       }
-      this.setState(this.state);
+      this.setState({ splits });
     }
   }
 
 
   onReconcileStateChangeHandler(index) {
     return  (value) => {
-      this.state.splits[index].reconciled_state = value;
-      this.setState(this.state);
+      let splits = [...this.state.splits];
+
+      splits[index].reconciled_state = value;
+      this.setState({ splits });
     }
   }
 
 
   onDateChangeHandler(reference, index, field) {
     return  (value) => {
+      let newState = {};
+      newState[reference] = JSON.parse(JSON.stringify(this.state[reference]));
       if (index == null) {
-        this.state[reference][field] = value.toISOString();
+        newState[reference][field] = value.toISOString();
       } else {
-        this.state[reference][index][field] = value.toISOString();
+        newState[reference][index][field] = value.toISOString();
       }
-      this.setState(this.state);
+      this.setState(newState);
     }
   }
 
@@ -475,22 +494,24 @@ class ShowTransaction extends React.Component {
 
   removeSplitHandler = (index) => {
     return (() => {
-      this.state.splits[index]._destroy = true;
-      this.submitTransaction();
+      let newSplits = [...this.state.splits];
+     newSplits[index]._destroy = true;
+      this.submitTransaction(this.state.transaction, newSplits);
     });
   }
 
 
   balanceSplitHandler = (index) => {
     return (() => {
-      let newValue = this.state.splits[index].value;
-      this.state.splits.forEach((split) => {
+      let newSplits = [...this.state.splits];
+      let newValue = newSplits[index].value;
+      newSplits.forEach((split) => {
         newValue = newValue - split.value;
       });
-      this.state.splits[index].value = newValue;
-      this.state.splits[index].quantity = newValue;
-      this.calculateStateFromTo();
-      this.submitTransaction();
+      newSplits[index].value = newValue;
+      newSplits[index].quantity = newValue;
+      this.calculateStateFromTo(newSplits);
+      this.submitTransaction(this.state.transaction, newSplits);
     });
   }
 
@@ -649,7 +670,7 @@ class ShowTransaction extends React.Component {
                               reconciled_state: "n",
                               to: "",
                               value: 0});
-      this.submitTransaction();
+      this.submitTransaction(this.state.transaction, this.state.splits);
     }
 
     const transaction = this.state.transaction;
@@ -758,9 +779,8 @@ class IndexTransaction extends React.Component {
 
     axios.get(`/api/v1/books/${bookId}/etransactions`)
          .then(response => {
-           this.state = { transactions: response.data.transactions,
-                          account_names: response.data.accounts };
-           this.setState(this.state);
+           this.setState({ transactions: response.data.transactions,
+                           account_names: response.data.accounts });
          })
          .catch(error => {
            if (error.response) {
@@ -863,7 +883,7 @@ class IndexTransaction extends React.Component {
     }
 
     let base = (
-      <React.Fragment>
+      <React.Fragment key={s.id}>
         <Row key={s.id}>
           <Col span={20}>
             { this.state.account_names[s.account_id] }
