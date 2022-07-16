@@ -21,7 +21,10 @@ let TopMenu = (props) => {
     );
 }
 TopMenu.propTypes = {
-  extraEntries: PropTypes.arrayOf(PropTypes.node).isRequired,
+  extraEntries: PropTypes.arrayOf(PropTypes.node),
+};
+TopMenu.defaultProps = {
+  extraEntries: null,
 };
 
 export { TopMenu };

@@ -358,8 +358,8 @@ class ShowTransaction extends React.Component {
 
   onBlurHandler(reference, index, field) {
     return  (event) => {
+      let splits = [...this.state.splits];
       if ((reference == "splits") && ['value_from', 'value_to'].includes(field)) {
-        let splits = [...this.state.splits];
         if (splits[index][field] != '') {
           let result = math.evaluate(splits[index][field]).toFixed(2);
           splits[index][field] = result == null ? '' : result;
@@ -369,9 +369,9 @@ class ShowTransaction extends React.Component {
 
       if ((event.relatedTarget == null) || (event.target.parentElement.parentElement != event.relatedTarget.parentElement.parentElement)) {
         this.calculateStateValueQuantity();
-        this.calculateStateShownAccount(this.state.splits, this.state.accounts);
-        this.calculateStateFromTo(this.state.splits);
-        this.submitTransaction(this.state.transaction, this.state.splits);
+        this.calculateStateShownAccount(splits, this.state.accounts);
+        this.calculateStateFromTo(splits);
+        this.submitTransaction(this.state.transaction, splits);
       }
     }
   }
@@ -436,7 +436,7 @@ class ShowTransaction extends React.Component {
       } else {
         newState[reference][index][field] = event;
       }
-      this.setState(this.state);
+      this.setState(newState);
     }
   }
 
@@ -568,6 +568,7 @@ class ShowTransaction extends React.Component {
               }
               onBlur={this.onBlurHandler('splits', index, 'account_id')}
               onChange={this.onAccountChangeHandler(index)}
+              onFocus={(event) => event.target.select()}
             />
           </Col>
           <Col span={1} >
@@ -592,6 +593,7 @@ class ShowTransaction extends React.Component {
               onChange={this.onTextChangeHandler('splits', index, 'value_to')}
               onBlur={this.onBlurHandler('splits', index, 'value_to')}
               onKeyDown={this.onKeyDownHandler}
+              onFocus={(event) => event.target.select()}
             />
           </Col>
           <Col span={4} >
@@ -601,7 +603,9 @@ class ShowTransaction extends React.Component {
               bordered={false}
               onChange={this.onTextChangeHandler('splits', index, 'value_from')}
               onBlur={this.onBlurHandler('splits', index, 'value_from')}
-              onKeyDown={this.onKeyDownHandler} />
+              onKeyDown={this.onKeyDownHandler}
+              onFocus={(event) => event.target.select()}
+            />
           </Col>
           <Col span={1} >
             <MinusCircleOutlined onClick={this.removeSplitHandler(index)} />
@@ -618,7 +622,10 @@ class ShowTransaction extends React.Component {
               onChange={this.onAutoCompleteChangeHandler('splits', index, 'memo')}
               onBlur={this.onBlurHandler('splits', index, 'description')}
               onSearch={(search) => this.searchSplitMemos(search)}
-              onFocus={(event) => this.searchSplitMemos(event.target.value)}
+              onFocus={(event) => {
+                event.target.select();
+                this.searchSplitMemos(event.target.value);
+              } }
               onSelect={(value, object) => { this.searchSplitMemos(value);
                 this.copySplit(index, object.key) }}
             />
@@ -704,6 +711,7 @@ class ShowTransaction extends React.Component {
                 onBlur={this.onBlurHandler('transaction', null, 'date_posted')}
                 onChange={this.onDateChangeHandler('transaction', null, 'date_posted')}
                 onKeyDown={this.onKeyDownHandler} suffixIcon={null}
+                onFocus={(event) => event.target.select()}
               />
             </Col>
             <Col span={3} >
@@ -714,6 +722,7 @@ class ShowTransaction extends React.Component {
                 onBlur={this.onBlurHandler('transaction', null, 'num')}
                 onChange={this.onTextChangeHandler('transaction', null, 'num')}
                 onKeyDown={this.onKeyDownHandler}
+                onFocus={(event) => event.target.select()}
               />
             </Col>
             <Col span={12} >
@@ -726,7 +735,10 @@ class ShowTransaction extends React.Component {
                 onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
                 onBlur={this.onBlurHandler('transaction', null, 'description')}
                 onSearch={(search) => this.searchAccountDescriptions(search)}
-                onFocus={(event) => this.searchAccountDescriptions(event.target.value)}
+                onFocus={(event) => {
+                  event.target.select();
+                  this.searchAccountDescriptions(event.target.value);
+                } }
                 onSelect={(value, object) => { this.searchAccountDescriptions(value);
                   this.copyTransaction(object.key); }}
               />
