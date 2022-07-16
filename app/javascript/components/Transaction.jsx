@@ -495,7 +495,7 @@ class ShowTransaction extends React.Component {
   removeSplitHandler = (index) => {
     return (() => {
       let newSplits = [...this.state.splits];
-     newSplits[index]._destroy = true;
+      newSplits[index]._destroy = true;
       this.submitTransaction(this.state.transaction, newSplits);
     });
   }
@@ -532,6 +532,7 @@ class ShowTransaction extends React.Component {
               onChange={this.onTextChangeHandler('splits', index, 'quantity_to')}
               onBlur={this.onBlurHandler('splits', index, 'quantity_to')}
               onKeyDown={this.onKeyDownHandler}
+              onFocus={(event) => event.target.select()}
             />
           </Col>
           <Col span={4} >
@@ -541,7 +542,9 @@ class ShowTransaction extends React.Component {
               bordered={false}
               onChange={this.onTextChangeHandler('splits', index, 'quantity_from')}
               onBlur={this.onBlurHandler('splits', index, 'quantity_from')}
-              onKeyDown={this.onKeyDownHandler} />
+              onKeyDown={this.onKeyDownHandler}
+              onFocus={(event) => event.target.select()}
+            />
           </Col>
         </React.Fragment>
       );
