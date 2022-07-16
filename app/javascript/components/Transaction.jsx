@@ -40,8 +40,7 @@ class NewTransaction extends React.Component {
            if (error.response) {
              this.setState({ error: `${error.response.status} ${error.response.statusText}` });
            } else {
-             console.log("Push /");
-             this.props.history.push("/");
+             console.log(error);
            }
          });
   }
@@ -114,7 +113,7 @@ class ShowTransaction extends React.Component {
            if (error.response) {
              this.setState({ error: error.response.data.error });
            } else {
-             this.props.history.push("/");
+             console.log(error);
            }
          });
   }
@@ -193,7 +192,11 @@ class ShowTransaction extends React.Component {
   setStateFromResponse(response) {
     let newState = {
       'transaction': response.data.transaction,
-      'splits': response.data.splits,
+      'splits': response.data.splits.sort((a, b) => {
+        const aDate = new Date(a.created_at);
+        const bDate = new Date(b.created_at);
+        return aDate - bDate;
+      }),
       'accounts': response.data.accounts,
       'account_ids': {}
     };
@@ -270,8 +273,6 @@ class ShowTransaction extends React.Component {
              this.setState({ error: `${error.response.status} ${error.response.statusText}` });
            } else {
              console.log(error);
-             console.log("Push /");
-             this.props.history.push("/");
            }
          });
   }
@@ -318,7 +319,7 @@ class ShowTransaction extends React.Component {
            if (error.response) {
              this.setState({ error: error.response.data.error });
            } else {
-             this.props.history.push("/");
+             console.log(error);
            }
          });
   }
@@ -350,7 +351,7 @@ class ShowTransaction extends React.Component {
            if (error.response) {
              this.setState({ error: error.response.data.error });
            } else {
-             this.props.history.push("/");
+             console.log(error);
            }
          });
   }
@@ -668,19 +669,20 @@ class ShowTransaction extends React.Component {
     } = this.props;
 
     let addSplitHandler = () => {
-      this.state.splits.push({account_id: null,
-                              _shown_account: "",
-                              action: "",
-                              etransaction_id: this.state.transaction.id,
-                              from: "",
-                              id: null,
-                              memo: "",
-                              quantity: 0,
-                              reconcile_date: null,
-                              reconciled_state: "n",
-                              to: "",
-                              value: 0});
-      this.submitTransaction(this.state.transaction, this.state.splits);
+      let splits = [...this.state.splits];
+      splits.push({account_id: null,
+                   _shown_account: "",
+                   action: "",
+                   etransaction_id: this.state.transaction.id,
+                   from: "",
+                   id: null,
+                   memo: "",
+                   quantity: 0,
+                   reconcile_date: null,
+                   reconciled_state: "n",
+                   to: "",
+                   value: 0});
+      this.submitTransaction(this.state.transaction, splits);
     }
 
     const transaction = this.state.transaction;
@@ -801,8 +803,7 @@ class IndexTransaction extends React.Component {
            if (error.response) {
              this.setState({ error: `${error.response.status} ${error.response.statusText}` });
            } else {
-             console.log("Push /");
-             this.props.history.push("/");
+             console.log(error);
            }
          });
   }
