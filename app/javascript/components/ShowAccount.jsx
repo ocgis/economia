@@ -49,20 +49,21 @@ class ShowAccount extends React.Component {
     }
     search += 'limit=100';
 
-    axios.get(`/api/v1/books/${bookId}/accounts/${id}${search}`).then(
-      (response) => {
+    axios
+      .get(`/api/v1/books/${bookId}/accounts/${id}${search}`)
+      .then((response) => {
         this.setState({
           account: response.data.account,
           splits: response.data.splits,
         });
-      },
-    ).catch((error) => {
-      if (error.response) {
-        this.setState({ error: `${error.response.status} ${error.response.statusText}` });
-      } else {
-        console.log(error);
-      }
-    });
+      })
+      .catch((error) => {
+        if (error.response) {
+          this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+        } else {
+          console.log(error);
+        }
+      });
   }
 
   renderSplit = (split) => {

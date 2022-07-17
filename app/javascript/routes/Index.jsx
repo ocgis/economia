@@ -7,7 +7,9 @@ import IndexAccount from '../components/IndexAccount';
 import ShowAccount from '../components/ShowAccount';
 import { IndexCommodity } from '../components/Commodity';
 import { IndexPrice } from '../components/Price';
-import { IndexTransaction, NewTransaction, ShowTransaction } from '../components/Transaction';
+import IndexTransaction from '../components/IndexTransaction';
+import NewTransaction from '../components/NewTransaction';
+import ShowTransaction from '../components/ShowTransaction';
 import { IndexReport, ShowReport } from '../components/Report';
 
 export default (

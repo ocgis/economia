@@ -46,8 +46,9 @@ class IndexAccount extends React.Component {
     const csrfToken = document.querySelector('[name=csrf-token]').content;
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-    axios.get(`/api/v1/books/${bookId}/accounts`).then(
-      (response) => {
+    axios
+      .get(`/api/v1/books/${bookId}/accounts`)
+      .then((response) => {
         const accounts = response.data.accounts.sort((a, b) => (
           response.data.accounts_map[a.id].localeCompare(response.data.accounts_map[b.id])
         ));
@@ -57,14 +58,14 @@ class IndexAccount extends React.Component {
           accounts_map: response.data.accounts_map,
           commodities: response.data.commodities,
         });
-      },
-    ).catch((error) => {
-      if (error.response) {
-        this.setState({ error: `${error.response.status} ${error.response.statusText}` });
-      } else {
-        console.log(error);
-      }
-    });
+      })
+      .catch((error) => {
+        if (error.response) {
+          this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+        } else {
+          console.log(error);
+        }
+      });
   }
 
   renderAddAccount = () => {

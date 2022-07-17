@@ -36,13 +36,14 @@ class AddAccount extends React.Component {
     const csrfToken = document.querySelector('[name=csrf-token]').content;
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-    axios.post(`/api/v1/books/${bookId}/accounts`, { account }).then(
-      (response) => {
+    axios
+      .post(`/api/v1/books/${bookId}/accounts`, { account })
+      .then((response) => {
         onCreated(response.data.account, response.data.accounts_map);
-      },
-    ).catch(
-      (error) => console.log(error),
-    );
+      })
+      .catch(
+        (error) => console.log(error),
+      );
   };
 
   render() {
