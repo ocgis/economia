@@ -45,3 +45,5 @@ gem 'cancancan'
 gem 'role_model'
 
 gem 'strscan', '= 3.0.1'
+
+gem 'matrix'
