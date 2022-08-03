@@ -43,3 +43,5 @@ gem 'omniauth-rails_csrf_protection'
 # Used for permissions
 gem 'cancancan'
 gem 'role_model'
+
+gem 'strscan', '= 3.0.1'
