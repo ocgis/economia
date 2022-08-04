@@ -1191,9 +1191,10 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@rails/ujs@^6.0.3-4":
-  version "6.0.3-4"
-  resolved "https://registry.npmjs.org/@rails/ujs/-/ujs-6.0.3-4.tgz"
+"@rails/ujs@^7.0.3-1":
+  version "7.0.3-1"
+  resolved "https://registry.yarnpkg.com/@rails/ujs/-/ujs-7.0.3-1.tgz#0a0f4f2b22b887bcbf6e0b0a72b8c86665cd31d9"
+  integrity sha512-g3LgpBAsWmW97xFxh5OTDgyEJLt63fEENJUYb/iNFRXY6aKLI/by6MjFw7x492DSP/+vKQa3oMEdNnjI9+yZgQ==
 
 "@rails/webpacker@5.4.3":
   version "5.4.3"
