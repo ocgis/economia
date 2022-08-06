@@ -1,12 +1,12 @@
 import axios from 'axios';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   Col, Input, Row,
 } from 'antd';
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { BookMenu } from './Book';
+import BookMenu from './BookMenu';
 import AddAccount from './AddAccount';
 
 class IndexAccount extends React.Component {
@@ -38,9 +38,7 @@ class IndexAccount extends React.Component {
 
   loadData() {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -70,9 +68,7 @@ class IndexAccount extends React.Component {
 
   renderAddAccount = () => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
     const { addAccountVisible, accounts_map, commodities } = this.state;
     if (addAccountVisible) {
@@ -107,9 +103,7 @@ class IndexAccount extends React.Component {
 
   renderAccount = (account) => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
     const { accounts_map } = this.state;
 
@@ -133,9 +127,7 @@ class IndexAccount extends React.Component {
 
   render() {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const {
@@ -147,8 +139,7 @@ class IndexAccount extends React.Component {
           <div>
             <BookMenu bookId={bookId} />
             <h1>
-              Could not load content:
-              {error}
+              {`Could not load content: ${error}`}
             </h1>
           </div>
         );
@@ -176,8 +167,15 @@ class IndexAccount extends React.Component {
   }
 }
 IndexAccount.propTypes = {
-  match: PropTypes.shape().isRequired,
+  params: PropTypes.shape().isRequired,
   location: PropTypes.shape().isRequired,
 };
 
-export default IndexAccount;
+export default function wrapper() {
+  return (
+    <IndexAccount
+      params={useParams()}
+      location={useLocation()}
+    />
+  );
+}

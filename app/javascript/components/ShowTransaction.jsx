@@ -1,6 +1,7 @@
 import axios from 'axios';
 import moment from 'moment';
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
   AutoComplete, Button, Col, DatePicker, Input, Popconfirm, Row, Select,
@@ -8,7 +9,7 @@ import {
 import * as math from 'mathjs';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { throttle } from 'throttle-debounce';
-import { BookMenu } from './Book';
+import BookMenu from './BookMenu';
 
 const { Option } = Select;
 
@@ -19,13 +20,15 @@ const calculateStateFromTo = (splits) => (
     value_to: split.value > 0 ? Number(split.value).toFixed(2) : '',
     quantity_from: split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '',
     quantity_to: split.quantity > 0 ? Number(split.quantity).toFixed(2) : '',
-  })));
+  }))
+);
 
 const calculateStateShownAccount = (splits, accounts) => (
   splits.map((split) => ({
     ...split,
     _shown_account: split.account_id ? accounts[split.account_id].full_name : undefined,
-  })));
+  }))
+);
 
 const onKeyDownHandler = (event) => {
   switch (event.keyCode) {
@@ -69,9 +72,7 @@ const onKeyDownHandler = (event) => {
 class ShowTransaction extends React.Component {
   searchAccountDescriptions = throttle(500, (searchString) => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -92,9 +93,7 @@ class ShowTransaction extends React.Component {
 
   searchSplitMemos = throttle(500, (searchString) => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -128,10 +127,7 @@ class ShowTransaction extends React.Component {
 
   componentDidMount() {
     const {
-      match: {
-        params: { id },
-        params: { bookId },
-      },
+      params: { bookId, id },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -274,10 +270,8 @@ class ShowTransaction extends React.Component {
 
   destroyTransaction = () => {
     const {
-      match: {
-        params: { bookId },
-      },
-      history,
+      params: { bookId },
+      navigate,
     } = this.props;
     const { transaction } = this.state;
 
@@ -287,7 +281,7 @@ class ShowTransaction extends React.Component {
     axios
       .delete(`/api/v1/books/${bookId}/etransactions/${transaction.id}`)
       .then(() => {
-        history.goBack();
+        navigate(-1);
       })
       .catch((error) => {
         if (error.response) {
@@ -347,9 +341,7 @@ class ShowTransaction extends React.Component {
     };
 
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -370,9 +362,7 @@ class ShowTransaction extends React.Component {
 
   copyTransaction(id) {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const handleResponse = (response) => {
@@ -425,9 +415,7 @@ class ShowTransaction extends React.Component {
 
   submitTransaction(newTransaction, newSplits) {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -615,10 +603,8 @@ class ShowTransaction extends React.Component {
     };
 
     const {
-      match: {
-        params: { bookId },
-      },
-      history,
+      params: { bookId },
+      navigate,
     } = this.props;
     const { descriptionOptions, error, transaction } = this.state;
 
@@ -628,8 +614,7 @@ class ShowTransaction extends React.Component {
           <div>
             <BookMenu bookId={bookId} />
             <h1>
-              Could not load content:
-              {error}
+              {`Could not load content: ${error}`}
             </h1>
           </div>
         );
@@ -695,7 +680,7 @@ class ShowTransaction extends React.Component {
         { this.renderSplits() }
         <PlusCircleOutlined onClick={addSplitHandler} />
         <hr />
-        <Button onClick={history.goBack}>Back</Button>
+        <Button onClick={() => navigate(-1)}>Back</Button>
         <Popconfirm
           placement="bottom"
           title="Delete transaction?"
@@ -708,8 +693,15 @@ class ShowTransaction extends React.Component {
   }
 }
 ShowTransaction.propTypes = {
-  match: PropTypes.shape().isRequired,
-  history: PropTypes.shape().isRequired,
+  params: PropTypes.shape().isRequired,
+  navigate: PropTypes.func.isRequired,
 };
 
-export default ShowTransaction;
+export default function wrapper() {
+  return (
+    <ShowTransaction
+      navigate={useNavigate()}
+      params={useParams()}
+    />
+  );
+}

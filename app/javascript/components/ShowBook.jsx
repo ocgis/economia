@@ -1,76 +1,94 @@
 import axios from 'axios';
 import React from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { Navigate, useParams } from 'react-router-dom';
 import BookMenu from './BookMenu';
+import { TopMenu } from './TopMenu';
 
-class NewTransaction extends React.Component {
+class ShowBook extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      transaction: null,
+      book: null,
       error: null,
     };
   }
 
   componentDidMount() {
+    this.loadData();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { location } = this.props;
+    if (location.search !== prevProps.location.search) {
+      this.loadData();
+    }
+  }
+
+  loadData() {
     const {
-      params: { bookId },
+      location,
+      navigate,
+      params: { id },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
     axios
-      .get(`/api/v1/books/${bookId}/etransactions/new`)
+      .get(`/api/v1/books/${id}${location.search}`)
       .then((response) => {
-        this.setState({ transaction: response.data.transaction });
+        this.setState({ book: response.data.book });
       })
       .catch((error) => {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log(error);
+          console.log('Push /');
+          navigate('/');
         }
       });
   }
 
   render() {
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const { error, transaction } = this.state;
-
-    if (transaction == null) {
+    const { book, error } = this.state;
+    if (book == null) {
       if (error != null) {
         return (
           <div>
-            <BookMenu bookId={bookId} />
+            <TopMenu />
             <h1>
-              {`Could not load content: ${error}`}
+              { `Could not load content: ${error}` }
             </h1>
           </div>
         );
       }
       return (
         <div>
-          <BookMenu bookId={bookId} />
+          <TopMenu />
           <h1>Loading</h1>
         </div>
       );
     }
-    return (<Navigate replace to={`/books/${bookId}/etransactions/${transaction.id}`} />);
+    return (
+      <div>
+        <BookMenu bookId={book.id} />
+      </div>
+    );
   }
 }
-NewTransaction.propTypes = {
+ShowBook.propTypes = {
+  location: PropTypes.shape().isRequired,
+  navigate: PropTypes.func.isRequired,
   params: PropTypes.shape().isRequired,
 };
 
 export default function wrapper() {
   return (
-    <NewTransaction
+    <ShowBook
+      location={useLocation()}
       params={useParams()}
+      navigate={useNavigate()}
     />
   );
 }

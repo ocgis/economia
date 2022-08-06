@@ -1,98 +1,100 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import {
-  IndexBook, ShowBook, ImportBook, ExportBook,
-} from '../components/Book';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import IndexBook from '../components/IndexBook';
+import ExportBook from '../components/ExportBook';
+import ImportBook from '../components/ImportBook';
+import ShowBook from '../components/ShowBook';
 import IndexAccount from '../components/IndexAccount';
 import ShowAccount from '../components/ShowAccount';
-import { IndexCommodity } from '../components/Commodity';
-import { IndexPrice } from '../components/Price';
+import IndexCommodity from '../components/IndexCommodity';
+import IndexPrice from '../components/IndexPrice';
 import IndexTransaction from '../components/IndexTransaction';
 import NewTransaction from '../components/NewTransaction';
 import ShowTransaction from '../components/ShowTransaction';
-import { IndexReport, ShowReport } from '../components/Report';
+import IndexReport from '../components/IndexReport';
+import ShowReport from '../components/ShowReport';
 
 export default (
   <Router>
-    <Switch>
+    <Routes>
       <Route
         path="/"
         exact
-        component={IndexBook}
+        element={<IndexBook />}
       />
 
       <Route
         path="/books/import"
         exact
-        component={ImportBook}
+        element={<ImportBook />}
       />
 
       <Route
         path="/books/:id/export"
         exact
-        component={ExportBook}
+        element={<ExportBook />}
       />
 
       <Route
         path="/books/:id"
         exact
-        component={ShowBook}
+        element={<ShowBook />}
       />
 
       <Route
         path="/books/:bookId/accounts/:id"
         exact
-        component={ShowAccount}
+        element={<ShowAccount />}
       />
 
       <Route
         path="/books/:bookId/accounts"
         exact
-        component={IndexAccount}
+        element={<IndexAccount />}
       />
 
       <Route
         path="/books/:bookId/commodities"
         exact
-        component={IndexCommodity}
+        element={<IndexCommodity />}
       />
 
       <Route
         path="/books/:bookId/prices"
         exact
-        component={IndexPrice}
+        element={<IndexPrice />}
       />
 
       <Route
         path="/books/:bookId/etransactions/new"
         exact
-        component={NewTransaction}
+        element={<NewTransaction />}
       />
 
       <Route
         path="/books/:bookId/etransactions/:id"
         exact
-        component={ShowTransaction}
+        element={<ShowTransaction />}
       />
 
       <Route
         path="/books/:bookId/etransactions"
         exact
-        component={IndexTransaction}
+        element={<IndexTransaction />}
       />
 
       <Route
         path="/books/:bookId/reports/:id"
         exact
-        component={ShowReport}
+        element={<ShowReport />}
       />
 
       <Route
         path="/books/:bookId/reports"
         exact
-        component={IndexReport}
+        element={<IndexReport />}
       />
 
-    </Switch>
+    </Routes>
   </Router>
 );

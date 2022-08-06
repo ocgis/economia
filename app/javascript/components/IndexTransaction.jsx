@@ -2,9 +2,9 @@ import axios from 'axios';
 import moment from 'moment';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Col, Row } from 'antd';
-import { BookMenu } from './Book';
+import BookMenu from './BookMenu';
 
 class IndexTransaction extends React.Component {
   constructor(props) {
@@ -17,9 +17,7 @@ class IndexTransaction extends React.Component {
 
   componentDidMount() {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
@@ -50,9 +48,7 @@ class IndexTransaction extends React.Component {
 
   renderTransaction = (t) => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     return (
@@ -130,9 +126,7 @@ class IndexTransaction extends React.Component {
 
   render() {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const { error, transactions } = this.state;
@@ -142,8 +136,7 @@ class IndexTransaction extends React.Component {
           <div>
             <BookMenu bookId={bookId} />
             <h1>
-              Could not load content:
-              {error}
+              {`Could not load content: ${error}`}
             </h1>
           </div>
         );
@@ -164,7 +157,13 @@ class IndexTransaction extends React.Component {
   }
 }
 IndexTransaction.propTypes = {
-  match: PropTypes.shape().isRequired,
+  params: PropTypes.shape().isRequired,
 };
 
-export default IndexTransaction;
+export default function wrapper() {
+  return (
+    <IndexTransaction
+      params={useParams()}
+    />
+  );
+}

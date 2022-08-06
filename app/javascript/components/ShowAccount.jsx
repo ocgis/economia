@@ -2,11 +2,11 @@ import axios from 'axios';
 import moment from 'moment';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   Col, Descriptions, Row,
 } from 'antd';
-import { BookMenu } from './Book';
+import BookMenu from './BookMenu';
 
 class ShowAccount extends React.Component {
   constructor(props) {
@@ -31,10 +31,7 @@ class ShowAccount extends React.Component {
 
   loadData() {
     const {
-      match: {
-        params: { id },
-        params: { bookId },
-      },
+      params: { bookId, id },
       location,
     } = this.props;
 
@@ -68,9 +65,7 @@ class ShowAccount extends React.Component {
 
   renderSplit = (split) => {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const base = (
@@ -122,9 +117,7 @@ class ShowAccount extends React.Component {
 
   render() {
     const {
-      match: {
-        params: { bookId },
-      },
+      params: { bookId },
     } = this.props;
 
     const { account, error } = this.state;
@@ -134,8 +127,7 @@ class ShowAccount extends React.Component {
           <div>
             <BookMenu bookId={bookId} />
             <h1>
-              Could not load content:
-              {error}
+              {`Could not load content: ${error}`}
             </h1>
           </div>
         );
@@ -160,8 +152,15 @@ class ShowAccount extends React.Component {
   }
 }
 ShowAccount.propTypes = {
-  match: PropTypes.shape().isRequired,
   location: PropTypes.shape().isRequired,
+  params: PropTypes.shape().isRequired,
 };
 
-export default ShowAccount;
+export default function wrapper() {
+  return (
+    <ShowAccount
+      location={useLocation()}
+      params={useParams()}
+    />
+  );
+}
