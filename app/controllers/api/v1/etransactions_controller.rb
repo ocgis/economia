@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Api::V1::EtransactionsController < ApplicationController
   load_and_authorize_resource
 
@@ -18,7 +20,7 @@ class Api::V1::EtransactionsController < ApplicationController
     accounts_map = @book.accounts.accounts_map
 
     render json: { transaction: @transaction.attributes,
-                   splits: splits,
+                   splits:,
                    accounts: accounts_map }
   end
 
@@ -28,10 +30,10 @@ class Api::V1::EtransactionsController < ApplicationController
       accounts_map = @book.accounts.accounts_map
 
       render json: { transaction: @transaction.attributes,
-                     splits: splits,
+                     splits:,
                      accounts: accounts_map }
     else
-      render json: @transaction.errors
+      render json: { error: @transaction.errors.inspect }
     end
   end
 
@@ -42,10 +44,10 @@ class Api::V1::EtransactionsController < ApplicationController
 
     transactions = etransactions.map do |e|
       splits = e.splits.map(&:attributes)
-      e.attributes.update(splits: splits)
+      e.attributes.update(splits:)
     end
     accounts_map = @book.accounts.full_name_map
-    render json: { transactions: transactions,
+    render json: { transactions:,
                    accounts: accounts_map }
   end
 
@@ -75,7 +77,7 @@ class Api::V1::EtransactionsController < ApplicationController
       count += 1
       break if count >= 10
     end
-    render json: { result: result }
+    render json: { result: }
   end
 
   def destroy
@@ -103,7 +105,7 @@ class Api::V1::EtransactionsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def transaction_params
     params.require(:transaction)
-          .permit(:id, :description, :num, :currency_id_, :currency_space, :date_posted,
+          .permit(:id, :book_id, :description, :num, :currency_id, :currency_space, :date_posted,
                   splits_attributes: %i[id memo reconciled_state value quantity reconcile_date account_id
                                         etransaction_id _destroy])
   end

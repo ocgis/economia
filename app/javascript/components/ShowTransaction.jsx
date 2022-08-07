@@ -222,14 +222,20 @@ class ShowTransaction extends React.Component {
   }
 
   setStateFromResponse(response) {
+    const {
+      accounts, error, splits, transaction,
+    } = response.data;
+    if (error != null) {
+      console.log(`ERROR: ${error}`);
+    }
     const newState = {
-      transaction: response.data.transaction,
-      splits: response.data.splits.sort((a, b) => {
+      transaction,
+      splits: splits.sort((a, b) => {
         const aDate = new Date(a.created_at);
         const bDate = new Date(b.created_at);
         return aDate - bDate;
       }),
-      accounts: response.data.accounts,
+      accounts,
       account_ids: {},
     };
     Object.keys(newState.accounts).forEach((t) => {
@@ -422,7 +428,19 @@ class ShowTransaction extends React.Component {
     axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
     const { created_at, updated_at, ...transaction } = newTransaction;
-    transaction.splits_attributes = newSplits;
+    transaction.splits_attributes = newSplits.map((newSplit) => {
+      const {
+        created_at: ca,
+        updated_at: ua,
+        _shown_account,
+        value_from,
+        value_to,
+        quantity_from,
+        quantity_to,
+        ...split
+      } = newSplit;
+      return split;
+    });
 
     if (transaction.id == null) {
       axios
@@ -590,13 +608,11 @@ class ShowTransaction extends React.Component {
         _shown_account: '',
         action: '',
         etransaction_id: state.transaction.id,
-        from: '',
         id: null,
         memo: '',
         quantity: 0,
         reconcile_date: null,
         reconciled_state: 'n',
-        to: '',
         value: 0,
       });
       this.submitTransaction(state.transaction, splits);
