@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
+  devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
 
   namespace :api do
     namespace :v1 do
-      resources :books, only: [:show, :index, :destroy] do
+      resources :books, only: %i[show index destroy] do
         collection do
           post :import
         end
@@ -12,11 +14,11 @@ Rails.application.routes.draw do
           get :export
         end
 
-        resources :accounts, only: [:show, :index, :create]
+        resources :accounts, only: %i[show index create]
         resources :commodities, only: %i[index create]
-        resources :prices, only: [:index, :create, :destroy]
-        resources :reports, only: [:show, :index]
-        resources :etransactions, only: [:show, :update, :new, :index, :destroy] do
+        resources :prices, only: %i[index create destroy]
+        resources :reports, only: %i[show index destroy]
+        resources :etransactions, only: %i[show update new index destroy] do
           collection do
             get 'search'
           end

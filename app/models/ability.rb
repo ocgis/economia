@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Configuation of access rights
 class Ability
   include CanCan::Ability
 
@@ -33,14 +34,14 @@ class Ability
 
     user ||= User.new # guest user (not logged in)
 
-    if user.has_role? :admin
-      can [:index, :show, :destroy, :import, :export], Book
-      can [:index, :show, :create], Account
-      can [:index, :show, :new, :update, :destroy, :search], Etransaction
-      can [:show, :search], Split
-      can [:index, :show], Report
-      can [:index, :create], Commodity
-      can [:index, :create, :destroy], Price
-    end
+    return unless user.has_role? :admin
+
+    can %i[index show destroy import export], Book
+    can %i[index show create], Account
+    can %i[index show new update destroy search], Etransaction
+    can %i[show search], Split
+    can %i[index show destroy], Report
+    can %i[index create], Commodity
+    can %i[index create destroy], Price
   end
 end

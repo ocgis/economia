@@ -2,9 +2,9 @@ import axios from 'axios';
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  Link, useLocation, useNavigate, useParams,
+  Link, useLocation, useParams,
 } from 'react-router-dom';
-import { Table } from 'antd';
+import { Button, Popconfirm, Table } from 'antd';
 import BookMenu from './BookMenu';
 
 class IndexReport extends React.Component {
@@ -27,9 +27,30 @@ class IndexReport extends React.Component {
     }
   }
 
+  destroyReport = (reportId) => {
+    const {
+      params: { bookId },
+    } = this.props;
+
+    const csrfToken = document.querySelector('[name=csrf-token]').content;
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+    axios
+      .delete(`/api/v1/books/${bookId}/reports/${reportId}`)
+      .then((response) => {
+        this.setState({ reports: response.data.reports });
+      })
+      .catch((error) => {
+        if (error.response) {
+          this.setState({ error: `${error.response.status} ${error.response.statusText}` });
+        } else {
+          this.setState({ error: `${error}` });
+        }
+      });
+  };
+
   loadData() {
     const {
-      navigate,
       params: { bookId },
     } = this.props;
 
@@ -45,8 +66,7 @@ class IndexReport extends React.Component {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log('Push /');
-          navigate('/');
+          this.setState({ error: `${error}` });
         }
       });
   }
@@ -84,6 +104,19 @@ class IndexReport extends React.Component {
         ),
       },
       {
+        title: 'Delete',
+        key: 'delete',
+        render: (t) => (
+          <Popconfirm
+            placement="bottom"
+            title={`Delete ${t.name}?`}
+            onConfirm={() => { this.destroyReport(t.id); }}
+          >
+            <Button>Delete</Button>
+          </Popconfirm>
+        ),
+      },
+      {
         title: 'Id',
         key: 'id',
         render: (t) => (
@@ -104,7 +137,6 @@ class IndexReport extends React.Component {
 IndexReport.propTypes = {
   params: PropTypes.shape().isRequired,
   location: PropTypes.shape().isRequired,
-  navigate: PropTypes.func.isRequired,
 };
 
 export default function wrapper() {
@@ -112,7 +144,6 @@ export default function wrapper() {
     <IndexReport
       params={useParams()}
       location={useLocation()}
-      navigate={useNavigate()}
     />
   );
 }
