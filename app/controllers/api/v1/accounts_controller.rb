@@ -108,7 +108,11 @@ module Api
           num_splits = all_splits_grouped[etransaction.id].size
 
           splits_regrouped = all_splits_grouped[etransaction.id].group_by do |split|
-            account_ids.include? split.account_id ? :account : :other
+            if account_ids.include? split.account_id
+              :account
+            else
+              :other
+            end
           end
 
           splits_regrouped[:account].each do |split|
