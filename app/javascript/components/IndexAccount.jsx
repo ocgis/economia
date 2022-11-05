@@ -47,9 +47,11 @@ class IndexAccount extends React.Component {
     axios
       .get(`/api/v1/books/${bookId}/accounts`)
       .then((response) => {
-        const accounts = response.data.accounts.sort((a, b) => (
-          response.data.accounts_map[a.id].localeCompare(response.data.accounts_map[b.id])
-        ));
+        const accounts = response.data.accounts.sort((a, b) => {
+          const aDate = new Date(a.sortdate);
+          const bDate = new Date(b.sortdate);
+          return bDate - aDate;
+        });
 
         this.setState({
           accounts,

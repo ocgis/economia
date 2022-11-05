@@ -21,6 +21,9 @@ module Api
         balances = Split.joins(:account).where('accounts.book_id =
           ?', @book.id).select(:account_id, :value).group(:account_id).calculate(:sum, :value)
 
+        dates = Split.joins(:account).where('accounts.book_id =
+          ?', @book.id).select(:account_id, :value).group(:account_id).maximum(:updated_at)
+
         # Include children balances in parent balance
         balances.each do |id, balance|
           until id.nil?
@@ -30,7 +33,13 @@ module Api
         end
 
         accounts = @book.accounts.map do |account|
-          account.attributes.update({ balance: mapped[account.id][:balance] })
+          sortdate =  if dates[account.id].nil?
+                        account[:updated_at]
+                      else
+                        dates[account.id]
+                      end
+          account.attributes.update({ balance: mapped[account.id][:balance],
+                                      sortdate: })
         end
 
         commodities = @book.commodities.map(&:attributes)
