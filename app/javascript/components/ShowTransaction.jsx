@@ -516,6 +516,7 @@ class ShowTransaction extends React.Component {
             <Select
               defaultValue={split.reconciled_state}
               bordered={false}
+              onBlur={this.onBlurHandler('splits', index, 'reconciled_state')}
               onChange={this.onReconcileStateChangeHandler(index)}
             >
               <Option value="n">n</Option>
