@@ -44,7 +44,7 @@ class ShowAccount extends React.Component {
     } else {
       search += '&';
     }
-    search += 'limit=100';
+    search += 'limit=500';
 
     axios
       .get(`/api/v1/books/${bookId}/accounts/${id}${search}`)
