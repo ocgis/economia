@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Popconfirm, Table } from 'antd';
-import { TopMenu } from './TopMenu';
+import TopMenu from './TopMenu';
 
 class IndexBook extends React.Component {
   constructor(props) {
@@ -40,7 +40,6 @@ class IndexBook extends React.Component {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log('Push /');
           navigate('/');
         }
       });
@@ -61,7 +60,6 @@ class IndexBook extends React.Component {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log('Push /');
           navigate('/');
         }
       });

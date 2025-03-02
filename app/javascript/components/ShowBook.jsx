@@ -3,7 +3,7 @@ import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import BookMenu from './BookMenu';
-import { TopMenu } from './TopMenu';
+import TopMenu from './TopMenu';
 
 class ShowBook extends React.Component {
   constructor(props) {
@@ -44,7 +44,6 @@ class ShowBook extends React.Component {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log('Push /');
           navigate('/');
         }
       });

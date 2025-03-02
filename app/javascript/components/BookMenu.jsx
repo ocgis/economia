@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { TopMenu } from './TopMenu';
+import TopMenu from './TopMenu';
 
 function BookMenu(props) {
   const { bookId } = props;

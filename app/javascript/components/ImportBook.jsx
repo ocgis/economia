@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React from 'react';
 import { Button, Input } from 'antd';
-import { TopMenu } from './TopMenu';
+import TopMenu from './TopMenu';
 
 class ImportBook extends React.Component {
   constructor(props) {
