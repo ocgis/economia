@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Rails.application.routes.draw do
+Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
 
   namespace :api do
@@ -32,14 +32,14 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :root, only: [:index] do
+  resources :computer, only: [:index] do
     collection do
       get 'error'
     end
   end
 
-  root 'root#index'
-  get '/*path' => 'root#index'
+  root 'computer#index'
+  get '/*path' => 'computer#index'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

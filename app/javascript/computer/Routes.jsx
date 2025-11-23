@@ -2,19 +2,19 @@ import React from 'react';
 import {
   BrowserRouter as Router, Link, Route, Routes,
 } from 'react-router-dom';
-import IndexBook from '../components/IndexBook';
-import ExportBook from '../components/ExportBook';
-import ImportBook from '../components/ImportBook';
-import ShowBook from '../components/ShowBook';
-import IndexAccount from '../components/IndexAccount';
-import ShowAccount from '../components/ShowAccount';
-import IndexCommodity from '../components/IndexCommodity';
-import IndexPrice from '../components/IndexPrice';
-import IndexTransaction from '../components/IndexTransaction';
-import NewTransaction from '../components/NewTransaction';
-import ShowTransaction from '../components/ShowTransaction';
-import IndexReport from '../components/IndexReport';
-import ShowReport from '../components/ShowReport';
+import IndexBook from './IndexBook';
+import ExportBook from './ExportBook';
+import ImportBook from './ImportBook';
+import ShowBook from './ShowBook';
+import IndexAccount from './IndexAccount';
+import ShowAccount from './ShowAccount';
+import IndexCommodity from './IndexCommodity';
+import IndexPrice from './IndexPrice';
+import IndexTransaction from './IndexTransaction';
+import NewTransaction from './NewTransaction';
+import ShowTransaction from './ShowTransaction';
+import IndexReport from './IndexReport';
+import ShowReport from './ShowReport';
 
 function NotFound() {
   return (

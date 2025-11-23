@@ -30,7 +30,7 @@ class NewTransaction extends React.Component {
         if (error.response) {
           this.setState({ error: `${error.response.status} ${error.response.statusText}` });
         } else {
-          console.log(error);
+          console.log(error); // eslint-disable-line no-console
         }
       });
   }

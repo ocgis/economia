@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from '../components/App';
+import App from '../computer/App';
 
 document.addEventListener('DOMContentLoaded', () => {
   const root = createRoot(document.body.appendChild(document.createElement('div')));
