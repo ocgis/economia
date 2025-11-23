@@ -40,7 +40,7 @@ class Api::V1::EtransactionsController < ApplicationController
   def index
     etransactions = @book.etransactions
                          .preload(:splits)
-                         .order('date_posted DESC').limit(100).sort_by(&:date_posted_sort)
+                         .order('date_posted DESC').limit(500).sort_by(&:date_posted_sort)
 
     transactions = etransactions.map do |e|
       splits = e.splits.map(&:attributes)
