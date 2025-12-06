@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Rails from '@rails/ujs';
-import App from '../computer/App';
+import App from '../mobile/App';
 
 Rails.start();
 

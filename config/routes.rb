@@ -39,6 +39,8 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   end
 
   root 'computer#index'
+  get '/m' => 'mobile#index'
+  get '/m/*path' => 'mobile#index'
   get '/*path' => 'computer#index'
 
   # The priority is based upon order of creation: first created -> highest priority.

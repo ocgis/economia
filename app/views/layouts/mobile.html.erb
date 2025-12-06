@@ -3,16 +3,15 @@
 <head>
   <title>Economia</title>
   <%= csrf_meta_tags %>
-  <%= javascript_pack_tag 'application' %>
-  <%= stylesheet_pack_tag 'application' %>
 </head>
 <body>
 
   <p class="notice"><%= notice %></p>
   <p class="alert"><%= alert %></p>
 
-<hr />
-<%= yield %>
+  <%= yield %>
 
+  <%= javascript_pack_tag 'Mobile' %>
+  <%= stylesheet_pack_tag 'Mobile' %>
 </body>
 </html>
