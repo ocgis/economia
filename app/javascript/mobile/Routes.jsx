@@ -3,6 +3,7 @@ import {
   BrowserRouter as Router, Link, Route, Routes,
 } from 'react-router-dom';
 import IndexBook from './IndexBook';
+import ShowBook from './ShowBook';
 
 function NotFound() {
   return (
@@ -23,6 +24,11 @@ export default (
         path="/m"
         exact
         element={<IndexBook />}
+      />
+      <Route
+        path="/m/books/:id"
+        exact
+        element={<ShowBook />}
       />
       <Route
         path="*"

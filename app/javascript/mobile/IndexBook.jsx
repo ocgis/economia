@@ -71,7 +71,7 @@ class IndexBook extends React.Component {
   render() {
     const { books, error } = this.state;
 
-    const extraEntries = [<Link to="/books/import" key="import">Import file</Link>];
+    const extraEntries = [<Link to="/m/books/import" key="import">Import file</Link>];
     if (books == null) {
       if (error != null) {
         return (
@@ -115,7 +115,7 @@ class IndexBook extends React.Component {
         <Card
           title={book.filename}
           onClick={() => {
-            navigate(`/books/${book.id}`);
+            navigate(`/m/books/${book.id}`);
           }}
         >
           {book.description}
