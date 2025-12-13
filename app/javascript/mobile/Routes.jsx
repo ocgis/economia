@@ -4,6 +4,7 @@ import {
 } from 'react-router-dom';
 import IndexBook from './IndexBook';
 import ShowBook from './ShowBook';
+import IndexAccount from './IndexAccount';
 
 function NotFound() {
   return (
@@ -25,11 +26,19 @@ export default (
         exact
         element={<IndexBook />}
       />
+
       <Route
         path="/m/books/:id"
         exact
         element={<ShowBook />}
       />
+
+      <Route
+        path="/m/books/:bookId/accounts"
+        exact
+        element={<IndexAccount />}
+      />
+
       <Route
         path="*"
         element={<NotFound />}
