@@ -5,6 +5,7 @@ import {
 import IndexBook from './IndexBook';
 import ShowBook from './ShowBook';
 import IndexAccount from './IndexAccount';
+import ShowAccount from './ShowAccount';
 
 function NotFound() {
   return (
@@ -31,6 +32,12 @@ export default (
         path="/m/books/:id"
         exact
         element={<ShowBook />}
+      />
+
+      <Route
+        path="/m/books/:bookId/accounts/:id"
+        exact
+        element={<ShowAccount />}
       />
 
       <Route
