@@ -19,7 +19,8 @@ class MobileAutoComplete extends React.Component {
       onChange, onFocus, onSearch, options, filterOption, placeholder,
     } = this.props;
     const { showOptions, search } = this.state;
-    const filteredOptions = options.filter((option) => filterOption(search, option));
+    const safeSearch = search == null ? '' : search;
+    const filteredOptions = options.filter((option) => filterOption(safeSearch, option));
     return (
       <div>
         <Input
@@ -40,6 +41,7 @@ class MobileAutoComplete extends React.Component {
           }}
           onChange={(newValue) => {
             this.setState({ search: newValue });
+            onChange(newValue);
             onSearch(newValue);
           }}
         />

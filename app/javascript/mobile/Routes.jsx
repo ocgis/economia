@@ -6,6 +6,7 @@ import IndexBook from './IndexBook';
 import ShowBook from './ShowBook';
 import IndexAccount from './IndexAccount';
 import ShowAccount from './ShowAccount';
+import NewTransaction from './NewTransaction';
 import ShowTransaction from './ShowTransaction';
 
 function NotFound() {
@@ -45,6 +46,12 @@ export default (
         path="/m/books/:bookId/accounts"
         exact
         element={<IndexAccount />}
+      />
+
+      <Route
+        path="/m/books/:bookId/etransactions/new"
+        exact
+        element={<NewTransaction />}
       />
 
       <Route
