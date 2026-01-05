@@ -132,20 +132,6 @@ class ShowTransaction extends React.Component {
       });
   }
 
-  onAccountChangeHandler(index) {
-    return (value) => {
-      const { account_ids, splits } = this.state;
-      const newSplits = [...splits];
-
-      newSplits[index]._shown_account = value;
-      const newId = account_ids[value];
-      if (newId != null) {
-        newSplits[index].account_id = newId;
-      }
-      this.setState({ splits: newSplits });
-    };
-  }
-
   onReconcileStateChangeHandler(index) {
     return (event) => {
       const { splits } = this.state;
@@ -433,7 +419,17 @@ class ShowTransaction extends React.Component {
                 newSplits = calculateStateShownAccount(newSplits, accounts);
                 this.submitTransaction(transaction, newSplits);
               }}
-              onChange={this.onAccountChangeHandler(index)}
+              onChange={(value) => {
+                const { account_ids, splits: oldSplits } = this.state;
+                const newSplits = [...oldSplits];
+
+                newSplits[index]._shown_account = value;
+                const newId = account_ids[value];
+                if (newId != null) {
+                  newSplits[index].account_id = newId;
+                }
+                this.setState({ splits: newSplits });
+              }}
               onFocus={(event) => event.target.select()}
             />
           </Grid.Item>
