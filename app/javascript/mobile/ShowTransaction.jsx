@@ -132,16 +132,6 @@ class ShowTransaction extends React.Component {
       });
   }
 
-  onReconcileStateChangeHandler(index) {
-    return (event) => {
-      const { splits } = this.state;
-      const newSplits = [...splits];
-
-      newSplits[index].reconciled_state = event.target.value;
-      this.setState({ splits: newSplits });
-    };
-  }
-
   setStateFromResponse(response) {
     const {
       accounts, error, splits, transaction,
@@ -441,7 +431,13 @@ class ShowTransaction extends React.Component {
                 const { splits: newSplits, transaction } = this.state;
                 this.submitTransaction(transaction, newSplits);
               }}
-              onChange={this.onReconcileStateChangeHandler(index)}
+              onChange={(event) => {
+                const { splits: oldSplits } = this.state;
+                const newSplits = [...oldSplits];
+
+                newSplits[index].reconciled_state = event.target.value;
+                this.setState({ splits: newSplits });
+              }}
             >
               <option value="n">n</option>
               <option value="c">c</option>
