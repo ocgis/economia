@@ -110,8 +110,6 @@ class ShowTransaction extends React.Component {
       key: Date.now(),
       datePickerVisible: false,
     };
-
-    this.onTextChangeHandler = this.onTextChangeHandler.bind(this);
   }
 
   componentDidMount() {
@@ -133,20 +131,6 @@ class ShowTransaction extends React.Component {
           console.log('ERROR:', error); // eslint-disable-line no-console
         }
       });
-  }
-
-  onTextChangeHandler(reference, index, field) {
-    return (value) => {
-      const { state } = this;
-      const newState = {};
-      newState[reference] = JSON.parse(JSON.stringify(state[reference]));
-      if (index == null) {
-        newState[reference][field] = value;
-      } else {
-        newState[reference][index][field] = value;
-      }
-      this.setState(newState);
-    };
   }
 
   onAccountChangeHandler(index) {
@@ -393,7 +377,12 @@ class ShowTransaction extends React.Component {
             value={split.quantity_to}
             placeholder="quantity to"
             bordered="false"
-            onChange={this.onTextChangeHandler('splits', index, 'quantity_to')}
+            onChange={(value) => {
+              const { splits: oldSplits } = this.state;
+              const newSplits = [...oldSplits];
+              newSplits[index].quantity_to = value;
+              this.setState({ splits: newSplits });
+            }}
             onBlur={() => {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
@@ -411,7 +400,12 @@ class ShowTransaction extends React.Component {
             value={split.quantity_from}
             placeholder="quantity from"
             bordered="false"
-            onChange={this.onTextChangeHandler('splits', index, 'quantity_from')}
+            onChange={(value) => {
+              const { splits: oldSplits } = this.state;
+              const newSplits = [...oldSplits];
+              newSplits[index].quantity_from = value;
+              this.setState({ splits: newSplits });
+            }}
             onBlur={() => {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
@@ -479,7 +473,12 @@ class ShowTransaction extends React.Component {
               value={split.value_to}
               placeholder="value to"
               bordered="false"
-              onChange={this.onTextChangeHandler('splits', index, 'value_to')}
+              onChange={(value) => {
+                const { splits: oldSplits } = this.state;
+                const newSplits = [...oldSplits];
+                newSplits[index].value_to = value;
+                this.setState({ splits: newSplits });
+              }}
               onBlur={() => {
                 const { splits: oldSplits, transaction } = this.state;
                 let newSplits = [...oldSplits];
@@ -498,7 +497,12 @@ class ShowTransaction extends React.Component {
               value={split.value_from}
               placeholder="value from"
               bordered="false"
-              onChange={this.onTextChangeHandler('splits', index, 'value_from')}
+              onChange={(value) => {
+                const { splits: oldSplits } = this.state;
+                const newSplits = [...oldSplits];
+                newSplits[index].value_from = value;
+                this.setState({ splits: newSplits });
+              }}
               onBlur={() => {
                 const { splits: oldSplits, transaction } = this.state;
                 let newSplits = [...oldSplits];
@@ -641,7 +645,14 @@ class ShowTransaction extends React.Component {
                 const { splits: newSplits } = this.state;
                 this.submitTransaction(transaction, newSplits);
               }}
-              onChange={this.onTextChangeHandler('transaction', null, 'num')}
+              onChange={(value) => {
+                this.setState((prevState) => ({
+                  transaction: {
+                    ...prevState.transaction,
+                    num: value,
+                  },
+                }));
+              }}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
