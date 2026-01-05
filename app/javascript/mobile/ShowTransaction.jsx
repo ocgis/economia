@@ -7,28 +7,17 @@ import {
   Button, CalendarPicker, Dialog, Grid, Input,
 } from 'antd-mobile/2x';
 import 'antd-mobile/2x/es/global';
-import * as math from 'mathjs';
 import { AddCircleOutline, CollectMoneyOutline, MinusCircleOutline } from 'antd-mobile-icons';
 import { throttle } from 'throttle-debounce';
 import BookMenu from './BookMenu';
+import {
+  calculateStateFromTo,
+  calculateStateShownAccount,
+  calculateStateValueQuantity,
+  commodityMatchesCurrency,
+  evaluateField,
+} from '../common/Common';
 import MobileAutoComplete from './MobileAutoComplete';
-
-const calculateStateFromTo = (splits) => (
-  splits.map((split) => ({
-    ...split,
-    value_from: split.value < 0 ? Number(-split.value).toFixed(2) : '',
-    value_to: split.value > 0 ? Number(split.value).toFixed(2) : '',
-    quantity_from: split.quantity < 0 ? Number(-split.quantity).toFixed(2) : '',
-    quantity_to: split.quantity > 0 ? Number(split.quantity).toFixed(2) : '',
-  }))
-);
-
-const calculateStateShownAccount = (splits, accounts) => (
-  splits.map((split) => ({
-    ...split,
-    _shown_account: split.account_id ? accounts[split.account_id].full_name : undefined,
-  }))
-);
 
 const onKeyDownHandler = (event) => {
   switch (event.keyCode) {
@@ -146,29 +135,6 @@ class ShowTransaction extends React.Component {
       });
   }
 
-  onBlurHandler(reference, index, field) {
-    return (event) => {
-      const { state } = this;
-      let splits = [...state.splits];
-      if ((reference === 'splits') && ['value_from', 'value_to'].includes(field)) {
-        if (splits[index][field] !== '') {
-          const result = math.evaluate(splits[index][field]).toFixed(2);
-          splits[index][field] = result == null ? '' : result;
-          this.setState({ splits });
-        }
-      }
-
-      if ((event.relatedTarget == null)
-          || (event.target.parentElement.parentElement
-            !== event.relatedTarget.parentElement.parentElement)) {
-        this.calculateStateValueQuantity();
-        splits = calculateStateShownAccount(splits, state.accounts);
-        splits = calculateStateFromTo(splits);
-        this.submitTransaction(state.transaction, splits);
-      }
-    };
-  }
-
   onTextChangeHandler(reference, index, field) {
     return (value) => {
       const { state } = this;
@@ -231,34 +197,6 @@ class ShowTransaction extends React.Component {
     newState.splits = calculateStateFromTo(newState.splits);
     this.setState(newState);
   }
-
-  commodityMatchesCurrency = (split) => {
-    const { accounts, transaction } = this.state;
-    const account = accounts[split.account_id];
-    if (account != null) {
-      return ((account.commodity_space === transaction.currency_space)
-           && (account.commodity_id === transaction.currency_id));
-    }
-    return true;
-  };
-
-  calculateStateValueQuantity = () => {
-    const { splits } = this.state;
-    return splits.map((split) => {
-      const newSplit = split;
-      const value_to = split.value_to === '' ? 0 : split.value_to;
-      const value_from = split.value_from === '' ? 0 : split.value_from;
-      newSplit.value = value_to - value_from;
-      if (this.commodityMatchesCurrency(split)) {
-        newSplit.quantity = split.value;
-      } else {
-        const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
-        const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
-        newSplit.quantity = quantity_to - quantity_from;
-      }
-      return newSplit;
-    });
-  };
 
   destroyTransaction = () => {
     const {
@@ -442,10 +380,10 @@ class ShowTransaction extends React.Component {
   }
 
   renderQuantity = (index) => {
-    const { splits } = this.state;
+    const { splits, transaction, accounts } = this.state;
     const split = splits[index];
 
-    if (this.commodityMatchesCurrency(split)) {
+    if (commodityMatchesCurrency(split, transaction, accounts)) {
       return null;
     }
     return (
@@ -456,7 +394,14 @@ class ShowTransaction extends React.Component {
             placeholder="quantity to"
             bordered="false"
             onChange={this.onTextChangeHandler('splits', index, 'quantity_to')}
-            onBlur={this.onBlurHandler('splits', index, 'quantity_to')}
+            onBlur={() => {
+              const { splits: oldSplits } = this.state;
+              let newSplits = [...oldSplits];
+
+              newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
+              newSplits = calculateStateFromTo(newSplits);
+              this.submitTransaction(transaction, newSplits);
+            }}
             onKeyDown={onKeyDownHandler}
             onFocus={(event) => event.target.select()}
           />
@@ -467,7 +412,14 @@ class ShowTransaction extends React.Component {
             placeholder="quantity from"
             bordered="false"
             onChange={this.onTextChangeHandler('splits', index, 'quantity_from')}
-            onBlur={this.onBlurHandler('splits', index, 'quantity_from')}
+            onBlur={() => {
+              const { splits: oldSplits } = this.state;
+              let newSplits = [...oldSplits];
+
+              newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
+              newSplits = calculateStateFromTo(newSplits);
+              this.submitTransaction(transaction, newSplits);
+            }}
             onKeyDown={onKeyDownHandler}
             onFocus={(event) => event.target.select()}
           />
@@ -493,7 +445,13 @@ class ShowTransaction extends React.Component {
               filterOption={(inputValue, option) => (
                 option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
               )}
-              onBlur={this.onBlurHandler('splits', index, 'account_id')}
+              onBlur={() => {
+                const { splits: oldSplits, transaction } = this.state;
+                let newSplits = [...oldSplits];
+
+                newSplits = calculateStateShownAccount(newSplits, accounts);
+                this.submitTransaction(transaction, newSplits);
+              }}
               onChange={this.onAccountChangeHandler(index)}
               onFocus={(event) => event.target.select()}
             />
@@ -502,7 +460,10 @@ class ShowTransaction extends React.Component {
             <select
               defaultValue={split.reconciled_state}
               bordered="false"
-              onBlur={this.onBlurHandler('splits', index, 'reconciled_state')}
+              onBlur={() => {
+                const { splits: newSplits, transaction } = this.state;
+                this.submitTransaction(transaction, newSplits);
+              }}
               onChange={this.onReconcileStateChangeHandler(index)}
             >
               <option value="n">n</option>
@@ -519,7 +480,15 @@ class ShowTransaction extends React.Component {
               placeholder="value to"
               bordered="false"
               onChange={this.onTextChangeHandler('splits', index, 'value_to')}
-              onBlur={this.onBlurHandler('splits', index, 'value_to')}
+              onBlur={() => {
+                const { splits: oldSplits, transaction } = this.state;
+                let newSplits = [...oldSplits];
+
+                newSplits[index].value_to = evaluateField(newSplits[index].value_to);
+                newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
+                newSplits = calculateStateFromTo(newSplits);
+                this.submitTransaction(transaction, newSplits);
+              }}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
@@ -530,7 +499,15 @@ class ShowTransaction extends React.Component {
               placeholder="value from"
               bordered="false"
               onChange={this.onTextChangeHandler('splits', index, 'value_from')}
-              onBlur={this.onBlurHandler('splits', index, 'value_from')}
+              onBlur={() => {
+                const { splits: oldSplits, transaction } = this.state;
+                let newSplits = [...oldSplits];
+
+                newSplits[index].value_from = evaluateField(newSplits[index].value_from);
+                newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
+                newSplits = calculateStateFromTo(newSplits);
+                this.submitTransaction(transaction, newSplits);
+              }}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
@@ -548,7 +525,10 @@ class ShowTransaction extends React.Component {
               style={{ width: '35ch' }}
               options={descriptionOptions}
               onChange={this.onAutoCompleteChangeHandler('splits', index, 'memo')}
-              onBlur={this.onBlurHandler('splits', index, 'description')}
+              onBlur={() => {
+                const { splits: newSplits, transaction } = this.state;
+                this.submitTransaction(transaction, newSplits);
+              }}
               onSearch={(search) => this.searchSplitMemos(search)}
               onFocus={(event) => {
                 event.target.select();
@@ -657,7 +637,10 @@ class ShowTransaction extends React.Component {
               value={transaction.num == null ? '' : transaction.num}
               placeholder="number"
               bordered="false"
-              onBlur={this.onBlurHandler('transaction', null, 'num')}
+              onBlur={() => {
+                const { splits: newSplits } = this.state;
+                this.submitTransaction(transaction, newSplits);
+              }}
               onChange={this.onTextChangeHandler('transaction', null, 'num')}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
@@ -671,7 +654,10 @@ class ShowTransaction extends React.Component {
               options={descriptionOptions}
               placeholder="description"
               onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
-              onBlur={this.onBlurHandler('transaction', null, 'description')}
+              onBlur={() => {
+                const { splits: newSplits } = this.state;
+                this.submitTransaction(transaction, newSplits);
+              }}
               onSearch={(search) => this.searchAccountDescriptions(search)}
               onFocus={(event) => {
                 event.target.select();
