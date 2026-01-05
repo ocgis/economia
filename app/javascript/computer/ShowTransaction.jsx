@@ -222,18 +222,6 @@ class ShowTransaction extends React.Component {
       });
   };
 
-  onAutoCompleteChangeHandler = (reference, index, field) => ((event) => {
-    const { state } = this;
-    const newState = {};
-    newState[reference] = JSON.parse(JSON.stringify(state[reference]));
-    if (index == null) {
-      newState[reference][field] = event;
-    } else {
-      newState[reference][index][field] = event;
-    }
-    this.setState(newState);
-  });
-
   removeSplitHandler = (index) => (() => {
     const { splits, transaction } = this.state;
     const newSplits = [...splits];
@@ -543,7 +531,12 @@ class ShowTransaction extends React.Component {
               bordered={false}
               style={{ width: '35ch' }}
               options={descriptionOptions}
-              onChange={this.onAutoCompleteChangeHandler('splits', index, 'memo')}
+              onChange={(value) => {
+                const { splits: oldSplits } = this.state;
+                const newSplits = [...oldSplits];
+                newSplits[index].memo = value;
+                this.setState({ splits: newSplits });
+              }}
               onBlur={() => {
                 const { splits: newSplits, transaction } = this.state;
                 this.submitTransaction(transaction, newSplits);
@@ -675,7 +668,14 @@ class ShowTransaction extends React.Component {
               style={{ width: '35ch' }}
               options={descriptionOptions}
               placeholder="description"
-              onChange={this.onAutoCompleteChangeHandler('transaction', null, 'description')}
+              onChange={(value) => {
+                this.setState((prevState) => ({
+                  transaction: {
+                    ...prevState.transaction,
+                    description: value,
+                  },
+                }));
+              }}
               onBlur={() => {
                 const { splits: newSplits } = this.state;
                 this.submitTransaction(transaction, newSplits);
