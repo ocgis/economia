@@ -107,10 +107,7 @@ class ShowTransaction extends React.Component {
       transaction: null,
       splits: [],
       descriptionOptions: [],
-      key: Date.now(),
     };
-
-    this.onDateChangeHandler = this.onDateChangeHandler.bind(this);
   }
 
   componentDidMount() {
@@ -132,20 +129,6 @@ class ShowTransaction extends React.Component {
           console.log('ERROR:', error); // eslint-disable-line no-console
         }
       });
-  }
-
-  onDateChangeHandler(reference, index, field) {
-    return (value) => {
-      const { state } = this;
-      const newState = {};
-      newState[reference] = JSON.parse(JSON.stringify(state[reference]));
-      if (index == null) {
-        newState[reference][field] = value.toISOString();
-      } else {
-        newState[reference][index][field] = value.toISOString();
-      }
-      this.setState(newState);
-    };
   }
 
   setStateFromResponse(response) {
@@ -626,7 +609,14 @@ class ShowTransaction extends React.Component {
                 const { splits: newSplits } = this.state;
                 this.submitTransaction(transaction, newSplits);
               }}
-              onChange={this.onDateChangeHandler('transaction', null, 'date_posted')}
+              onChange={(value) => {
+                this.setState((prevState) => ({
+                  transaction: {
+                    ...prevState.transaction,
+                    date_posted: value.toISOString(),
+                  },
+                }));
+              }}
               onKeyDown={onKeyDownHandler}
               suffixIcon={null}
               onFocus={(event) => event.target.select()}
