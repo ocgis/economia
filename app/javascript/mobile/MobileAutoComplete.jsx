@@ -30,13 +30,14 @@ class MobileAutoComplete extends React.Component {
             onFocus(event);
             this.setState({ showOptions: true });
           }}
-          onBlur={() => {
+          onBlur={(event) => {
             setTimeout(() => {
-              const { value } = this.props;
+              const { onBlur, value } = this.props;
               this.setState({
                 showOptions: false,
                 search: value,
               });
+              onBlur(event);
             }, 200);
           }}
           onChange={(newValue) => {
@@ -69,6 +70,7 @@ class MobileAutoComplete extends React.Component {
 }
 MobileAutoComplete.propTypes = {
   filterOption: PropTypes.func,
+  onBlur: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onSearch: PropTypes.func,
@@ -78,6 +80,7 @@ MobileAutoComplete.propTypes = {
 };
 MobileAutoComplete.defaultProps = {
   filterOption: () => true,
+  onBlur: () => {},
   onChange: () => {},
   onFocus: () => {},
   onSearch: () => {},
