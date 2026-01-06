@@ -111,24 +111,15 @@ class ShowTransaction extends React.Component {
   }
 
   componentDidMount() {
-    const {
-      params: { bookId, id },
-    } = this.props;
+    this.loadTransaction();
+  }
 
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    axios
-      .get(`/api/v1/books/${bookId}/etransactions/${id}`)
-      .then((response) => this.setStateFromResponse(response))
-      .catch((error) => {
-        if (error.response) {
-          this.setState({ error: error.response.data.error });
-        } else {
-          this.setState({ error });
-          console.log('ERROR:', error); // eslint-disable-line no-console
-        }
-      });
+  componentDidUpdate(prevProps) {
+    const { params: { bookId, id } } = this.props;
+    if ((prevProps.params.bookId !== bookId)
+        || (prevProps.params.id !== id)) {
+      this.loadTransaction();
+    }
   }
 
   setStateFromResponse(response) {
@@ -200,6 +191,27 @@ class ShowTransaction extends React.Component {
     newSplits = calculateStateFromTo(newSplits);
     this.submitTransaction(transaction, newSplits);
   });
+
+  loadTransaction() {
+    const {
+      params: { bookId, id },
+    } = this.props;
+
+    const csrfToken = document.querySelector('[name=csrf-token]').content;
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+
+    axios
+      .get(`/api/v1/books/${bookId}/etransactions/${id}`)
+      .then((response) => this.setStateFromResponse(response))
+      .catch((error) => {
+        if (error.response) {
+          this.setState({ error: error.response.data.error });
+        } else {
+          this.setState({ error });
+          console.log('ERROR:', error); // eslint-disable-line no-console
+        }
+      });
+  }
 
   copySplit(split_index, split_id) {
     const handleResponse = (response) => {
