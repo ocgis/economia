@@ -8,7 +8,7 @@ import {
 } from 'antd-mobile/2x';
 import 'antd-mobile/2x/es/global';
 import { AddCircleOutline, CollectMoneyOutline, MinusCircleOutline } from 'antd-mobile-icons';
-import { throttle } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 import BookMenu from './BookMenu';
 import {
   calculateStateFromTo,
@@ -100,6 +100,14 @@ class ShowTransaction extends React.Component {
         console.log('ERROR:', error); // eslint-disable-line no-console
       });
   });
+
+  debounceSubmit = debounce(
+    500,
+    () => {
+      const { splits, transaction } = this.state;
+      this.submitTransaction(transaction, splits);
+    },
+  );
 
   constructor(props) {
     super(props);
@@ -444,11 +452,11 @@ class ShowTransaction extends React.Component {
                 this.submitTransaction(transaction, newSplits);
               }}
               onChange={(event) => {
-                const { splits: oldSplits } = this.state;
+                const { splits: oldSplits, transaction } = this.state;
                 const newSplits = [...oldSplits];
 
                 newSplits[index].reconciled_state = event.target.value;
-                this.setState({ splits: newSplits });
+                this.submitTransaction(transaction, newSplits);
               }}
             >
               <option value="n">n</option>
@@ -524,6 +532,7 @@ class ShowTransaction extends React.Component {
                 const newSplits = [...oldSplits];
                 newSplits[index].memo = value;
                 this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
               onBlur={() => {
                 const { splits: newSplits, transaction } = this.state;
@@ -648,6 +657,7 @@ class ShowTransaction extends React.Component {
                     num: value,
                   },
                 }));
+                this.debounceSubmit();
               }}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
@@ -667,6 +677,7 @@ class ShowTransaction extends React.Component {
                     description: value,
                   },
                 }));
+                this.debounceSubmit();
               }}
               onBlur={() => {
                 const { splits: newSplits } = this.state;

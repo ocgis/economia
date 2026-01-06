@@ -7,7 +7,7 @@ import {
   AutoComplete, Button, Col, DatePicker, Input, Popconfirm, Row, Select,
 } from 'antd';
 import { MinusCircleOutlined, PlusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { throttle } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 import BookMenu from './BookMenu';
 import {
   calculateStateFromTo,
@@ -100,6 +100,14 @@ class ShowTransaction extends React.Component {
         console.log('ERROR:', error); // eslint-disable-line no-console
       });
   });
+
+  debounceSubmit = debounce(
+    500,
+    () => {
+      const { splits, transaction } = this.state;
+      this.submitTransaction(transaction, splits);
+    },
+  );
 
   constructor(props) {
     super(props);
@@ -428,6 +436,7 @@ class ShowTransaction extends React.Component {
                 const newId = account_ids[value];
                 if (newId != null) {
                   newSplits[index].account_id = newId;
+                  this.debounceSubmit();
                 }
                 this.setState({ splits: newSplits });
               }}
@@ -448,6 +457,7 @@ class ShowTransaction extends React.Component {
 
                 newSplits[index].reconciled_state = value;
                 this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
             >
               <Option value="n">n</Option>
@@ -523,6 +533,7 @@ class ShowTransaction extends React.Component {
                 const newSplits = [...oldSplits];
                 newSplits[index].memo = value;
                 this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
               onBlur={() => {
                 const { splits: newSplits, transaction } = this.state;
@@ -628,6 +639,7 @@ class ShowTransaction extends React.Component {
                     date_posted: value.toISOString(),
                   },
                 }));
+                this.debounceSubmit();
               }}
               onKeyDown={onKeyDownHandler}
               suffixIcon={null}
@@ -650,6 +662,7 @@ class ShowTransaction extends React.Component {
                     num: event.target.value,
                   },
                 }));
+                this.debounceSubmit();
               }}
               onKeyDown={onKeyDownHandler}
               onFocus={(event) => event.target.select()}
@@ -669,6 +682,7 @@ class ShowTransaction extends React.Component {
                     description: value,
                   },
                 }));
+                this.debounceSubmit();
               }}
               onBlur={() => {
                 const { splits: newSplits } = this.state;
