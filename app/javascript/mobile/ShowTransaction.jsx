@@ -445,7 +445,7 @@ class ShowTransaction extends React.Component {
           </Grid.Item>
           <Grid.Item span={1} key="reconciled">
             <select
-              defaultValue={split.reconciled_state}
+              value={split.reconciled_state}
               bordered="false"
               onBlur={() => {
                 const { splits: newSplits, transaction } = this.state;

@@ -14,9 +14,16 @@ class MobileAutoComplete extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    const { value } = this.props;
+    if (prevProps.value !== value) {
+      this.setState({ search: value });
+    }
+  }
+
   render() {
     const {
-      onChange, onFocus, onSearch, options, filterOption, placeholder,
+      onChange, onFocus, onSearch, onSelect, options, filterOption, placeholder,
     } = this.props;
     const { showOptions, search } = this.state;
     const safeSearch = search == null ? '' : search;
@@ -56,7 +63,8 @@ class MobileAutoComplete extends React.Component {
           { filteredOptions.map((option) => (
             <List.Item
               onClick={() => {
-                onChange(option.value);
+                this.setState({ search: option.value });
+                onSelect(option.value, option);
               }}
               key={option.value}
             >
@@ -74,6 +82,7 @@ MobileAutoComplete.propTypes = {
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onSearch: PropTypes.func,
+  onSelect: PropTypes.func,
   options: PropTypes.arrayOf(PropTypes.shape()),
   placeholder: PropTypes.string,
   value: PropTypes.string,
@@ -84,6 +93,7 @@ MobileAutoComplete.defaultProps = {
   onChange: () => {},
   onFocus: () => {},
   onSearch: () => {},
+  onSelect: () => {},
   options: [],
   placeholder: undefined,
   value: undefined,
