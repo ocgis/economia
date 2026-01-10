@@ -309,7 +309,7 @@ class ShowTransaction extends React.Component {
       });
   }
 
-  submitTransaction(newTransaction, newSplits) {
+  submitTransaction(newTransaction, newSplits, setStateOnResponse = true) {
     const {
       params: { bookId },
     } = this.props;
@@ -335,12 +335,20 @@ class ShowTransaction extends React.Component {
     if (transaction.id == null) {
       axios
         .post(`/api/v1/books/${bookId}/etransactions`, { transaction })
-        .then((response) => this.setStateFromResponse(response))
+        .then((response) => {
+          if (setStateOnResponse) {
+            this.setStateFromResponse(response);
+          }
+        })
         .catch((error) => console.log('ERROR:', error)); // eslint-disable-line no-console
     } else {
       axios
         .patch(`/api/v1/books/${bookId}/etransactions/${transaction.id}`, { transaction })
-        .then((response) => this.setStateFromResponse(response))
+        .then((response) => {
+          if (setStateOnResponse) {
+            this.setStateFromResponse(response);
+          }
+        })
         .catch((error) => console.log('ERROR:', error)); // eslint-disable-line no-console
     }
   }
