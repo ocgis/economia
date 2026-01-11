@@ -1,4 +1,3 @@
-import axios from 'axios';
 import moment from 'moment';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -8,358 +7,21 @@ import {
 } from 'antd-mobile/2x';
 import 'antd-mobile/2x/es/global';
 import { AddCircleOutline, CollectMoneyOutline, MinusCircleOutline } from 'antd-mobile-icons';
-import { debounce, throttle } from 'throttle-debounce';
+import ShowTransactionBase from '../common/ShowTransactionBase';
 import BookMenu from './BookMenu';
-import {
-  calculateStateFromTo,
-  calculateStateShownAccount,
-  calculateStateValueQuantity,
-  commodityMatchesCurrency,
-  evaluateField,
-} from '../common/Common';
 import MobileAutoComplete from './MobileAutoComplete';
 
-const onKeyDownHandler = (event) => {
-  switch (event.keyCode) {
-    case 38: /* Up arrow */
-      {
-        const td = event.target.parentElement;
-        const tr = td.parentElement;
-        const columnIndex = Array.prototype.indexOf.call(td.parentElement.children, td);
-        const prevTr = tr.previousSibling;
-        if (prevTr != null) {
-          const prevTd = prevTr.children[columnIndex];
-          const prevInput = prevTd.children[0];
-          prevInput.focus();
-          prevInput.select();
-        }
-      }
-      event.stopPropagation();
-      break;
-
-    case 40: /* Down arrow */
-      {
-        const td = event.target.parentElement;
-        const tr = td.parentElement;
-        const columnIndex = Array.prototype.indexOf.call(td.parentElement.children, td);
-        const nextTr = tr.nextSibling;
-        if (nextTr != null) {
-          const nextTd = nextTr.children[columnIndex];
-          const nextInput = nextTd.children[0];
-          nextInput.focus();
-          nextInput.select();
-        }
-      }
-      event.stopPropagation();
-      break;
-
-    default:
-      // Do nothing
-  }
-};
-
-class ShowTransaction extends React.Component {
-  searchAccountDescriptions = throttle(500, (searchString) => {
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    const encodedSearch = encodeURIComponent(searchString);
-    axios
-      .get(`/api/v1/books/${bookId}/etransactions/search?query=${encodedSearch}`)
-      .then((response) => {
-        this.setState({
-          descriptionOptions: response.data.result,
-        });
-      })
-      .catch((error) => {
-        console.log('ERROR:', error); // eslint-disable-line no-console
-      });
-  });
-
-  searchSplitMemos = throttle(500, (searchString) => {
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    const encodedSearch = encodeURIComponent(searchString);
-    axios
-      .get(`/api/v1/books/${bookId}/splits/search?query=${encodedSearch}`)
-      .then((response) => {
-        this.setState({
-          descriptionOptions: response.data.result,
-        });
-      })
-      .catch((error) => {
-        console.log('ERROR:', error); // eslint-disable-line no-console
-      });
-  });
-
-  debounceSubmit = debounce(
-    500,
-    () => {
-      const { splits, transaction } = this.state;
-      const noSetStateOnResponse = false;
-      this.submitTransaction(transaction, splits, noSetStateOnResponse);
-    },
-  );
-
+class ShowTransaction extends ShowTransactionBase {
   constructor(props) {
     super(props);
-    this.state = {
-      transaction: null,
-      splits: [],
-      descriptionOptions: [],
-      datePickerVisible: false,
-    };
-  }
-
-  componentDidMount() {
-    this.loadTransaction();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { params: { bookId, id } } = this.props;
-    if ((prevProps.params.bookId !== bookId)
-        || (prevProps.params.id !== id)) {
-      this.loadTransaction();
-    }
-  }
-
-  setStateFromResponse(response) {
-    const {
-      accounts, error, splits, transaction,
-    } = response.data;
-    if (error != null) {
-      console.log('ERROR:', error); // eslint-disable-line no-console
-    }
-    const newState = {
-      transaction,
-      splits: splits.sort((a, b) => {
-        const aDate = new Date(a.created_at);
-        const bDate = new Date(b.created_at);
-        return aDate - bDate;
-      }),
-      accounts,
-      account_ids: {},
-    };
-    Object.keys(newState.accounts).forEach((t) => {
-      newState.account_ids[newState.accounts[t].full_name] = t;
-    });
-    newState.splits = calculateStateShownAccount(newState.splits, newState.accounts);
-    newState.splits = calculateStateFromTo(newState.splits);
-    this.setState(newState);
-  }
-
-  destroyTransaction = () => {
-    const {
-      params: { bookId },
-      navigate,
-    } = this.props;
-    const { transaction } = this.state;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    axios
-      .delete(`/api/v1/books/${bookId}/etransactions/${transaction.id}`)
-      .then(() => {
-        navigate(-1);
-      })
-      .catch((error) => {
-        if (error.response) {
-          this.setState({ error: `${error.response.status} ${error.response.statusText}` });
-        } else {
-          console.log('ERROR:', error); // eslint-disable-line no-console
-          this.setState({ error });
-        }
-      });
-  };
-
-  removeSplitHandler = (index) => (() => {
-    const { splits, transaction } = this.state;
-    const newSplits = [...splits];
-    newSplits[index]._destroy = true;
-    this.submitTransaction(transaction, newSplits);
-  });
-
-  balanceSplitHandler = (index) => (() => {
-    const { splits, transaction } = this.state;
-    let newSplits = [...splits];
-    let newValue = newSplits[index].value;
-    newSplits.forEach((split) => {
-      newValue -= split.value;
-    });
-    newSplits[index].value = newValue;
-    newSplits[index].quantity = newValue;
-    newSplits = calculateStateFromTo(newSplits);
-    this.submitTransaction(transaction, newSplits);
-  });
-
-  loadTransaction() {
-    const {
-      params: { bookId, id },
-    } = this.props;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    axios
-      .get(`/api/v1/books/${bookId}/etransactions/${id}`)
-      .then((response) => this.setStateFromResponse(response))
-      .catch((error) => {
-        if (error.response) {
-          this.setState({ error: error.response.data.error });
-        } else {
-          this.setState({ error });
-          console.log('ERROR:', error); // eslint-disable-line no-console
-        }
-      });
-  }
-
-  copySplit(split_index, split_id) {
-    const handleResponse = (response) => {
-      const { accounts, splits, transaction } = this.state;
-      const {
-        created_at, updated_at, etransaction_id, id, ...newSplit
-      } = response.data.split;
-      let updatedSplits = [...splits];
-
-      updatedSplits[split_index] = { ...updatedSplits[split_index], ...newSplit };
-
-      updatedSplits = calculateStateShownAccount(updatedSplits, accounts);
-      updatedSplits = calculateStateFromTo(updatedSplits);
-      this.submitTransaction(transaction, updatedSplits);
-    };
-
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    axios
-      .get(`/api/v1/books/${bookId}/splits/${split_id}`)
-      .then((response) => handleResponse(response))
-      .catch((error) => {
-        if (error.response) {
-          this.setState({ error: error.response.data.error });
-        } else {
-          console.log('ERROR:', error); // eslint-disable-line no-console
-          this.setState({ error });
-        }
-      });
-  }
-
-  copyTransaction(id) {
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const handleResponse = (response) => {
-      const { accounts, splits, transaction } = this.state;
-      const {
-        created_at: trn_ca, updated_at: trn_ua, date_posted, id: trn_id, ...newTransaction
-      } = response.data.transaction;
-      const updatedTransaction = { ...transaction, ...newTransaction };
-
-      const newSplits = response.data.splits;
-      let updatedSplits = [...splits];
-      // Overwrite existing splits with new splits
-      for (let i = 0; i < Math.min(updatedSplits.length, newSplits.length); i += 1) {
-        const {
-          created_at, updated_at, etransaction_id, id: spl_id, ...newSplit
-        } = newSplits[i];
-        updatedSplits[i] = { ...updatedSplits[i], ...newSplit };
-      }
-      // Append new splits
-      for (let i = updatedSplits.length; i < newSplits.length; i += 1) {
-        const {
-          created_at, updated_at, etransaction_id, id: spl_id, ...newSplit
-        } = newSplits[i];
-        updatedSplits.push(newSplit);
-      }
-      // Delete existing splits
-      for (let i = newSplits.length; i < updatedSplits.length; i += 1) {
-        updatedSplits[i]._destroy = true;
-      }
-      updatedSplits = calculateStateShownAccount(updatedSplits, accounts);
-      updatedSplits = calculateStateFromTo(updatedSplits);
-      this.submitTransaction(updatedTransaction, updatedSplits);
-    };
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    axios
-      .get(`/api/v1/books/${bookId}/etransactions/${id}`)
-      .then((response) => handleResponse(response))
-      .catch((error) => {
-        if (error.response) {
-          this.setState({ error: error.response.data.error });
-        } else {
-          console.log('ERROR:', error); // eslint-disable-line no-console
-          this.setState({ error });
-        }
-      });
-  }
-
-  submitTransaction(newTransaction, newSplits, setStateOnResponse = true) {
-    const {
-      params: { bookId },
-    } = this.props;
-
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-
-    const { created_at, updated_at, ...transaction } = newTransaction;
-    transaction.splits_attributes = newSplits.map((newSplit) => {
-      const {
-        created_at: ca,
-        updated_at: ua,
-        _shown_account,
-        value_from,
-        value_to,
-        quantity_from,
-        quantity_to,
-        ...split
-      } = newSplit;
-      return split;
-    });
-
-    if (transaction.id == null) {
-      axios
-        .post(`/api/v1/books/${bookId}/etransactions`, { transaction })
-        .then((response) => {
-          if (setStateOnResponse) {
-            this.setStateFromResponse(response);
-          }
-        })
-        .catch((error) => console.log('ERROR:', error)); // eslint-disable-line no-console
-    } else {
-      axios
-        .patch(`/api/v1/books/${bookId}/etransactions/${transaction.id}`, { transaction })
-        .then((response) => {
-          if (setStateOnResponse) {
-            this.setStateFromResponse(response);
-          }
-        })
-        .catch((error) => console.log('ERROR:', error)); // eslint-disable-line no-console
-    }
+    this.datePickerVisible = false;
   }
 
   renderQuantity = (index) => {
     const { splits, transaction, accounts } = this.state;
     const split = splits[index];
 
-    if (commodityMatchesCurrency(split, transaction, accounts)) {
+    if (this.constructor.commodityMatchesCurrency(split, transaction, accounts)) {
       return null;
     }
     return (
@@ -379,11 +41,15 @@ class ShowTransaction extends React.Component {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
 
-              newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
-              newSplits = calculateStateFromTo(newSplits);
+              newSplits = this.constructor.calculateStateValueQuantity(
+                newSplits,
+                transaction,
+                accounts,
+              );
+              newSplits = this.constructor.calculateStateFromTo(newSplits);
               this.submitTransaction(transaction, newSplits);
             }}
-            onKeyDown={onKeyDownHandler}
+            onKeyDown={this.onKeyDownHandler}
             onFocus={(event) => event.target.select()}
           />
         </Grid.Item>
@@ -402,11 +68,15 @@ class ShowTransaction extends React.Component {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
 
-              newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
-              newSplits = calculateStateFromTo(newSplits);
+              newSplits = this.constructor.calculateStateValueQuantity(
+                newSplits,
+                transaction,
+                accounts,
+              );
+              newSplits = this.constructor.calculateStateFromTo(newSplits);
               this.submitTransaction(transaction, newSplits);
             }}
-            onKeyDown={onKeyDownHandler}
+            onKeyDown={this.onKeyDownHandler}
             onFocus={(event) => event.target.select()}
           />
         </Grid.Item>
@@ -435,7 +105,7 @@ class ShowTransaction extends React.Component {
                 const { splits: oldSplits, transaction } = this.state;
                 let newSplits = [...oldSplits];
 
-                newSplits = calculateStateShownAccount(newSplits, accounts);
+                newSplits = this.constructor.calculateStateShownAccount(newSplits, accounts);
                 this.submitTransaction(transaction, newSplits);
               }}
               onChange={(value) => {
@@ -491,12 +161,18 @@ class ShowTransaction extends React.Component {
                 const { splits: oldSplits, transaction } = this.state;
                 let newSplits = [...oldSplits];
 
-                newSplits[index].value_to = evaluateField(newSplits[index].value_to);
-                newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
-                newSplits = calculateStateFromTo(newSplits);
+                newSplits[index].value_to = this.constructor.evaluateField(
+                  newSplits[index].value_to,
+                );
+                newSplits = this.constructor.calculateStateValueQuantity(
+                  newSplits,
+                  transaction,
+                  accounts,
+                );
+                newSplits = this.constructor.calculateStateFromTo(newSplits);
                 this.submitTransaction(transaction, newSplits);
               }}
-              onKeyDown={onKeyDownHandler}
+              onKeyDown={this.onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
           </Grid.Item>
@@ -515,12 +191,18 @@ class ShowTransaction extends React.Component {
                 const { splits: oldSplits, transaction } = this.state;
                 let newSplits = [...oldSplits];
 
-                newSplits[index].value_from = evaluateField(newSplits[index].value_from);
-                newSplits = calculateStateValueQuantity(newSplits, transaction, accounts);
-                newSplits = calculateStateFromTo(newSplits);
+                newSplits[index].value_from = this.constructor.evaluateField(
+                  newSplits[index].value_from,
+                );
+                newSplits = this.constructor.calculateStateValueQuantity(
+                  newSplits,
+                  transaction,
+                  accounts,
+                );
+                newSplits = this.constructor.calculateStateFromTo(newSplits);
                 this.submitTransaction(transaction, newSplits);
               }}
-              onKeyDown={onKeyDownHandler}
+              onKeyDown={this.onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
           </Grid.Item>
@@ -668,7 +350,7 @@ class ShowTransaction extends React.Component {
                 }));
                 this.debounceSubmit();
               }}
-              onKeyDown={onKeyDownHandler}
+              onKeyDown={this.onKeyDownHandler}
               onFocus={(event) => event.target.select()}
             />
           </Grid.Item>
