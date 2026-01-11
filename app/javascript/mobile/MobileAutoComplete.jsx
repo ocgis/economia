@@ -64,6 +64,7 @@ class MobileAutoComplete extends React.Component {
             <List.Item
               onClick={() => {
                 this.setState({ search: option.value });
+                onChange(option.value);
                 onSelect(option.value, option);
               }}
               key={option.value}

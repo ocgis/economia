@@ -33,7 +33,7 @@ class ShowTransactionBase extends React.Component {
       const value_to = split.value_to === '' ? 0 : split.value_to;
       const value_from = split.value_from === '' ? 0 : split.value_from;
       newSplit.value = value_to - value_from;
-      if (this.commodityMatchesCurrency(split, transaction, accounts)) {
+      if (this.constructor.commodityMatchesCurrency(split, transaction, accounts)) {
         newSplit.quantity = split.value;
       } else {
         const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
