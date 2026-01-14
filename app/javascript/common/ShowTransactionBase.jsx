@@ -231,7 +231,7 @@ class ShowTransactionBase extends React.Component {
   });
 
   balanceSplitHandler = (index) => (() => {
-    const { splits, transaction } = this.state;
+    const { splits } = this.state;
     let newSplits = [...splits];
     let newValue = newSplits[index].value;
     newSplits.forEach((split) => {
@@ -240,7 +240,8 @@ class ShowTransactionBase extends React.Component {
     newSplits[index].value = newValue;
     newSplits[index].quantity = newValue;
     newSplits = this.constructor.calculateStateFromTo(newSplits);
-    this.submitTransaction(transaction, newSplits);
+    this.setState({ splits: newSplits });
+    this.debounceSubmit();
   });
 
   loadTransaction() {

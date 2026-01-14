@@ -144,7 +144,9 @@ class ShowTransaction extends ShowTransactionBase {
             </select>
           </Grid.Item>
           <Grid.Item span={1}>
-            <CollectMoneyOutline onClick={this.balanceSplitHandler(index)} />
+            <CollectMoneyOutline
+              onClick={() => setTimeout(() => this.balanceSplitHandler(index)(), 100)}
+            />
           </Grid.Item>
           <Grid.Item span={4} key="to">
             <Input
@@ -170,7 +172,8 @@ class ShowTransaction extends ShowTransactionBase {
                   accounts,
                 );
                 newSplits = this.constructor.calculateStateFromTo(newSplits);
-                this.submitTransaction(transaction, newSplits);
+                this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
               onKeyDown={this.onKeyDownHandler}
               onFocus={(event) => event.target.select()}
@@ -200,7 +203,8 @@ class ShowTransaction extends ShowTransactionBase {
                   accounts,
                 );
                 newSplits = this.constructor.calculateStateFromTo(newSplits);
-                this.submitTransaction(transaction, newSplits);
+                this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
               onKeyDown={this.onKeyDownHandler}
               onFocus={(event) => event.target.select()}
