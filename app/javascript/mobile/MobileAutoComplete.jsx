@@ -65,7 +65,7 @@ class MobileAutoComplete extends React.Component {
               onClick={() => {
                 this.setState({ search: option.value });
                 onChange(option.value);
-                onSelect(option.value, option);
+                setTimeout(() => onSelect(option.value, option), 100);
               }}
               key={option.value}
             >
