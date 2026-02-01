@@ -18,32 +18,6 @@ class ShowTransactionBase extends React.Component {
     }))
   );
 
-  static commodityMatchesCurrency = (split, transaction, accounts) => {
-    const account = accounts[split.account_id];
-    if (account != null) {
-      return ((account.commodity_space === transaction.currency_space)
-           && (account.commodity_id === transaction.currency_id));
-    }
-    return true;
-  };
-
-  static calculateStateValueQuantity = (splits, transaction, accounts) => (
-    splits.map((split) => {
-      const newSplit = { ...split };
-      const value_to = split.value_to === '' ? 0 : split.value_to;
-      const value_from = split.value_from === '' ? 0 : split.value_from;
-      newSplit.value = value_to - value_from;
-      if (this.commodityMatchesCurrency(split, transaction, accounts)) {
-        newSplit.quantity = split.value;
-      } else {
-        const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
-        const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
-        newSplit.quantity = quantity_to - quantity_from;
-      }
-      return newSplit;
-    })
-  );
-
   static calculateStateShownAccount = (splits, accounts) => (
     splits.map((split) => ({
       ...split,
@@ -197,6 +171,36 @@ class ShowTransactionBase extends React.Component {
     newState.splits = this.constructor.calculateStateFromTo(newState.splits);
     this.setState(newState);
   }
+
+  commodityMatchesCurrency = (split) => {
+    const { accounts, transaction } = this.state;
+    const account = accounts[split.account_id];
+    if (account != null) {
+      return ((account.commodity_space === transaction.currency_space)
+           && (account.commodity_id === transaction.currency_id));
+    }
+    return true;
+  };
+
+  calculateStateValueQuantity = (splits) => {
+    const { accounts, transaction } = this.state;
+    const newSplits = splits.map((split) => {
+      const newSplit = { ...split };
+      const value_to = split.value_to === '' ? 0 : split.value_to;
+      const value_from = split.value_from === '' ? 0 : split.value_from;
+      newSplit.value = value_to - value_from;
+      if (this.commodityMatchesCurrency(split, transaction, accounts)) {
+        newSplit.quantity = split.value;
+      } else {
+        const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
+        const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
+        newSplit.quantity = quantity_to - quantity_from;
+      }
+      return newSplit;
+    });
+
+    return this.constructor.calculateStateFromTo(newSplits);
+  };
 
   destroyTransaction = () => {
     const {

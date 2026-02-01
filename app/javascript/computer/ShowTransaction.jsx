@@ -13,10 +13,10 @@ const { Option } = Select;
 
 class ShowTransaction extends ShowTransactionBase {
   renderQuantity = (index) => {
-    const { accounts, splits, transaction } = this.state;
+    const { splits, transaction } = this.state;
     const split = splits[index];
 
-    if (this.constructor.commodityMatchesCurrency(split, transaction, accounts)) {
+    if (this.commodityMatchesCurrency(split)) {
       return null;
     }
     return (
@@ -36,12 +36,7 @@ class ShowTransaction extends ShowTransactionBase {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
 
-              newSplits = this.constructor.calculateStateValueQuantity(
-                newSplits,
-                transaction,
-                accounts,
-              );
-              newSplits = this.constructor.calculateStateFromTo(newSplits);
+              newSplits = this.calculateStateValueQuantity(newSplits);
               this.submitTransaction(transaction, newSplits);
             }}
             onKeyDown={this.onKeyDownHandler}
@@ -63,12 +58,7 @@ class ShowTransaction extends ShowTransactionBase {
               const { splits: oldSplits } = this.state;
               let newSplits = [...oldSplits];
 
-              newSplits = this.constructor.calculateStateValueQuantity(
-                newSplits,
-                transaction,
-                accounts,
-              );
-              newSplits = this.constructor.calculateStateFromTo(newSplits);
+              newSplits = this.calculateStateValueQuantity(newSplits);
               this.submitTransaction(transaction, newSplits);
             }}
             onKeyDown={this.onKeyDownHandler}
@@ -157,18 +147,13 @@ class ShowTransaction extends ShowTransactionBase {
                 this.setState({ splits: newSplits });
               }}
               onBlur={() => {
-                const { splits: oldSplits, transaction } = this.state;
+                const { splits: oldSplits } = this.state;
                 let newSplits = [...oldSplits];
 
                 newSplits[index].value_to = this.constructor.evaluateField(
                   newSplits[index].value_to,
                 );
-                newSplits = this.constructor.calculateStateValueQuantity(
-                  newSplits,
-                  transaction,
-                  accounts,
-                );
-                newSplits = this.constructor.calculateStateFromTo(newSplits);
+                newSplits = this.calculateStateValueQuantity(newSplits);
                 this.setState({ splits: newSplits });
                 this.debounceSubmit();
               }}
@@ -188,18 +173,13 @@ class ShowTransaction extends ShowTransactionBase {
                 this.setState({ splits: newSplits });
               }}
               onBlur={() => {
-                const { splits: oldSplits, transaction } = this.state;
+                const { splits: oldSplits } = this.state;
                 let newSplits = [...oldSplits];
 
                 newSplits[index].value_from = this.constructor.evaluateField(
                   newSplits[index].value_from,
                 );
-                newSplits = this.constructor.calculateStateValueQuantity(
-                  newSplits,
-                  transaction,
-                  accounts,
-                );
-                newSplits = this.constructor.calculateStateFromTo(newSplits);
+                newSplits = this.calculateStateValueQuantity(newSplits);
                 this.setState({ splits: newSplits });
                 this.debounceSubmit();
               }}
