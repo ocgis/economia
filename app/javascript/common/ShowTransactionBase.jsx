@@ -267,7 +267,7 @@ class ShowTransactionBase extends React.Component {
 
   copySplit(split_index, split_id) {
     const handleResponse = (response) => {
-      const { accounts, splits, transaction } = this.state;
+      const { accounts, splits } = this.state;
       const {
         created_at, updated_at, etransaction_id, id, ...newSplit
       } = response.data.split;
@@ -277,7 +277,8 @@ class ShowTransactionBase extends React.Component {
 
       updatedSplits = this.constructor.calculateStateShownAccount(updatedSplits, accounts);
       updatedSplits = this.constructor.calculateStateFromTo(updatedSplits);
-      this.submitTransaction(transaction, updatedSplits);
+      this.setState({ splits: updatedSplits });
+      this.debounceSubmit();
     };
 
     const {
