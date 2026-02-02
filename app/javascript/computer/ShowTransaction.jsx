@@ -247,6 +247,24 @@ class ShowTransaction extends ShowTransactionBase {
     );
   };
 
+  renderCurrencyOptions = () => {
+    const { commodities } = this.state;
+    const currencyOptions = [];
+
+    Object.keys(commodities).sort().forEach((k) => {
+      const commodity = commodities[k];
+      currencyOptions.push((
+        <Option
+          value={k}
+          key={k}
+        >
+          {commodity.id_}
+        </Option>
+      ));
+    });
+    return currencyOptions;
+  };
+
   render() {
     const addSplitHandler = () => {
       const { state } = this;
@@ -371,7 +389,27 @@ class ShowTransaction extends ShowTransactionBase {
             />
           </Col>
           <Col span={5}>
-            {`${transaction.currency_space} ${transaction.currency_id}`}
+            <Select
+              defaultValue={`${transaction.currency_id}_${transaction.currency_space}`}
+              bordered={false}
+              onBlur={() => {
+                const { splits: newSplits, transaction: newTransaction } = this.state;
+                this.submitTransaction(newTransaction, newSplits);
+              }}
+              onChange={(value) => {
+                const { commodities } = this.state;
+                this.setState((prevState) => ({
+                  transaction: {
+                    ...prevState.transaction,
+                    currency_id: commodities[value].id_,
+                    currency_space: commodities[value].space,
+                  },
+                }));
+                this.debounceSubmit();
+              }}
+            >
+              { this.renderCurrencyOptions() }
+            </Select>
           </Col>
         </Row>
         { this.renderSplits() }

@@ -17,21 +17,25 @@ class Api::V1::EtransactionsController < ApplicationController
 
   def show
     splits = @transaction.splits.map(&:attributes)
-    accounts_map = @book.accounts.accounts_map
+    accounts = @book.accounts.accounts_map
+    commodities = @book.commodities.commodities_map
 
     render json: { transaction: @transaction.attributes,
                    splits:,
-                   accounts: accounts_map }
+                   accounts:,
+                   commodities: }
   end
 
   def update
     if @transaction.update(transaction_params)
       splits = @transaction.splits.map(&:attributes)
-      accounts_map = @book.accounts.accounts_map
+      accounts = @book.accounts.accounts_map
+      commodities = @book.commodities.commodities_map
 
       render json: { transaction: @transaction.attributes,
                      splits:,
-                     accounts: accounts_map }
+                     accounts:,
+                     commodities: }
     else
       render json: { error: @transaction.errors.inspect }
     end

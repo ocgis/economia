@@ -247,6 +247,24 @@ class ShowTransaction extends ShowTransactionBase {
     );
   };
 
+  renderCurrencyOptions = () => {
+    const { commodities } = this.state;
+    const currencyOptions = [];
+
+    Object.keys(commodities).sort().forEach((k) => {
+      const commodity = commodities[k];
+      currencyOptions.push((
+        <option
+          value={k}
+          key={k}
+        >
+          {commodity.id_}
+        </option>
+      ));
+    });
+    return currencyOptions;
+  };
+
   render() {
     const addSplitHandler = () => {
       const { state } = this;
@@ -370,7 +388,28 @@ class ShowTransaction extends ShowTransactionBase {
             />
           </Grid.Item>
           <Grid.Item span={5}>
-            {`${transaction.currency_space} ${transaction.currency_id}`}
+            <select
+              defaultValue={`${transaction.currency_id}_${transaction.currency_space}`}
+              bordered="false"
+              onBlur={() => {
+                const { splits: newSplits, transaction: newTransaction } = this.state;
+                this.submitTransaction(newTransaction, newSplits);
+              }}
+              onChange={(event) => {
+                const { commodities } = this.state;
+                const { target: { value } } = event;
+                this.setState((prevState) => ({
+                  transaction: {
+                    ...prevState.transaction,
+                    currency_id: commodities[value].id_,
+                    currency_space: commodities[value].space,
+                  },
+                }));
+                this.debounceSubmit();
+              }}
+            >
+              { this.renderCurrencyOptions() }
+            </select>
           </Grid.Item>
         </Grid>
         { this.renderSplits() }

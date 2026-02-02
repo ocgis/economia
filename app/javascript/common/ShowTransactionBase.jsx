@@ -90,6 +90,7 @@ class ShowTransactionBase extends React.Component {
       transaction: null,
       splits: [],
       descriptionOptions: [],
+      commodities: [],
     };
   }
 
@@ -146,7 +147,7 @@ class ShowTransactionBase extends React.Component {
 
   setStateFromResponse(response) {
     const {
-      accounts, error, splits, transaction,
+      accounts, commodities, error, splits, transaction,
     } = response.data;
     if (error != null) {
       console.log('ERROR:', error); // eslint-disable-line no-console
@@ -160,6 +161,7 @@ class ShowTransactionBase extends React.Component {
       }),
       accounts,
       account_ids: {},
+      commodities,
     };
     Object.keys(newState.accounts).forEach((t) => {
       newState.account_ids[newState.accounts[t].full_name] = t;
