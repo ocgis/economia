@@ -18,8 +18,9 @@ class ShowTransaction extends ShowTransactionBase {
   }
 
   renderQuantity = (index) => {
-    const { splits, transaction } = this.state;
+    const { accounts, splits, transaction } = this.state;
     const split = splits[index];
+    const { commodity_id } = accounts[split.account_id];
 
     if (this.commodityMatchesCurrency(split)) {
       return null;
@@ -29,7 +30,7 @@ class ShowTransaction extends ShowTransactionBase {
         <Grid.Item span={4}>
           <Input
             value={split.quantity_to}
-            placeholder="quantity to"
+            placeholder={`${commodity_id} to`}
             bordered="false"
             onChange={(value) => {
               const { splits: oldSplits } = this.state;
@@ -51,7 +52,7 @@ class ShowTransaction extends ShowTransactionBase {
         <Grid.Item span={4}>
           <Input
             value={split.quantity_from}
-            placeholder="quantity from"
+            placeholder={`${commodity_id} from`}
             bordered="false"
             onChange={(value) => {
               const { splits: oldSplits } = this.state;
@@ -75,7 +76,9 @@ class ShowTransaction extends ShowTransactionBase {
   };
 
   renderSplit = (index) => {
-    const { accounts, descriptionOptions, splits } = this.state;
+    const {
+      accounts, descriptionOptions, splits, transaction,
+    } = this.state;
     const split = splits[index];
     const options = Object.keys(accounts).map((t) => ({ value: accounts[t].full_name }));
     const base = (
@@ -92,7 +95,7 @@ class ShowTransaction extends ShowTransactionBase {
                 option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
               )}
               onBlur={() => {
-                const { splits: oldSplits, transaction } = this.state;
+                const { splits: oldSplits } = this.state;
                 let newSplits = [...oldSplits];
 
                 newSplits = this.constructor.calculateStateShownAccount(newSplits, accounts);
@@ -117,11 +120,11 @@ class ShowTransaction extends ShowTransactionBase {
               value={split.reconciled_state}
               bordered="false"
               onBlur={() => {
-                const { splits: newSplits, transaction } = this.state;
+                const { splits: newSplits } = this.state;
                 this.submitTransaction(transaction, newSplits);
               }}
               onChange={(event) => {
-                const { splits: oldSplits, transaction } = this.state;
+                const { splits: oldSplits } = this.state;
                 const newSplits = [...oldSplits];
 
                 newSplits[index].reconciled_state = event.target.value;
@@ -141,7 +144,7 @@ class ShowTransaction extends ShowTransactionBase {
           <Grid.Item span={4} key="to">
             <Input
               value={split.value_to}
-              placeholder="value to"
+              placeholder={`${transaction.currency_id} to`}
               bordered="false"
               onChange={(value) => {
                 const { splits: oldSplits } = this.state;
@@ -167,7 +170,7 @@ class ShowTransaction extends ShowTransactionBase {
           <Grid.Item span={4} key="from">
             <Input
               value={split.value_from}
-              placeholder="value from"
+              placeholder={`${transaction.currency_id} from`}
               bordered="false"
               onChange={(value) => {
                 const { splits: oldSplits } = this.state;
@@ -210,7 +213,7 @@ class ShowTransaction extends ShowTransactionBase {
                 this.debounceSubmit();
               }}
               onBlur={() => {
-                const { splits: newSplits, transaction } = this.state;
+                const { splits: newSplits } = this.state;
                 this.submitTransaction(transaction, newSplits);
               }}
               onSearch={(search) => this.searchSplitMemos(search)}
