@@ -78,7 +78,7 @@ class ShowAccount extends React.Component {
         </Col>
         <Col span={4}>
           <div style={{ float: 'right' }}>
-            { Number(split.value).toFixed(2) }
+            { Number(split.quantity).toFixed(2) }
           </div>
         </Col>
         <Col span={4}>

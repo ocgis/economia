@@ -19,10 +19,10 @@ module Api
           mapped[account[:id]][:parent] = account.parent_id
         end
         balances = Split.joins(:account).where('accounts.book_id =
-          ?', @book.id).select(:account_id, :value).group(:account_id).calculate(:sum, :value)
+          ?', @book.id).select(:account_id, :quantity).group(:account_id).calculate(:sum, :quantity)
 
         dates = Split.joins(:account).where('accounts.book_id =
-          ?', @book.id).select(:account_id, :value).group(:account_id).maximum(:updated_at)
+          ?', @book.id).select(:account_id, :quantity).group(:account_id).maximum(:updated_at)
 
         # Include children balances in parent balance
         balances.each do |id, balance|
@@ -91,7 +91,7 @@ module Api
         ).where(
           "etransaction_id in (#{account_splits.to_sql})"
         ).calculate(
-          :sum, :value
+          :sum, :quantity
         )
 
         account_splits = account_splits.limit(params[:limit]) if params.key?(:limit)
@@ -133,7 +133,7 @@ module Api
 
         splits.each do |split|
           split[:balance] = end_balance
-          end_balance -= split['value']
+          end_balance -= split['quantity']
         end
 
         render json: { account:,

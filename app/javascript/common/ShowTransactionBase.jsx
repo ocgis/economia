@@ -185,20 +185,41 @@ class ShowTransactionBase extends React.Component {
   };
 
   calculateStateValueQuantity = (splits) => {
-    const { accounts, transaction } = this.state;
-    const newSplits = splits.map((split) => {
+    const { accounts } = this.state;
+    let quantityChanged = false;
+    let rate = 1;
+    let account = null;
+    const splitsFirstPass = splits.map((split) => {
       const newSplit = { ...split };
       const value_to = split.value_to === '' ? 0 : split.value_to;
       const value_from = split.value_from === '' ? 0 : split.value_from;
       newSplit.value = value_to - value_from;
-      if (this.commodityMatchesCurrency(split, transaction, accounts)) {
-        newSplit.quantity = split.value;
-      } else {
-        const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
-        const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
-        newSplit.quantity = quantity_to - quantity_from;
+      const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
+      const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
+      newSplit.quantity = quantity_to - quantity_from;
+
+      if (newSplit.value !== +split.value) {
+        newSplit.quantity = (split.quantity / split.value) * newSplit.value;
+      } else if (newSplit.quantity !== +split.quantity) {
+        quantityChanged = true;
+        rate = newSplit.quantity / split.value;
+        account = accounts[split.account_id];
       }
       return newSplit;
+    });
+
+    const newSplits = splitsFirstPass.map((split) => {
+      if (quantityChanged) {
+        const splitAccount = accounts[split.account_id];
+        if ((splitAccount.commodity_id === account.commodity_id)
+            && (splitAccount.commodity_space === account.commodity_space)) {
+          return {
+            ...split,
+            quantity: split.value * rate,
+          };
+        }
+      }
+      return split;
     });
 
     return this.constructor.calculateStateFromTo(newSplits);
@@ -238,13 +259,13 @@ class ShowTransactionBase extends React.Component {
 
   balanceSplitHandler = (index) => (() => {
     const { splits } = this.state;
-    let newSplits = [...splits];
+    let newSplits = splits.map((split) => ({ ...split }));
     let newValue = newSplits[index].value;
     newSplits.forEach((split) => {
       newValue -= split.value;
     });
     newSplits[index].value = newValue;
-    newSplits[index].quantity = newValue;
+    newSplits[index].quantity = newValue * (splits[index].quantity / splits[index].value);
     newSplits = this.constructor.calculateStateFromTo(newSplits);
     this.setState({ splits: newSplits });
     this.debounceSubmit();
