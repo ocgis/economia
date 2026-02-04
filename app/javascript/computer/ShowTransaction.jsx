@@ -15,7 +15,7 @@ class ShowTransaction extends ShowTransactionBase {
   renderQuantity = (index) => {
     const { accounts, splits, transaction } = this.state;
     const split = splits[index];
-    const { commodity_id } = accounts[split.account_id];
+    const { commodity_id } = accounts[split.account_id] || '';
 
     if (this.commodityMatchesCurrency(split)) {
       return null;
