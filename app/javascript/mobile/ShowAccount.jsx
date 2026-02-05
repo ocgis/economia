@@ -84,7 +84,7 @@ class ShowAccount extends React.Component {
           </Grid.Item>
           <Grid.Item span={18} onClick={goToTransaction}>
             <div style={{ float: 'right' }}>
-              { Number(split.value).toFixed(2) }
+              { Number(split.quantity).toFixed(2) }
             </div>
           </Grid.Item>
           <Grid.Item span={6} onClick={goToTransaction}>
