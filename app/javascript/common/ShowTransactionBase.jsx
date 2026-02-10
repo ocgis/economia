@@ -191,18 +191,18 @@ class ShowTransactionBase extends React.Component {
     let account = null;
     const splitsFirstPass = splits.map((split) => {
       const newSplit = { ...split };
-      const value_to = split.value_to === '' ? 0 : split.value_to;
-      const value_from = split.value_from === '' ? 0 : split.value_from;
+      const value_to = Number(split.value_to) ?? 0;
+      const value_from = Number(split.value_from) ?? 0;
       newSplit.value = value_to - value_from;
-      const quantity_to = split.quantity_to === '' ? 0 : split.quantity_to;
-      const quantity_from = split.quantity_from === '' ? 0 : split.quantity_from;
+      const quantity_to = Number(split.quantity_to) ?? 0;
+      const quantity_from = Number(split.quantity_from) ?? 0;
       newSplit.quantity = quantity_to - quantity_from;
 
       if (newSplit.value !== +split.value) {
         newSplit.quantity = (split.quantity / split.value) * newSplit.value;
       } else if (newSplit.quantity !== +split.quantity) {
         quantityChanged = true;
-        rate = newSplit.quantity / split.value;
+        rate = (newSplit.quantity / split.value) ?? 1;
         account = accounts[split.account_id];
       }
       return newSplit;
@@ -215,7 +215,7 @@ class ShowTransactionBase extends React.Component {
             && (splitAccount.commodity_space === account.commodity_space)) {
           return {
             ...split,
-            quantity: split.value * rate,
+            quantity: Number(split.value * rate).toFixed(2),
           };
         }
       }
