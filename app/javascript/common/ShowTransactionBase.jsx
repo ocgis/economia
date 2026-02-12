@@ -174,6 +174,26 @@ class ShowTransactionBase extends React.Component {
     this.setState(newState);
   }
 
+  calculateQuantityPerValue = (splits, commodity_space, commodity_id) => {
+    const { accounts } = this.state;
+    let maxQuantity = 0;
+    let maxValue = 1;
+
+    splits.forEach((split) => {
+      const { commodity_space: split_space, commodity_id: split_id } = accounts[split.account_id];
+      if ((commodity_space === split_space) && (commodity_id === split_id)) {
+        if (split.value && (Math.abs(split.quantity) > maxQuantity)) {
+          maxQuantity = Math.abs(split.quantity);
+          maxValue = Math.abs(split.value);
+        }
+      }
+    });
+    if (maxQuantity === 0) {
+      return 1;
+    }
+    return maxQuantity / maxValue;
+  };
+
   commodityMatchesCurrency = (split) => {
     const { accounts, transaction } = this.state;
     const account = accounts[split.account_id];
@@ -185,26 +205,6 @@ class ShowTransactionBase extends React.Component {
   };
 
   calculateStateValueQuantity = (splits) => {
-    const calculateQuantityPerValue = (commodity_space, commodity_id) => {
-      const { accounts } = this.state;
-      let maxQuantity = 0;
-      let maxValue = 1;
-
-      splits.forEach((split) => {
-        const { commodity_space: split_space, commodity_id: split_id } = accounts[split.account_id];
-        if ((commodity_space === split_space) && (commodity_id === split_id)) {
-          if (split.value && (Math.abs(split.quantity) > maxQuantity)) {
-            maxQuantity = Math.abs(split.quantity);
-            maxValue = Math.abs(split.value);
-          }
-        }
-      });
-      if (maxQuantity === 0) {
-        return 1;
-      }
-      return maxQuantity / maxValue;
-    };
-
     const { accounts } = this.state;
     let quantityChanged = false;
     let rate = 1;
@@ -221,7 +221,11 @@ class ShowTransactionBase extends React.Component {
       if (newSplit.value !== +split.value) {
         // Recalculate split quantity from transaction value
         const { commodity_space, commodity_id } = accounts[split.account_id];
-        const quantityPerValue = calculateQuantityPerValue(commodity_space, commodity_id);
+        const quantityPerValue = this.calculateQuantityPerValue(
+          splits,
+          commodity_space,
+          commodity_id,
+        );
         newSplit.quantity = quantityPerValue * newSplit.value;
       } else if (newSplit.quantity !== +split.quantity) {
         quantityChanged = true;
@@ -281,14 +285,16 @@ class ShowTransactionBase extends React.Component {
   });
 
   balanceSplitHandler = (index) => (() => {
-    const { splits } = this.state;
+    const { accounts, splits } = this.state;
+    const { commodity_space, commodity_id } = accounts[splits[index].account_id];
+    const quantityPerValue = this.calculateQuantityPerValue(splits, commodity_space, commodity_id);
     let newSplits = splits.map((split) => ({ ...split }));
     let newValue = newSplits[index].value;
     newSplits.forEach((split) => {
       newValue -= split.value;
     });
     newSplits[index].value = newValue;
-    newSplits[index].quantity = newValue * (splits[index].quantity / splits[index].value);
+    newSplits[index].quantity = newValue * quantityPerValue;
     newSplits = this.constructor.calculateStateFromTo(newSplits);
     this.setState({ splits: newSplits });
     this.debounceSubmit();
