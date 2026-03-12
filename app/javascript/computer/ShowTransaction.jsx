@@ -13,7 +13,7 @@ const { Option } = Select;
 
 class ShowTransaction extends ShowTransactionBase {
   renderQuantity = (index) => {
-    const { accounts, splits, transaction } = this.state;
+    const { accounts, splits } = this.state;
     const split = splits[index];
     const { commodity_id } = accounts[split.account_id] || '';
 
@@ -35,10 +35,9 @@ class ShowTransaction extends ShowTransactionBase {
             }}
             onBlur={() => {
               const { splits: oldSplits } = this.state;
-              let newSplits = [...oldSplits];
-
-              newSplits = this.calculateStateValueQuantity(newSplits);
-              this.submitTransaction(transaction, newSplits);
+              const newSplits = this.calculateStateValueQuantity(oldSplits);
+              this.setState({ splits: newSplits });
+              this.debounceSubmit();
             }}
             onKeyDown={this.onKeyDownHandler}
             onFocus={(event) => event.target.select()}
@@ -57,10 +56,9 @@ class ShowTransaction extends ShowTransactionBase {
             }}
             onBlur={() => {
               const { splits: oldSplits } = this.state;
-              let newSplits = [...oldSplits];
-
-              newSplits = this.calculateStateValueQuantity(newSplits);
-              this.submitTransaction(transaction, newSplits);
+              const newSplits = this.calculateStateValueQuantity(oldSplits);
+              this.setState({ splits: newSplits });
+              this.debounceSubmit();
             }}
             onKeyDown={this.onKeyDownHandler}
             onFocus={(event) => event.target.select()}
@@ -91,10 +89,9 @@ class ShowTransaction extends ShowTransactionBase {
               )}
               onBlur={() => {
                 const { splits: oldSplits } = this.state;
-                let newSplits = [...oldSplits];
-
-                newSplits = this.constructor.calculateStateShownAccount(newSplits, accounts);
-                this.submitTransaction(transaction, newSplits);
+                const newSplits = this.constructor.calculateStateShownAccount(oldSplits, accounts);
+                this.setState({ splits: newSplits });
+                this.debounceSubmit();
               }}
               onChange={(value) => {
                 const { account_ids, splits: oldSplits } = this.state;
@@ -115,10 +112,6 @@ class ShowTransaction extends ShowTransactionBase {
             <Select
               defaultValue={split.reconciled_state}
               bordered={false}
-              onBlur={() => {
-                const { splits: newSplits } = this.state;
-                this.submitTransaction(transaction, newSplits);
-              }}
               onChange={(value) => {
                 const { splits: oldSplits } = this.state;
                 const newSplits = [...oldSplits];
@@ -209,10 +202,6 @@ class ShowTransaction extends ShowTransactionBase {
                 this.setState({ splits: newSplits });
                 this.debounceSubmit();
               }}
-              onBlur={() => {
-                const { splits: newSplits } = this.state;
-                this.submitTransaction(transaction, newSplits);
-              }}
               onSearch={(search) => this.searchSplitMemos(search)}
               onFocus={(event) => {
                 event.target.select();
@@ -240,9 +229,12 @@ class ShowTransaction extends ShowTransactionBase {
     const { splits } = this.state;
     const splitsElements = [];
 
-    for (let i = 0; i < splits.length; i += 1) {
-      splitsElements.push(this.renderSplit(i));
-    }
+    splits.forEach((split, index) => {
+      if (split._destroy !== true) {
+        splitsElements.push(this.renderSplit(index));
+      }
+    });
+
     return (
       <div>
         { splitsElements }
@@ -269,24 +261,6 @@ class ShowTransaction extends ShowTransactionBase {
   };
 
   render() {
-    const addSplitHandler = () => {
-      const { state } = this;
-      const splits = [...state.splits];
-      splits.push({
-        account_id: null,
-        _shown_account: '',
-        action: '',
-        etransaction_id: state.transaction.id,
-        id: null,
-        memo: '',
-        quantity: 0,
-        reconcile_date: null,
-        reconciled_state: 'n',
-        value: 0,
-      });
-      this.submitTransaction(state.transaction, splits);
-    };
-
     const {
       params: { bookId },
       navigate,
@@ -320,10 +294,6 @@ class ShowTransaction extends ShowTransactionBase {
             <DatePicker
               value={moment(transaction.date_posted)}
               bordered={false}
-              onBlur={() => {
-                const { splits: newSplits } = this.state;
-                this.submitTransaction(transaction, newSplits);
-              }}
               onChange={(value) => {
                 this.setState((prevState) => ({
                   transaction: {
@@ -343,10 +313,6 @@ class ShowTransaction extends ShowTransactionBase {
               value={transaction.num}
               placeholder="number"
               bordered={false}
-              onBlur={() => {
-                const { splits: newSplits } = this.state;
-                this.submitTransaction(transaction, newSplits);
-              }}
               onChange={(event) => {
                 this.setState((prevState) => ({
                   transaction: {
@@ -376,10 +342,6 @@ class ShowTransaction extends ShowTransactionBase {
                 }));
                 this.debounceSubmit();
               }}
-              onBlur={() => {
-                const { splits: newSplits } = this.state;
-                this.submitTransaction(transaction, newSplits);
-              }}
               onSearch={(search) => this.searchAccountDescriptions(search)}
               onFocus={(event) => {
                 event.target.select();
@@ -395,10 +357,6 @@ class ShowTransaction extends ShowTransactionBase {
             <Select
               defaultValue={`${transaction.currency_id}_${transaction.currency_space}`}
               bordered={false}
-              onBlur={() => {
-                const { splits: newSplits, transaction: newTransaction } = this.state;
-                this.submitTransaction(newTransaction, newSplits);
-              }}
               onChange={(value) => {
                 const { commodities } = this.state;
                 this.setState((prevState) => ({
@@ -416,7 +374,7 @@ class ShowTransaction extends ShowTransactionBase {
           </Col>
         </Row>
         { this.renderSplits() }
-        <PlusCircleOutlined onClick={addSplitHandler} />
+        <PlusCircleOutlined onClick={this.addSplitHandler} />
         <hr />
         <Button onClick={() => navigate(-1)}>Back</Button>
         <Popconfirm

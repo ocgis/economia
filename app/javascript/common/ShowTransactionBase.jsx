@@ -81,6 +81,7 @@ class ShowTransactionBase extends React.Component {
       const { splits, transaction } = this.state;
       const noSetStateOnResponse = false;
       this.submitTransaction(transaction, splits, noSetStateOnResponse);
+      this.setState({ splits: splits.filter((split) => split._destroy !== true) });
     },
   );
 
@@ -278,10 +279,11 @@ class ShowTransactionBase extends React.Component {
   };
 
   removeSplitHandler = (index) => (() => {
-    const { splits, transaction } = this.state;
+    const { splits } = this.state;
     const newSplits = [...splits];
     newSplits[index]._destroy = true;
-    this.submitTransaction(transaction, newSplits);
+    this.setState({ splits: newSplits });
+    this.debounceSubmit();
   });
 
   balanceSplitHandler = (index) => (() => {
@@ -299,6 +301,24 @@ class ShowTransactionBase extends React.Component {
     this.setState({ splits: newSplits });
     this.debounceSubmit();
   });
+
+  addSplitHandler = () => {
+    const { splits, transaction } = this.state;
+    const newSplits = [...splits];
+    newSplits.push({
+      account_id: null,
+      _shown_account: '',
+      action: '',
+      etransaction_id: transaction.id,
+      id: null,
+      memo: '',
+      quantity: 0,
+      reconcile_date: null,
+      reconciled_state: 'n',
+      value: 0,
+    });
+    this.submitTransaction(transaction, newSplits);
+  };
 
   loadTransaction() {
     const {
@@ -391,7 +411,8 @@ class ShowTransactionBase extends React.Component {
       }
       updatedSplits = this.constructor.calculateStateShownAccount(updatedSplits, accounts);
       updatedSplits = this.constructor.calculateStateFromTo(updatedSplits);
-      this.submitTransaction(updatedTransaction, updatedSplits);
+      this.setState({ transaction: updatedTransaction, splits: updatedSplits });
+      this.debounceSubmit();
     };
 
     const csrfToken = document.querySelector('[name=csrf-token]').content;
