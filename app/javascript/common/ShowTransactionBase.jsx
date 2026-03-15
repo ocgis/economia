@@ -176,7 +176,7 @@ class ShowTransactionBase extends React.Component {
   }
 
   directSubmit = (transaction, splits) => {
-    this.debounceSubmit.cancel();
+    this.debounceSubmit.cancel({ upcomingOnly: true });
     const setStateOnResponse = true;
     this.submitTransaction(transaction, splits, setStateOnResponse);
   };
