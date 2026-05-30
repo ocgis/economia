@@ -70,12 +70,8 @@ class AddAccount extends React.Component {
     ));
 
     const commodityOptions = commodities.map((t, i) => (
-      <Select.Option value={i} key={t.id_}>
-        { t.id_ }
-        <br />
-        (
-        { t.space }
-        )
+      <Select.Option value={i} key={`${t.id_} ${t.space}`}>
+        { `${t.id_} (${t.space})` }
       </Select.Option>
     ));
 

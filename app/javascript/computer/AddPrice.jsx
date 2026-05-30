@@ -62,11 +62,7 @@ class AddPrice extends React.Component {
 
     const options = commodities.map((t, i) => (
       <Select.Option value={i} key={`${t.id_}_${t.space}`}>
-        { t.id_ }
-        <br />
-        (
-        { t.space }
-        )
+        {`${t.id_} (${t.space})` }
       </Select.Option>
     ));
 
@@ -117,6 +113,7 @@ class AddPrice extends React.Component {
                   },
                 }));
               }}
+              dropdownMatchSelectWidth
             >
               {options}
             </Select>
@@ -132,6 +129,7 @@ class AddPrice extends React.Component {
                   },
                 }));
               }}
+              dropdownMatchSelectWidth
             >
               {options}
             </Select>
